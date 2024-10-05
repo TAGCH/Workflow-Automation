@@ -1,13 +1,24 @@
-<h1>Workflow Automation</h1>
+# Workflow Automation
 
-<a>The application is a web-based automation tool designed for small teams and individual users. It enables users to create automated workflows that streamline repetitive tasks.</a>
+The application is a web-based automation tool designed for small teams and individual users. It enables users to create automated workflows that streamline repetitive tasks.
 
-<h2>Documents</h2>
+## Install and Run
 
-- [Vision and Scope]()
-- [Requirements]()
-- [Project Plan]()
-- [Domain Model]()
-- [Use Case Diagram]()
-- [Project Proposal](https://docs.google.com/document/d/1bkid4DuUEVvUOlZlwN-5G6HXH3dDwOP_L2NB2wT2V-k/edit)
-- [Project Development Plan]()
+1. Installation : follow the step in [Installation](https://github.com/TAGCH/Workflow-Automation/blob/main/Installation.md) 
+
+## Setting Up Social Applications
+
+## Demo Admin
+
+## Demo Users
+
+## Project Documents
+
+All project documents are in the [Project Wiki](../../wiki/Home).
+
+- [Vision and Scope](../../wiki/Vision%20Statement)
+- [Requirements](../../wiki/Requirements)
+- [Project Development Plan](../../wiki/Project%20Development%20Plan)
+- [Coding Standard Guideline](../../wiki/Coding%20Standard%20Guideline)
+- [Domain Model](../../wiki/Domain%20Model)
+- [Use Case Diagram](../../wiki/Use%20Case%20Diagram)
