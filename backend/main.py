@@ -1,24 +1,14 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import fastapi as _fastapi
+import fastapi.security as _security
 
-app = FastAPI()
+import sqlalchemy.orm as _orm
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+import app.services as _services
+import app.schemas as _schemas
 
+app = _fastapi.FastAPI()
 
-@app.get("/api/data")
-async def get_data():
-    return {"message": "Hello from the backend!"}
+@app.post("api/users")
+async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Depends()):
+    pass
 
-
-@app.post("/api/login")
-async def login(username: str, password: str):
-    # Placeholder for actual authentication logic
-    return {"username": username, "status": "logged in"}
