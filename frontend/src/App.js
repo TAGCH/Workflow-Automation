@@ -1,7 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from "./pages/HomePage";
-import Workflow from "./pages/Workflow";
+import Workflow from "./pages/WorkflowPage";
+import MyflowPage from "./pages/MyflowPage";
 
 
 function App() {
@@ -9,7 +10,8 @@ function App() {
       <Router>
         <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/workflow" element={<Workflow />} />
+            <Route path="/createflow" element={<Workflow />} />
+            <Route path="/myflow" element={<MyflowPage />} />
         </Routes>
       </Router>
   );

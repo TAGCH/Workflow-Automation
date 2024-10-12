@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const VerticalNavbar = () => {
     const [isHovered, setIsHovered] = useState(false);
+    const previousPage = useNavigate();
 
     return (
         <div
@@ -20,11 +22,17 @@ const VerticalNavbar = () => {
                 transition: 'height 0.6s ease-in-out',
             }}
         >
-            <i className="bi bi-caret-down-square" style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <i className="bi bi-house-door-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <i className="bi bi-file-earmark-plus-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <i className="bi bi-file-earmark-check-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <i className="bi bi-chevron-double-left" style={{fontSize: '2rem', margin: '10px 0', marginTop: 'auto'}}></i>
+            <i className={isHovered ? 'bi bi-caret-up-square' : 'bi bi-caret-down-square'} style={{fontSize: '2rem', margin: '10px 0'}}></i>
+            <Link to={"/"} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
+                <i className="bi bi-house-door-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
+            </Link>
+            <Link to={"/createflow"} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
+                <i className="bi bi-file-earmark-plus-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
+            </Link>
+            <Link to={"/myflow"} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
+                <i className="bi bi-collection-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
+            </Link>
+            <i className="bi bi-chevron-double-left" style={{fontSize: '2rem', margin: '10px 0', marginTop: 'auto'}} onClick={() => previousPage(-1)}></i>
         </div>
     );
 };

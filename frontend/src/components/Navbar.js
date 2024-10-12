@@ -6,7 +6,7 @@ function MyNavbar() {
     return (
         <Navbar bg="light" variant="light" className="shadow-sm">
             <Container>
-                <Navbar.Brand href="/home" style={{ fontWeight: 'bold', fontFamily: 'Modak', fontSize: '32px' }}>
+                <Navbar.Brand href="/" style={{ fontWeight: 'bold', fontFamily: 'Modak', fontSize: '32px' }}>
                     Workflow
                 </Navbar.Brand>
                 <Button variant="outline-secondary" className="border-0" style={{
