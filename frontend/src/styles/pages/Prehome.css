@@ -1,0 +1,60 @@
+.text-overlay {
+    background-color: black;
+    border-radius: 15px;
+    color: white;
+    padding: 20px 30px;
+    z-index: 1;
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.gradient-text {
+    background: linear-gradient(to right, #FF6F61, #6A82FB);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.gradient-text2 {
+    background: linear-gradient(to right, #00C9FF, #92FE9D);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.font-size72 {
+    font-size: 72px;
+}
+
+.font-size52 {
+    font-size: 52px;
+}
+
+.font-size25 {
+    font-size: 25px;
+}
+
+.font-size200 {
+    font-size: 200px;
+}
+
+.px-30 {
+    padding-right: 30px;
+    padding-left: 30px;
+}
+
+.get-started {
+    background-color: black;
+    border-radius: 15px;
+    color: white;
+    padding: 20px 30px;
+    z-index: 1;
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.get-started:hover {
+    background-color: #20c997;
+}
