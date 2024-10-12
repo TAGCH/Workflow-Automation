@@ -23,7 +23,7 @@ const VerticalNavbar = () => {
             }}
         >
             <i className={isHovered ? 'bi bi-caret-up-square' : 'bi bi-caret-down-square'} style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <Link to={"/"} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
+            <Link to={"/home"} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
                 <i className="bi bi-house-door-fill" style={{fontSize: '2rem', margin: '10px 0'}}
                    onMouseEnter={(e) => (e.currentTarget.style.color = '#20c997')}
                    onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}>
