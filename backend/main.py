@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+import pandas as pd
 
 app = FastAPI()
 
@@ -22,3 +23,12 @@ async def get_data():
 async def login(username: str, password: str):
     # Placeholder for actual authentication logic
     return {"username": username, "status": "logged in"}
+
+@app.post("/import-workflow")
+async def import_workflow(file: UploadFile = File()):
+    # Read content of the file with pandas
+    df = pd.read_excel(file.file)
+
+    print(df.to_csv)
+
+    return {"workflow_data": df.to_csv()}

@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PrehomePage from "./pages/PrehomePage";
 import HomePage from "./pages/HomePage";
-import Workflow from "./pages/WorkflowPage";
+import Workflow from "./pages/Workflow";
 import MyflowPage from "./pages/MyflowPage";
 
 
