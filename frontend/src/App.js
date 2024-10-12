@@ -13,7 +13,7 @@ function App() {
             <Route path="/" element={<PrehomePage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/createflow" element={<Workflow />} />
-            <Route path="/myflow" element={<MyflowPage />} />
+            <Route path="/myflows" element={<MyflowPage />} />
         </Routes>
       </Router>
   );
