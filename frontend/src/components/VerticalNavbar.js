@@ -22,9 +22,9 @@ const VerticalNavbar = () => {
         >
             <i className="bi bi-caret-down-square" style={{fontSize: '2rem', margin: '10px 0'}}></i>
             <i className="bi bi-house-door-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <i className="bi bi-plus-circle-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <i className="bi bi-slash-circle-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <i className="bi bi-chevron-double-right" style={{fontSize: '2rem', margin: '10px 0', marginTop: 'auto'}}></i>
+            <i className="bi bi-file-earmark-plus-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
+            <i className="bi bi-file-earmark-check-fill" style={{fontSize: '2rem', margin: '10px 0'}}></i>
+            <i className="bi bi-chevron-double-left" style={{fontSize: '2rem', margin: '10px 0', marginTop: 'auto'}}></i>
         </div>
     );
 };
