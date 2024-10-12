@@ -29,6 +29,6 @@ async def import_workflow(file: UploadFile = File()):
     # Read content of the file with pandas
     df = pd.read_excel(file.file)
 
-    print(df.to_csv)
+    print(df.to_csv(index=False))
 
-    return {"workflow_data": df.to_csv()}
+    return {"workflow_data": df.to_csv(index=False)}
