@@ -1,5 +1,5 @@
 from database import Base
-from sqlalchemy import Column, Integer, String, Boolean, Float
+from sqlalchemy import Column, Integer, String, ARRAY
 from passlib.hash import bcrypt
 
 class User(Base):
@@ -18,3 +18,11 @@ class Workflow(Base):
     email = Column(String, unique=True, index=True)
     title = Column(String)
     body = Column(String)
+
+# class Workflow(Base):
+#     __tablename__ = 'workflows'
+
+#     id = Column(Integer, primary_key=True, index=True)
+#     emails = Column(ARRAY(String))
+#     title = Column(String)
+#     body = Column(String)
