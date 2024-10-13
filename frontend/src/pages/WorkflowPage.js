@@ -17,7 +17,7 @@ const WorkflowPage = () => {
   });
 
   const fetchFlows = async () => {
-    const response = await api.get('/workflow');
+    const response = await api.get(`/workflow/`);
     setWorkflows(response.data)
   };
 
@@ -35,7 +35,7 @@ const WorkflowPage = () => {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    await api.post('/workflow', flowData);
+    await api.post(`/workflow/`, flowData);
     fetchFlows();
     setFlowData({
       email: '',
@@ -59,14 +59,26 @@ const WorkflowPage = () => {
                             <div className="d-flex justify-content-between align-items-center">
                               
                                     <div>
-                                        {/* <h5>Workflow {param.id}</h5> */}
-                                        <h5>Workflow</h5>
+                                        <h5>Workflow {param.id}</h5>
+                                        {/* <h5>Workflow</h5> */}
                                         <form onSubmit={handleFormSubmit}>
                                           <div className='mb-3 mt-3'>
                                               <label htmlFor='email' className='form-label'>
                                                   email:
                                               </label>
                                             <input type='text' className='form-control' id='email' name='email' onChange={handleInputChange} value={flowData.email}/>
+                                          </div>
+                                          <div className='mb-3 mt-3'>
+                                              <label htmlFor='title' className='form-label'>
+                                                  title:
+                                              </label>
+                                            <input type='text' className='form-control' id='title' name='title' onChange={handleInputChange} value={flowData.title}/>
+                                          </div>
+                                          <div className='mb-3 mt-3'>
+                                              <label htmlFor='body' className='form-label'>
+                                                  body:
+                                              </label>
+                                            <input type='text' className='form-control' id='body' name='body' onChange={handleInputChange} value={flowData.body}/>
                                           </div>
                                           <button type='submit' className="btn btn-primary mt-2">
                                             Send

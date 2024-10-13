@@ -53,12 +53,12 @@ async def login(username: str, password: str):
     # Placeholder for actual authentication logic
     return {"username": username, "status": "logged in"}
 
-@app.get("/workflow", response_model=List[WorkflowModel])
+@app.get("/workflow/", response_model=List[WorkflowModel])
 async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
     workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
     return workflows
 
-@app.post("/workflow", response_model=WorkflowModel)
+@app.post("/workflow/", response_model=WorkflowModel)
 async def create_workflow(workflow: WorkflowBase, db: db_dependency):
     db_workflow = models.Workflow(**workflow.model_dump())
     db.add(db_workflow)
