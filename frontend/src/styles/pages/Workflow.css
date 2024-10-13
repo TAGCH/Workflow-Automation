@@ -1,0 +1,16 @@
+.add-contents {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+}
+
+.add-contents-clickable {
+    font-size: 5rem;
+    cursor: pointer;
+    color: black;
+}
+
+.add-contents-clickable:hover {
+    color: #20c997;
+}
