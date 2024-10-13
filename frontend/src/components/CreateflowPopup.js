@@ -49,7 +49,7 @@ const CreateflowPopup = ({ closePopup }) => {
                     placeholder="Enter workflow name"
                     value={workflowName}
                     onChange={(e) => setWorkflowName(e.target.value)}
-                    className="popup-input"
+                    className="justify-content-center text-center"
                 />
                 {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
                 <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px' }}>
