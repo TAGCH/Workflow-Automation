@@ -1,51 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import PrehomePage from "./pages/PrehomePage";
+import HomePage from "./pages/HomePage";
+import Workflow from "./pages/WorkflowPage";
+import MyflowPage from "./pages/MyflowPage";
+
 
 function App() {
-  const [message, setMessage] = useState('');
-  
-  // Fetch data from the backend when the component mounts
-  useEffect(() => {
-    fetch('http://localhost:8000/api/data')
-      .then(response => response.json())
-      .then(data => {
-        setMessage(data.message);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }, []);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const username = e.target.username.value;
-    const password = e.target.password.value;
-
-    fetch('http://localhost:8000/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Login successful:', data);
-      })
-      .catch((error) => {
-        console.error('Error logging in:', error);
-      });
-  };
-
   return (
-    <div>
-      <h1>Frontend</h1>
-      <p>{message}</p>
-      <form onSubmit={handleLogin}>
-        <input type="text" name="username" placeholder="Username" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <button type="submit">Login</button>
-      </form>
-    </div>
+      <Router>
+        <Routes>
+            <Route path="/" element={<PrehomePage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/createflow" element={<Workflow />} />
+            <Route path="/myflows" element={<MyflowPage />} />
+        </Routes>
+      </Router>
   );
 }
 
