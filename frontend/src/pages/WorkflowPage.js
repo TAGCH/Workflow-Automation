@@ -8,13 +8,17 @@ import VerticalNavbar from '../components/VerticalNavbar';
 
 const WorkflowPage = () => {
     const [showOptions, setShowOptions] = useState(false);
+    const [showEmailForm, setShowEmailForm] = useState(false);
 
     const handleIconClick = () => {
         setShowOptions(true);
     };
 
-    const handleOptionClick = () => {
+    const handleOptionClick = (option) => {
         setShowOptions(false);
+        if (option === 'Send Email') {
+            setShowEmailForm(true);
+        }
     };
 
     const handleExitClick = () => {
@@ -25,6 +29,91 @@ const WorkflowPage = () => {
         <div style={{ position: 'relative' }}>
             <Navbar />
             <VerticalNavbar />
+            {showEmailForm && (
+                <div
+                    className="email-form-container"
+                    style={{
+                        marginTop: '20px',
+                        backgroundColor: '#f8f9fa',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                        width: '450px',
+                        margin: '20px auto',
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                        <img src={gmailIcon} alt="Gmail Icon" style={{ width: '30px', marginRight: '10px' }} />
+                        <h3>Send an email</h3>
+                    </div>
+
+                    <div className="form-field">
+                        <label style={{ color: 'red', marginRight: '5px' }}>*</label>
+                        <label>To</label>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <i className="bi bi-envelope" style={{ marginRight: '8px' }}></i>
+                            <input
+                                type="text"
+                                placeholder="Email"
+                                style={{
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    flex: '1',
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-field" style={{ marginTop: '10px' }}>
+                        <label style={{ color: 'red', marginRight: '5px' }}>*</label>
+                        <label>Title</label>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <input
+                                type="text"
+                                placeholder="Welcome"
+                                style={{
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    flex: '1',
+                                }}
+                            />
+                            <i className="bi bi-person" style={{ marginLeft: '8px' }}></i>
+                            <input
+                                type="text"
+                                placeholder="Last Name"
+                                style={{
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    flex: '1',
+                                    marginLeft: '8px',
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-field" style={{ marginTop: '10px' }}>
+                        <label style={{ color: 'red', marginRight: '5px' }}>*</label>
+                        <label>Body</label>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <i className="bi bi-person" style={{ marginRight: '8px' }}></i>
+                            <textarea
+                                placeholder="Dear, First Name"
+                                rows="3"
+                                style={{
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    width: '100%',
+                                }}
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="add-contents">
                 <i
                     className="bi bi-plus-circle-fill add-contents-clickable"
@@ -39,6 +128,7 @@ const WorkflowPage = () => {
                     }}
                 ></i>
             </div>
+
             {showOptions && (
                 <div
                     className="popup-overlay"
