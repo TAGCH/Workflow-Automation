@@ -1,0 +1,22 @@
+.welcome-container {
+    flex: 1;
+    padding: 50px 100px 150px 150px;
+}
+
+.bg-black {
+    background-color: #343a40;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bg-black h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.bg-black p {
+    font-size: 1.25rem;
+    line-height: 1.5;
+    margin-top: 0;
+}
