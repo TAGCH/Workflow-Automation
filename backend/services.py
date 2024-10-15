@@ -3,6 +3,8 @@ import fastapi.security as _security
 import jwt as _jwt
 import sqlalchemy.orm as _orm
 import passlib.hash as _hash
+from dotenv import load_dotenv
+import os
 
 import database as _database
 import models as _models
@@ -10,7 +12,9 @@ import schemas as _schemas
 
 oauth2schema = _security.OAuth2PasswordBearer(tokenUrl="/api/token")
 
-JWT_SECRET = "myjwtsecret"
+load_dotenv()
+
+JWT_SECRET = os.getenv("JWT_SECRET", "myjwtsecret")
 
 def create_database():
     return _database.Base.metadata.create_all(bind=_database.engine)
@@ -20,7 +24,7 @@ def get_db():
     try:
         yield db
     finally:
-        db.close
+        db.close()
 
 async def get_user_by_email(email: str, db: _orm.Session):
     return db.query(_models.User).filter(_models.User.email == email).first()
@@ -33,14 +37,18 @@ async def create_user(user: _schemas.UserCreate, db: _orm.Session):
     return user_obj
 
 async def authenticate_user(email: str, password: str, db: _orm.Session):
+    print(f"Authenticating user: {email}")
     user = await get_user_by_email(db=db, email=email)
 
     if not user:
+        print("User not found")
         return False
 
     if not user.verify_password(password):
+        print("Password verification failed")
         return False
 
+    print("User authenticated")
     return user
 
 async def create_token(user: _models.User):
@@ -53,8 +61,12 @@ async def create_token(user: _models.User):
 async def get_current_user(db: _orm.Session = _fastapi.Depends(get_db), token: str = _fastapi.Depends(oauth2schema)):
     try:
         payload = _jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-        user = db.query(_models.User).get(payload["id"])
-    except:
-        raise _fastapi.HTTPException(status_code=401, detail="Invalid Email or Password")
+        user = db.query(_models.User).filter_by(id=payload["id"]).first()
+        if user is None:
+            raise _fastapi.HTTPException(status_code=401, detail="User not found")
+    except _jwt.ExpiredSignatureError:
+        raise _fastapi.HTTPException(status_code=401, detail="Token expired")
+    except _jwt.InvalidTokenError:
+        raise _fastapi.HTTPException(status_code=401, detail="Invalid token")
 
     return _schemas.User.from_orm(user)
