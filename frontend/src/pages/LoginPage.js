@@ -8,13 +8,13 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [, setToken] = useContext(UserContext);
+  const { setToken } = useContext(UserContext); // Fix here
   const navigate = useNavigate();
 
   const submitLogin = async () => {
     console.log("Submitting login form...");  // Debugging log
     const requestData = new URLSearchParams({
-      grant_type: 'password',  // Set grant_type to "password"
+      grant_type: 'password',  
       username: email,
       password: password,
       scope: '',
@@ -29,11 +29,10 @@ const LoginPage = () => {
   
       console.log("Response received: ", response);  // Debugging log
   
-      // If the request was successful, set the token and navigate
       setToken(response.data.access_token);
       navigate('/home');
     } catch (error) {
-      console.error("Error during login: ", error);  // Debugging log
+      console.error("Error during login: ", error);  
       if (error.response && error.response.data) {
         const message = typeof error.response.data.detail === 'string'
           ? error.response.data.detail
@@ -45,10 +44,9 @@ const LoginPage = () => {
     }
   };  
   
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form submitted");  // Debugging log
+    console.log("Form submitted");  
     submitLogin();
   };
 

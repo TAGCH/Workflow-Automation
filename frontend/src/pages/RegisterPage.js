@@ -1,35 +1,31 @@
 import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";  // Import useNavigate from react-router-dom
+import { useNavigate } from "react-router-dom";  
 import { UserContext } from "../context/UserContext";
 import ErrorMessage from "../components/ErrorMessage";
-import api from "../services/api";  // Import the Axios instance
+import api from "../services/api";  
 
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmationPassword, setConfirmationPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [, setToken] = useContext(UserContext);
-  const navigate = useNavigate();  // Create a navigate function
+  const { setToken } = useContext(UserContext); // Fix here
+  const navigate = useNavigate();  
 
   const submitRegistration = async () => {
-    // Prepare the request body
     const requestBody = {
       email: email,
-      hashed_password: password, // Ensure this matches your API requirements
+      hashed_password: password, 
     };
     
     try {
-      // Use Axios to make the POST request
       const response = await api.post("/api/users", requestBody);
       console.log("Response:", response);
       
-      // Assuming the token is returned in response.data.access_token
       setToken(response.data.access_token);
-      navigate("/"); // Navigate to the home page
+      navigate("/home"); 
     } catch (error) {
       console.error("Error during registration:", error);
-      // Check if error response exists and extract message
       if (error.response) {
         setErrorMessage(error.response.data.detail || "An error occurred during registration.");
       } else {
@@ -44,9 +40,7 @@ const RegisterPage = () => {
     if (password === confirmationPassword && password.length > 5) {
       submitRegistration();
     } else {
-      setErrorMessage(
-        "Ensure that the passwords match and are greater than 5 characters"
-      );
+      setErrorMessage("Ensure that the passwords match and are greater than 5 characters");
     }
   };
 
