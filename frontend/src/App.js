@@ -14,6 +14,7 @@ function App() {
             <Route path="/home" element={<HomePage />} />
             <Route path="/createflow" element={<WorkflowPage />} />
             <Route path="/myflows" element={<MyflowPage />} />
+            <Route path="/workflow/" element={<WorkflowPage />} />
         </Routes>
       </Router>
   );

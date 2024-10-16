@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import CreateflowPopup from './CreateflowPopup';
+
 
 const VerticalNavbar = () => {
     const [isHovered, setIsHovered] = useState(false);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const openPopup = () => setIsPopupOpen(true);
+    const closePopup = () => setIsPopupOpen(false);
     const previousPage = useNavigate();
 
     return (
@@ -29,7 +34,7 @@ const VerticalNavbar = () => {
                    onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}>
                 </i>
             </Link>
-            <Link to={"/createflow"} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
+            <Link to={"#"} onClick={openPopup} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
                 <i className="bi bi-file-earmark-plus-fill" style={{fontSize: '2rem', margin: '10px 0'}}
                    onMouseEnter={(e) => (e.currentTarget.style.color = '#20c997')}
                    onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}>
@@ -45,6 +50,7 @@ const VerticalNavbar = () => {
                onMouseEnter={(e) => (e.currentTarget.style.color = '#20c997')}
                onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}>
             </i>
+            {isPopupOpen && <CreateflowPopup closePopup={closePopup} />}
         </div>
     );
 };

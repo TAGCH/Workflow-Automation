@@ -23,3 +23,4 @@ python_multipart==0.0.12
 pandas
 openpyxl
 bootstrap-icon
+fastapi-mail
