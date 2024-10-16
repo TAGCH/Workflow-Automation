@@ -4,6 +4,7 @@ import PrehomePage from "./pages/PrehomePage";
 import HomePage from "./pages/HomePage";
 import Workflow from "./pages/WorkflowPage";
 import MyflowPage from "./pages/MyflowPage";
+import WorkflowPage from './pages/WorkflowPage';
 
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
             <Route path="/home" element={<HomePage />} />
             <Route path="/createflow" element={<Workflow />} />
             <Route path="/myflows" element={<MyflowPage />} />
+            <Route path="/workflow/" element={<WorkflowPage />} />
         </Routes>
       </Router>
   );
