@@ -14,7 +14,7 @@ function MyFooter() {
                     </Col>
                     <Col xs={6} className="text-end">
                         <a
-                            href="https://github.com/TAGCH/Workflow-Automationa"
+                            href="https://github.com/TAGCH/Workflow-Automation"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-dark"

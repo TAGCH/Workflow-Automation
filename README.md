@@ -11,6 +11,9 @@ The application is a web-based automation tool designed for small teams and indi
 ## Demo Admin
 
 ## Demo Users
+| Username | Password |
+| -------- | ------- |
+| test@example.com | 123456 |
 
 ## Project Documents
 
