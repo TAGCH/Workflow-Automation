@@ -1,15 +1,14 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, BackgroundTasks
 import fastapi as _fastapi
 import fastapi.security as _security
-from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
 from typing import Annotated, List
+
 #email
-from fastapi import BackgroundTasks, FastAPI
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
@@ -158,4 +157,3 @@ async def import_workflow( db: db_dependency, file: UploadFile = File()):
 #     fm = FastMail(conf)
 #     await fm.send_message(message)
 #     return JSONResponse(status_code=200, content={"message": "email has been sent"})
-

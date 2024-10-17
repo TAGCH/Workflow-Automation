@@ -6,7 +6,6 @@ import WorkflowPage from "./pages/WorkflowPage";
 import MyflowPage from "./pages/MyflowPage";
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import WorkflowPage from './pages/WorkflowPage';
 
 
 function App() {
