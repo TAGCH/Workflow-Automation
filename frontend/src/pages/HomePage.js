@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import gmail from "../images/gmail.png";
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import VerticalNavbar from "../components/VerticalNavbar";
+import { UserContext } from '../context/UserContext';
 
+const HomePage = () => {
+    const { user } = useContext(UserContext);
+
+    // Function to extract the username from the email
+    const getUsernameFromEmail = (email) => {
+        return email.split('@')[0]; // Get the part before '@'
+    };
 
 const HomePage = () => {
     return (
@@ -14,7 +22,9 @@ const HomePage = () => {
                 <div className="welcome-container">
                     <div className="bg-black p-4 rounded mb-4">
                         <div className="d-flex align-items-center">
-                            <h1 className="font-weight-bold">Welcome back, [User's Name]!</h1>
+                            <h1 className="font-weight-bold">
+                                Welcome back, {user ? getUsernameFromEmail(user.email) : "User"}!
+                            </h1>
                         </div>
                         <p>Hope you enjoy your lucky day! 🍀</p>
                     </div>
@@ -36,9 +46,7 @@ const HomePage = () => {
                                             <img src={gmail} alt="gmail" className="img-fit"/>
                                         </div>
                                     </div>
-                                    <button
-                                        className="btn btn-primary mt-2"
-                                    >
+                                    <button className="btn btn-primary mt-2">
                                         View Workflow
                                     </button>
                                 </div>
