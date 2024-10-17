@@ -9,8 +9,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
 
-def verify_password(self, password: str):
-    return bcrypt.verify(password, self.hashed_password)
+    def verify_password(self, password: str):
+        return bcrypt.verify(password, self.hashed_password)
 
 #gmailWorkflow 
 class Workflow(Base):
