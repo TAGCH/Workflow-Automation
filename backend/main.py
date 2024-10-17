@@ -1,10 +1,9 @@
-
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 import fastapi as _fastapi
 import fastapi.security as _security
-
 from fastapi import FastAPI, Depends, HTTPException
-
 from fastapi.middleware.cors import CORSMiddleware
+import pandas as pd
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
@@ -38,7 +37,7 @@ class WorkflowBase(BaseModel):
 
 class WorkflowModel(WorkflowBase):
     id: int
-    
+
     # class Config:
     #     orm_mode = True
     
@@ -107,6 +106,21 @@ async def create_workflow(workflow: WorkflowBase, db: db_dependency):
     return db_workflow
 
 
+@app.post("/workflow/import")
+async def import_workflow( db: db_dependency, file: UploadFile = File()):
+    '''Using pandas to read excel file and return dict of data.'''
+
+    df = pd.read_excel(file.file)
+    spreadsheet_workflow = models.spreadSheetWorkflow(
+        emails=df['email'].to_list(),
+        first_name=df['first'].to_list(),
+        last_name=df['last'].to_list(),
+        tel_number=df['tel'].to_list()
+    )
+    db.add(spreadsheet_workflow)
+    db.commit()
+    db.refresh(spreadsheet_workflow)
+    return spreadsheet_workflow
 
 # class EmailSchema(BaseModel):
 #     email: List[EmailStr]
@@ -128,7 +142,7 @@ async def create_workflow(workflow: WorkflowBase, db: db_dependency):
 
 
 # html = """
-# <p>Thanks for using Fastapi-mail</p> 
+# <p>Thanks for using Fastapi-mail</p>
 # """
 
 

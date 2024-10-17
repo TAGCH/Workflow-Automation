@@ -20,6 +20,9 @@ sniffio==1.3.1
 starlette==0.38.6
 typing_extensions==4.12.2
 python_multipart==0.0.12
+pandas
+openpyxl
+bootstrap-icon
 bcrypt==3.1.7
 fastapi[all]
 fastapi-mail
