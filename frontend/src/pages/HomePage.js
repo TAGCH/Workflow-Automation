@@ -12,8 +12,6 @@ const HomePage = () => {
     const getUsernameFromEmail = (email) => {
         return email.split('@')[0]; // Get the part before '@'
     };
-
-const HomePage = () => {
     return (
         <div>
             <Navbar />
