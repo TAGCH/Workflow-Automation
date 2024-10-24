@@ -1,15 +1,7 @@
 import datetime as _dt
-
-import sqlalchemy as _sql
-import sqlalchemy.orm as _orm
-import passlib.hash as _hash
-
-import database as _database
-
 from database import Base
 from sqlalchemy import Column, Integer, String, JSON
 from passlib.hash import bcrypt
-
 
 class User(Base):
     __tablename__ = 'users'
@@ -17,8 +9,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
 
-def verify_password(self, password: str):
-    return bcrypt.verify(password, self.hashed_password)
+    def verify_password(self, password: str):
+        return bcrypt.verify(password, self.hashed_password)
 
 #gmailWorkflow 
 class Workflow(Base):
