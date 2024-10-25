@@ -19,7 +19,7 @@ const WorkflowPage = () => {
 
   // Fetch workflows whhich is not actually being used (yet)
   const fetchFlows = async () => {
-    const response = await api.get(`/workflow/`);
+    const response = await api.get(`/workflow/${param.id}/`);
     setWorkflows(response.data);
   };
 
@@ -39,7 +39,7 @@ const WorkflowPage = () => {
   // Handle form submission
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    await api.post(`/workflow/`, flowData);
+    await api.post(`/workflow/${param.id}/`, flowData);
     fetchFlows();
     setFlowData({
       email: '',

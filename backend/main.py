@@ -98,17 +98,21 @@ async def login(username: str, password: str):
     # Placeholder for actual authentication logic
     return {"username": username, "status": "logged in"}
 
-@app.get("/workflow/", response_model=List[WorkflowModel])
-async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
+@app.get("/workflow/{flow_id}/", response_model=List[WorkflowModel])
+async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: int=100):
     workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+    print(f'get flow with id {flow_id}')
     return workflows
 
-@app.post("/workflow/", response_model=WorkflowModel)
-async def create_workflow(workflow: WorkflowBase, db: db_dependency):
+@app.post("/workflow/{flow_id}/", response_model=WorkflowModel)
+async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
     db_workflow = models.Workflow(**workflow.model_dump())
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
+    print(f'posted with id: {flow_id}')
+    print(db_workflow.email)
+    print(type(db_workflow.email))
     return db_workflow
 
 
@@ -144,9 +148,11 @@ conf = ConnectionConfig(
     # VALIDATE_CERTS = True
 )
 
-@app.post("/email/{workflow_id}")
-async def send_email(content: WorkflowModel, db: db_dependency, skip: int=0, limit: int=100):
-    workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+@app.post("/email/{workflow_id}", response_model=WorkflowModel)
+async def send_email(content: WorkflowBase):
+    workflow = models.Workflow(**content.model_dump())
+    email = workflow.email
+    print(email)
     html = """
     <p>Thanks for using Fastapi-mail</p>
     <br> 
@@ -158,7 +164,7 @@ async def send_email(content: WorkflowModel, db: db_dependency, skip: int=0, lim
     """
     message = MessageSchema(
             subject={content.title},
-            recipients=email.dict().get("email"),
+            recipients= email,
             body=html,
             subtype=MessageType.html)
 
