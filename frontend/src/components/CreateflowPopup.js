@@ -9,10 +9,6 @@ const CreateflowPopup = ({ closePopup }) => {
     const { user } = useContext(UserContext);
 
     const handleOptionClick = (option) => {
-        if (!user) {
-            alert("Please log in to continue."); // Alert if user is not logged in
-            return;
-        }
         if (option === 'Send Email') {
             navigate(`/gmailworkflow/${user.id}`);
         } else if (option === 'Update') {

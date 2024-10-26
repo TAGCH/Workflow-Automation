@@ -1,13 +1,14 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AnimatedBars from "../components/AnimatedBars";
-
+import { UserContext } from '../context/UserContext';
 
 const PrehomePage = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const { user } = useContext(UserContext);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -30,9 +31,9 @@ const PrehomePage = () => {
                 </div>
             </div>
             <div className="d-flex justify-content-center align-items-center py-xl-5">
-                <Link to="/home">
+                <Link to={user ? "/home" : "/login"}>
                     <div className="get-started font-size25">
-                        <a>Get Started</a>
+                        <a>{user ? "Home" : "Get Started"}</a>
                     </div>
                 </Link>
             </div>

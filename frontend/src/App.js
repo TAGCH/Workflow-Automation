@@ -6,6 +6,7 @@ import SpreadSheetWorkflowPage from "./pages/SpreadSheetWorkflowPage";
 import MyflowPage from "./pages/MyflowPage";
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 function App() {
@@ -13,12 +14,40 @@ function App() {
       <Router>
         <Routes>
             <Route path="/" element={<PrehomePage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/myflows" element={<MyflowPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/gmailworkflow/:id" element={<GmailWorkflowPage />} />
-            <Route path="/spreadsheetflow/:id" element={<SpreadSheetWorkflowPage />} />
+            <Route
+                path="/home"
+                element={
+                    <ProtectedRoute>
+                        <HomePage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/myflows"
+                element={
+                    <ProtectedRoute>
+                        <MyflowPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/gmailworkflow/:id"
+                element={
+                    <ProtectedRoute>
+                        <GmailWorkflowPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/spreadsheetflow/:id"
+                element={
+                    <ProtectedRoute>
+                        <SpreadSheetWorkflowPage />
+                    </ProtectedRoute>
+                }
+            />
         </Routes>
       </Router>
   );

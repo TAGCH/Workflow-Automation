@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { Navbar, Container, Button, Modal } from 'react-bootstrap';
 import { FaSignOutAlt, FaSignInAlt } from 'react-icons/fa';
 import { UserContext } from '../context/UserContext'; // Import UserContext
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 
 function MyNavbar() {
     const { user, setToken, setUser } = useContext(UserContext); // Access user, setToken, and setUser from UserContext
@@ -33,9 +33,11 @@ function MyNavbar() {
         <>
             <Navbar bg="light" variant="light" className="shadow-sm">
                 <Container>
-                    <Navbar.Brand href="/home" style={{ fontWeight: 'bold', fontFamily: 'Modak', fontSize: '32px' }}>
-                        Workflow
-                    </Navbar.Brand>
+                    <Link to="/home" style={{ textDecoration: 'none' }}>
+                        <Navbar.Brand style={{ fontWeight: 'bold', fontFamily: 'Modak', fontSize: '32px' }}>
+                            Workflow
+                        </Navbar.Brand>
+                    </Link>
                     {user ? ( // If user is logged in
                         <Button 
                             variant="outline-secondary" 
