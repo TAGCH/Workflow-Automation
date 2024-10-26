@@ -4,7 +4,23 @@ The application is a web-based automation tool designed for small teams and indi
 
 ## Install and Run
 
-1. Installation : follow the step in [Installation](https://github.com/TAGCH/Workflow-Automation/blob/main/Installation.md) 
+Installation : follow the step in [Installation](https://github.com/TAGCH/Workflow-Automation/blob/main/Installation.md) 
+
+## Running the Application
+
+Running : run by typing this code in your terminal, cmd or powershell.
+- Run backend
+```
+cd backend
+uvicorn main:app --reload
+```
+- Run frontend
+```
+npm install
+npm start
+```
+
+** Please make sure that your path is in the workflows automate directory.
 
 ## Setting Up Social Applications
 
