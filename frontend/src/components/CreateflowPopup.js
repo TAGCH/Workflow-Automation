@@ -8,7 +8,7 @@ const CreateflowPopup = ({ closePopup }) => {
 
     const handleOptionClick = (option) => {
         if (option === 'Send Email') {
-            navigate('/createflow');
+            navigate(`/workflow/1`);
         } else if (option === 'Update') {
             closePopup();
         }
