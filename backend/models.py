@@ -22,9 +22,9 @@ class Workflow(Base):
     title = Column(String)
     body = Column(String)
 
-#MainWorkflow
-class emailWorkflow(Base):
-    __tablename__ = 'emailworkflows'
+# MainWorkflow
+class Workflow2(Base):
+    __tablename__ = 'workflows2'
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True)

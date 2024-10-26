@@ -18,7 +18,7 @@ function App() {
             <Route path="/myflows" element={<MyflowPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/workflow/" element={<WorkflowPage />} />
+            <Route path="/workflow/:id" element={<WorkflowPage />} />
         </Routes>
       </Router>
   );

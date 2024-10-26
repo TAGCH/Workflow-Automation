@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import api from '../api';
 import { useDropzone } from 'react-dropzone';
 
+// I think I'mma need the id from create page
 const WorkflowPage = () => {
   const param = useParams();
 
@@ -16,9 +17,9 @@ const WorkflowPage = () => {
     body: ''
   });
 
-  // Fetch workflows
+  // Fetch workflows whhich is not actually being used (yet)
   const fetchFlows = async () => {
-    const response = await api.get(`/workflow/`);
+    const response = await api.get(`/workflow/${param.id}/`);
     setWorkflows(response.data);
   };
 
@@ -38,7 +39,7 @@ const WorkflowPage = () => {
   // Handle form submission
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    await api.post(`/workflow/`, flowData);
+    await api.post(`/workflow/${param.id}/`, flowData);
     fetchFlows();
     setFlowData({
       email: '',
