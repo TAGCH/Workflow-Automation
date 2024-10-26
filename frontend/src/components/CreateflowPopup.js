@@ -1,16 +1,22 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import gmailIcon from '../images/gmail.png';
 import ggsheetIcon from '../images/googlesheet.png';
 import { useNavigate } from "react-router-dom";
+import { UserContext } from '../context/UserContext';
 
 const CreateflowPopup = ({ closePopup }) => {
     const navigate = useNavigate();
+    const { user } = useContext(UserContext);
 
     const handleOptionClick = (option) => {
+        if (!user) {
+            alert("Please log in to continue."); // Alert if user is not logged in
+            return;
+        }
         if (option === 'Send Email') {
-            navigate(`/gmailworkflow/1`);
+            navigate(`/gmailworkflow/${user.id}`);
         } else if (option === 'Update') {
-            navigate(`/spreadsheetflow/1`);
+            navigate(`/spreadsheetflow/${user.id}`);
         }
     };
 

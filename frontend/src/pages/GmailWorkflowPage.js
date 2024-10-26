@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import VerticalNavbar from '../components/VerticalNavbar';
-import { useParams } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import api from '../api';
+import { UserContext } from "../context/UserContext";
 
 // I think I'mma need the id from create page
 const GmailWorkflowPage = () => {
-    const param = useParams();
-
+    const { id } = useParams();
+    const { user } = useContext(UserContext);
+    const navigate = useNavigate();
     const [workflows, setWorkflows] = useState([]);
     const [flowData, setFlowData] = useState({
         email: '',
@@ -18,7 +20,7 @@ const GmailWorkflowPage = () => {
 
     // Fetch workflows whhich is not actually being used (yet)
     const fetchFlows = async () => {
-        const response = await api.get(`/workflow/${param.id}/`);
+        const response = await api.get(`/workflow/${id}/`);
         setWorkflows(response.data);
     };
 
@@ -38,7 +40,7 @@ const GmailWorkflowPage = () => {
     // Handle form submission
     const handleFormSubmit = async (event) => {
         event.preventDefault();
-        await api.post(`/workflow/${param.id}/`, flowData);
+        await api.post(`/workflow/${id}/`, flowData);
         fetchFlows();
         setFlowData({
             email: '',
@@ -46,6 +48,12 @@ const GmailWorkflowPage = () => {
             body: ''
         });
     };
+
+    useEffect(() => {
+        if (!user || user.id !== parseInt(id, 10)) {
+            navigate('/home');
+        }
+    }, [user, id, navigate]);
 
     return (
         <div>
@@ -57,7 +65,7 @@ const GmailWorkflowPage = () => {
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body">
-                                <h5 className="text-center mb-4">Workflow {param.id}</h5>
+                                <h5 className="text-center mb-4">Workflow {id}</h5>
                                 <form onSubmit={handleFormSubmit}>
                                     <div className='mb-3'>
                                         <label htmlFor='email' className='form-label'>Email:</label>

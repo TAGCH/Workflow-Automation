@@ -1,11 +1,18 @@
+import {useEffect} from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import VerticalNavbar from '../components/VerticalNavbar';
 import api from '../api';
+import { UserContext } from "../context/UserContext";
 import { useDropzone } from 'react-dropzone';
+import {useContext} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+
 
 const SpreadSheetWorkflowPage = () => {
-    // Dropzone functionality
+    const { user } = useContext(UserContext);
+    const { id } = useParams();
+    const navigate = useNavigate();
     const onDrop = async (acceptedFiles) => {
         const formData = new FormData();
         formData.append('file', acceptedFiles[0]); // Append the first file
@@ -23,6 +30,12 @@ const SpreadSheetWorkflowPage = () => {
     };
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
+    useEffect(() => {
+        if (!user || user.id !== parseInt(id, 10)) {
+            navigate('/home');
+        }
+    }, [user, id, navigate]);
 
     return (
         <div>
