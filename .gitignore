@@ -164,3 +164,4 @@ cython_debug/
 
 # database
 backend/database.db
+backend/test_database.db

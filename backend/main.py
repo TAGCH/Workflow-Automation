@@ -18,12 +18,11 @@ import sqlalchemy.orm as _orm
 
 import services as _services
 import schemas as _schemas
+import os
 
-#dotenv
-from dotenv import dotenv_values
-
-#credentials
-credentials = dotenv_values("../.env")
+MAIL_USERNAME = os.getenv("EMAIL")
+MAIL_PASSWORD = os.getenv("PASS")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 app = FastAPI()
 
@@ -46,17 +45,18 @@ class WorkflowModel(WorkflowBase):
 
     # class Config:
     #     orm_mode = True
-    
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-        
+
 db_dependency = Annotated[Session, Depends(get_db)]
 
 models.Base.metadata.create_all(bind=engine)
+
 
 @app.post("/api/users")
 async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Depends(_services.get_db)):
@@ -88,21 +88,23 @@ async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_
     return user
 
 
-
 @app.get("/api")
 async def root():
     return {"message": "Awesome Leads Manager"}
+
 
 @app.post("/api/login")
 async def login(username: str, password: str):
     # Placeholder for actual authentication logic
     return {"username": username, "status": "logged in"}
 
+
 @app.get("/workflow/{flow_id}/", response_model=List[WorkflowModel])
 async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: int=100):
     workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
     print(f'get flow with id {flow_id}')
     return workflows
+
 
 @app.post("/workflow/{flow_id}/", response_model=WorkflowModel)
 async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
@@ -132,20 +134,20 @@ async def import_workflow( db: db_dependency, file: UploadFile = File()):
     db.refresh(spreadsheet_workflow)
     return spreadsheet_workflow
 
+
 class EmailSchema(BaseModel):
     email: List[EmailStr]
 
 
 conf = ConnectionConfig(
-    MAIL_USERNAME = credentials["EMAIL"],
-    MAIL_PASSWORD = credentials["PASS"],
-    MAIL_FROM = credentials["EMAIL"],
-    MAIL_PORT = 465,
-    MAIL_SERVER = "smtp.gmail.com",
-    MAIL_STARTTLS = False,
-    MAIL_SSL_TLS = True,
-    USE_CREDENTIALS = True,
-    # VALIDATE_CERTS = True
+    MAIL_USERNAME=MAIL_USERNAME,
+    MAIL_PASSWORD=MAIL_PASSWORD,
+    MAIL_FROM=MAIL_USERNAME,
+    MAIL_PORT=465,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=False,
+    MAIL_SSL_TLS=True,
+    USE_CREDENTIALS=True,
 )
 
 @app.post("/email/{workflow_id}", response_model=WorkflowModel)
@@ -155,7 +157,7 @@ async def send_email(content: WorkflowBase):
     print(email)
     html = """
     <p>Thanks for using Fastapi-mail</p>
-    <br> 
+    <br>
     <p> {content.email}</p>
     <br> 
     <p> {content.title}</p>
@@ -171,4 +173,3 @@ async def send_email(content: WorkflowBase):
     fm = FastMail(conf)
     await fm.send_message(message)
     return JSONResponse(status_code=200, content={"message": "email has been sent"})
-
