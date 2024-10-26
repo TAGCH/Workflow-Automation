@@ -2,11 +2,9 @@ name: Run Pytest
 
 on:
   push:
-    branches:
-      - tests/backend
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - tests/backend
+    branches: [ "main" ]
 
 jobs:
   test:
