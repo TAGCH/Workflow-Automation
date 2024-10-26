@@ -46,17 +46,18 @@ class WorkflowModel(WorkflowBase):
 
     # class Config:
     #     orm_mode = True
-    
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-        
+
 db_dependency = Annotated[Session, Depends(get_db)]
 
 models.Base.metadata.create_all(bind=engine)
+
 
 @app.post("/api/users")
 async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Depends(_services.get_db)):
@@ -88,21 +89,23 @@ async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_
     return user
 
 
-
 @app.get("/api")
 async def root():
     return {"message": "Awesome Leads Manager"}
+
 
 @app.post("/api/login")
 async def login(username: str, password: str):
     # Placeholder for actual authentication logic
     return {"username": username, "status": "logged in"}
 
+
 @app.get("/workflow/{flow_id}/", response_model=List[WorkflowModel])
 async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: int=100):
     workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
     print(f'get flow with id {flow_id}')
     return workflows
+
 
 @app.post("/workflow/{flow_id}/", response_model=WorkflowModel)
 async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
@@ -132,6 +135,7 @@ async def import_workflow( db: db_dependency, file: UploadFile = File()):
     db.refresh(spreadsheet_workflow)
     return spreadsheet_workflow
 
+
 class EmailSchema(BaseModel):
     email: List[EmailStr]
 
@@ -155,7 +159,7 @@ async def send_email(content: WorkflowBase):
     print(email)
     html = """
     <p>Thanks for using Fastapi-mail</p>
-    <br> 
+    <br>
     <p> {content.email}</p>
     <br> 
     <p> {content.title}</p>

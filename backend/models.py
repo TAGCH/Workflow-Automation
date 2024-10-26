@@ -40,7 +40,7 @@ class spreadSheetWorkflow(Base):
     first_name = Column(JSON)
     last_name = Column(JSON)
     tel_number = Column(JSON)
-    
+
 # class Workflow(Base):
 #     __tablename__ = 'workflows'
 
