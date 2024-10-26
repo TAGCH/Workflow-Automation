@@ -1,3 +1,4 @@
+[![Pytest](https://github.com/TAGCH/Workflow-Automation/actions/workflows/workflows-pytest.yml/badge.svg)](https://github.com/TAGCH/Workflow-Automation/actions/workflows/workflows-pytest.yml)
 # Workflow Automation
 
 The application is a web-based automation tool designed for small teams and individual users. It enables users to create automated workflows that streamline repetitive tasks.
