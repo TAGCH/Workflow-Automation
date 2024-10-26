@@ -1,3 +1,4 @@
+import os
 import pytest
 from fastapi.testclient import TestClient
 from main import app  # Correct import statement to reflect the path
@@ -5,6 +6,12 @@ from database import Base
 from services import get_db  # Import get_db function
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# Set environment variables for the test
+os.environ["EMAIL"] = "test@example.com"
+os.environ["PASS"] = "testpassword"
+os.environ["JWT_SECRET"] = "mysecretkey"
+os.environ["DATABASE_URL"] = "sqlite:///./test_database.db"
 
 # Set up a test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_database.db"
