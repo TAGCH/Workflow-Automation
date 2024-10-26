@@ -1,13 +1,14 @@
 import datetime as _dt
-
+from pydantic import BaseModel, EmailStr
 import pydantic as _pydantic
 
 
 class _UserBase(_pydantic.BaseModel):
-    email: str
+    email: EmailStr
 
 
 class UserCreate(_UserBase):
+    email: EmailStr
     hashed_password: str
 
     class Config:
