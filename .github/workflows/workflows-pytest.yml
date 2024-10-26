@@ -33,6 +33,10 @@ jobs:
           echo "JWT_SECRET=mysecretkey" >> $GITHUB_ENV
           echo "DATABASE_URL=sqlite:///./database.db" >> $GITHUB_ENV
 
+      - name: Print all environment variables  # Debugging step
+        run: |
+          env
+
       - name: Run backend tests
         run: |
           cd backend
