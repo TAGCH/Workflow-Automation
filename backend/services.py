@@ -26,6 +26,7 @@ def get_db():
     finally:
         db.close()
 
+# User-related functions
 async def get_user_by_email(email: str, db: _orm.Session):
     return db.query(_models.User).filter(_models.User.email == email).first()
 
@@ -53,9 +54,7 @@ async def authenticate_user(email: str, password: str, db: _orm.Session):
 
 async def create_token(user: _models.User):
     user_obj = _schemas.User.from_orm(user)
-
     token = _jwt.encode(user_obj.dict(), JWT_SECRET)
-
     return dict(access_token=token, token_type="bearer")
 
 async def get_current_user(db: _orm.Session = _fastapi.Depends(get_db), token: str = _fastapi.Depends(oauth2schema)):
@@ -70,3 +69,14 @@ async def get_current_user(db: _orm.Session = _fastapi.Depends(get_db), token: s
         raise _fastapi.HTTPException(status_code=401, detail="Invalid token")
 
     return _schemas.User.from_orm(user)
+
+# Workflow-related functions
+async def create_workflow(workflow: _schemas.WorkflowCreate, user_id: int, db: _orm.Session):
+    db_workflow = _models.Workflow(name=workflow.name, type=workflow.type, owner_id=user_id)
+    db.add(db_workflow)
+    db.commit()
+    db.refresh(db_workflow)
+    return db_workflow
+
+async def get_user_workflows(user_id: int, db: _orm.Session):
+    return db.query(_models.Workflow).filter_by(owner_id=user_id).all()

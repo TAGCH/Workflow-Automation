@@ -1,91 +1,81 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../context/UserContext';
+import axios from 'axios';
+import '../styles/components/CreateflowPopup.css'; 
 
 const CreateflowPopup = ({ closePopup }) => {
+    const { token } = useContext(UserContext);
     const [workflowName, setWorkflowName] = useState('');
+    const [workflowType, setWorkflowType] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleCreate = () => {
-        if (workflowName.trim()) {
-            setError('')
-            closePopup();
-            navigate('/createflow');
+    const handleCreate = async () => {
+        if (workflowName.trim() && workflowType) {
+            setError('');
+    
+            if (!token) {
+                setError('No authorization token found. Please log in.');
+                return;
+            }
+    
+            try {
+                const response = await axios.post(
+                    'http://localhost:8000/api/workflows',
+                    {
+                        name: workflowName,
+                        type: workflowType,
+                        details: {}
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+    
+                console.log('Workflow created:', response.data);
+                closePopup();
+
+                // Redirect based on workflow type
+                const workflowId = response.data.id;
+                if (workflowType === 'email') {
+                    navigate(`/workflows/email/${workflowId}`);
+                } else if (workflowType === 'google-sheet') {
+                    navigate(`/workflows/excel/${workflowId}`);
+                }
+                
+            } catch (error) {
+                setError(error.response?.data?.detail || 'Failed to create workflow');
+                console.error('Error details:', error.response ? error.response.data : error.message);
+            }
         } else {
-            setError('Please enter a valid name');
+            setError('Please enter a valid name and select a workflow type');
         }
     };
-
+    
     return (
-        <div
-            className="popup-overlay"
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 1000
-            }}
-        >
-            <div
-                className="popup-content"
-                style={{
-                    backgroundColor: 'white',
-                    padding: '30px',
-                    borderRadius: '10px',
-                    boxShadow: '0px 0px 15px rgba(0,0,0,0.2)',
-                    width: '400px',
-                    textAlign: 'center'
-                }}
-            >
+        <div className="popup-overlay">
+            <div className="popup-content">
                 <h2>New Workflow</h2>
                 <input
                     type="text"
                     placeholder="Enter workflow name"
                     value={workflowName}
                     onChange={(e) => setWorkflowName(e.target.value)}
-                    className="popup-input"
                 />
-                {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
-                <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px' }}>
-                    <button
-                        onClick={handleCreate}
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#6f42c1',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            transition: 'background-color 0.3s ease',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#5a32a3')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#6f42c1')}
-                    >
-                        Create
-                    </button>
-                    <button
-                        onClick={closePopup}
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#dc3545',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            transition: 'background-color 0.3s ease',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#c82333')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#dc3545')}
-                    >
-                        Cancel
-                    </button>
-                </div>
+                <select
+                    value={workflowType}
+                    onChange={(e) => setWorkflowType(e.target.value)}
+                >
+                    <option value="" disabled>Select workflow type</option>
+                    <option value="email">Send Email to Users from Excel</option>
+                    <option value="google-sheet">Update Google Sheet from Excel</option>
+                </select>
+                {error && <div style={{ color: 'red' }}>{error}</div>}
+                <button onClick={handleCreate}>Create</button>
+                <button onClick={closePopup}>Cancel</button>
             </div>
         </div>
     );
