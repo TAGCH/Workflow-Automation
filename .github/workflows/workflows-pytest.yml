@@ -29,5 +29,4 @@ jobs:
       - name: Run backend tests
         run: |
           cd backend
-          pytest
-
+          PYTHONPATH=. pytest tests
