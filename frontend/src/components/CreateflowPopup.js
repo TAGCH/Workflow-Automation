@@ -10,7 +10,7 @@ const CreateflowPopup = ({ closePopup }) => {
         if (option === 'Send Email') {
             navigate(`/gmailworkflow/1`);
         } else if (option === 'Update') {
-            closePopup();
+            navigate(`/spreadsheetflow/1`);
         }
     };
 

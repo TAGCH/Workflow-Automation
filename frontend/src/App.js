@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PrehomePage from "./pages/PrehomePage";
 import HomePage from "./pages/HomePage";
 import GmailWorkflowPage from "./pages/GmailWorkflowPage";
+import SpreadSheetWorkflowPage from "./pages/SpreadSheetWorkflowPage";
 import MyflowPage from "./pages/MyflowPage";
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -17,6 +18,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/gmailworkflow/:id" element={<GmailWorkflowPage />} />
+            <Route path="/spreadsheetflow/:id" element={<SpreadSheetWorkflowPage />} />
         </Routes>
       </Router>
   );
