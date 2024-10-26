@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import gmailIcon from '../images/gmail.png';
+import ggsheetIcon from '../images/googlesheet.png';
+import { useNavigate } from "react-router-dom";
 
 const CreateflowPopup = ({ closePopup }) => {
-    const [workflowName, setWorkflowName] = useState('');
-    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleCreate = () => {
-        if (workflowName.trim()) {
-            setError('')
-            closePopup();
+    const handleOptionClick = (option) => {
+        if (option === 'Send Email') {
             navigate('/createflow');
-        } else {
-            setError('Please enter a valid name');
+        } else if (option === 'Update') {
+            closePopup();
         }
     };
 
@@ -29,62 +27,65 @@ const CreateflowPopup = ({ closePopup }) => {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                zIndex: 1000
+                zIndex: 1000,
             }}
         >
             <div
                 className="popup-content"
                 style={{
+                    position: 'relative',
                     backgroundColor: 'white',
                     padding: '30px',
                     borderRadius: '10px',
                     boxShadow: '0px 0px 15px rgba(0,0,0,0.2)',
-                    width: '400px',
-                    textAlign: 'center'
+                    width: '450px',
+                    textAlign: 'center',
                 }}
             >
-                <h2>New Workflow</h2>
-                <input
-                    type="text"
-                    placeholder="Enter workflow name"
-                    value={workflowName}
-                    onChange={(e) => setWorkflowName(e.target.value)}
-                    className="popup-input"
-                />
-                {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
-                <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px' }}>
-                    <button
-                        onClick={handleCreate}
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#6f42c1',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            transition: 'background-color 0.3s ease',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#5a32a3')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#6f42c1')}
+                <button
+                    onClick={closePopup}
+                    style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        padding: '5px 10px',
+                        backgroundColor: 'black',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        fontSize: '18px',
+                        cursor: 'pointer',
+                        lineHeight: '1',
+                        width: '35px',
+                        height: '35px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        transition: 'background-color 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dc3545')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'black')}
+                >
+                    &times;
+                </button>
+                <h2>Select an Action</h2>
+                <div className="options-container" style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px' }}>
+                    <div
+                        className="option"
+                        onClick={() => handleOptionClick('Send Email')}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}
                     >
-                        Create
-                    </button>
-                    <button
-                        onClick={closePopup}
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#dc3545',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            transition: 'background-color 0.3s ease',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#c82333')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#dc3545')}
+                        <img src={gmailIcon} alt="Gmail Icon" style={{ width: '50px', height: '50px' }} />
+                        <p className="pt-3">Send Email</p>
+                    </div>
+                    <div
+                        className="option"
+                        onClick={() => handleOptionClick('Update')}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}
                     >
-                        Cancel
-                    </button>
+                        <img src={ggsheetIcon} alt="Google Sheets Icon" style={{ width: '50px', height: '50px' }} />
+                        <p className="pt-3">Update</p>
+                    </div>
                 </div>
             </div>
         </div>
