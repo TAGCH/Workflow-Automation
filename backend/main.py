@@ -18,12 +18,11 @@ import sqlalchemy.orm as _orm
 
 import services as _services
 import schemas as _schemas
+import os
 
-#dotenv
-from dotenv import dotenv_values
-
-#credentials
-credentials = dotenv_values("../.env")
+MAIL_USERNAME = os.getenv("EMAIL")
+MAIL_PASSWORD = os.getenv("PASS")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 app = FastAPI()
 
@@ -141,15 +140,14 @@ class EmailSchema(BaseModel):
 
 
 conf = ConnectionConfig(
-    MAIL_USERNAME = credentials["EMAIL"],
-    MAIL_PASSWORD = credentials["PASS"],
-    MAIL_FROM = credentials["EMAIL"],
-    MAIL_PORT = 465,
-    MAIL_SERVER = "smtp.gmail.com",
-    MAIL_STARTTLS = False,
-    MAIL_SSL_TLS = True,
-    USE_CREDENTIALS = True,
-    # VALIDATE_CERTS = True
+    MAIL_USERNAME=MAIL_USERNAME,
+    MAIL_PASSWORD=MAIL_PASSWORD,
+    MAIL_FROM=MAIL_USERNAME,
+    MAIL_PORT=465,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=False,
+    MAIL_SSL_TLS=True,
+    USE_CREDENTIALS=True,
 )
 
 @app.post("/email/{workflow_id}", response_model=WorkflowModel)
@@ -175,4 +173,3 @@ async def send_email(content: WorkflowBase):
     fm = FastMail(conf)
     await fm.send_message(message)
     return JSONResponse(status_code=200, content={"message": "email has been sent"})
-
