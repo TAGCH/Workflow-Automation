@@ -26,7 +26,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Set environment variables
+        run: |
+          echo "EMAIL=test@example.com" >> $GITHUB_ENV
+          echo "PASS=testpassword" >> $GITHUB_ENV
+          echo "JWT_SECRET=mysecretkey" >> $GITHUB_ENV
+          echo "DATABASE_URL=sqlite:///./database.db" >> $GITHUB_ENV
+
       - name: Run backend tests
         run: |
           cd backend
-          PYTHONPATH=. pytest tests
+          pytest tests
