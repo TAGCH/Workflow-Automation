@@ -3,14 +3,21 @@ import { Navigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
 
 const ProtectedRoute = ({ children }) => {
-    const { user } = useContext(UserContext);
+    const { user, loading, error } = useContext(UserContext);
 
-    if (!user) {
-        // If user is not authenticated, redirect to login
-        return <Navigate to="/login" replace />;
+    if (loading) {
+        return <div data-testid="auth-loading">Loading...</div>;
     }
 
-    return children; // If user is authenticated, render children
+    if (error) {
+        return <div data-testid="auth-error">Authentication Error: {error}</div>;
+    }
+
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
+
+    return children;
 };
 
 export default ProtectedRoute;

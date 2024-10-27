@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, {useContext, useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import CreateflowPopup from './CreateflowPopup';
+import { UserContext } from "../context/UserContext";
 
 
 const VerticalNavbar = () => {
@@ -9,6 +10,7 @@ const VerticalNavbar = () => {
     const openPopup = () => setIsPopupOpen(true);
     const closePopup = () => setIsPopupOpen(false);
     const previousPage = useNavigate();
+    const { user } = useContext(UserContext);
 
     return (
         <div
@@ -28,7 +30,7 @@ const VerticalNavbar = () => {
             }}
         >
             <i className={isHovered ? 'bi bi-caret-up-square' : 'bi bi-caret-down-square'} style={{fontSize: '2rem', margin: '10px 0'}}></i>
-            <Link to={"/home"} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
+            <Link to={`/home/${user.id}`} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
                 <i className="bi bi-house-door-fill" style={{fontSize: '2rem', margin: '10px 0'}}
                    onMouseEnter={(e) => (e.currentTarget.style.color = '#20c997')}
                    onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}>
