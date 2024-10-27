@@ -3,6 +3,7 @@ import fastapi as _fastapi
 import fastapi.security as _security
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+import io
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
@@ -156,17 +157,18 @@ async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependenc
     await fm.send_message(message)
     return db_workflow
 
-@app.get("/workflow/import/", response_model=List[SpreadSheetModel])
-async def read_flow_sheets(db: db_dependency, skip: int=0, limit: int=100):
+@app.get("/workflow/{flow_id}/import/", response_model=List[SpreadSheetModel])
+async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
     sheets = db.query(models.spreadSheetWorkflow).offset(skip).limit(limit).all()
     return sheets
 
 
-@app.post("/workflow/import/")
+@app.post("/workflow/{flow_id}/import/")
 async def import_workflow( db: db_dependency, file: UploadFile = File()):
     '''Using pandas to read excel file and return dict of data.'''
 
-    df = pd.read_excel(file.file)
+    contents = await file.read()
+    df = pd.read_excel(io.BytesIO(contents))
     spreadsheet_workflow = models.spreadSheetWorkflow(
         emails=df['email'].to_list(),
         first_name=df['first'].to_list(),
