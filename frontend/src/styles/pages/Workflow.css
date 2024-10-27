@@ -1,0 +1,14 @@
+.add-contents {
+    display: flex;
+    height: 80vh;
+}
+
+.add-contents-clickable {
+    font-size: 3rem;
+    cursor: pointer;
+    color: black;
+}
+
+.add-contents-clickable:hover {
+    color: #20c997;
+}
