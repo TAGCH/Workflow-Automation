@@ -24,7 +24,7 @@ const RegisterPage = () => {
       console.log("Response:", response);
       
       setToken(response.data.access_token);
-      navigate("/home"); 
+      navigate(`/home/${setToken.id}`); 
     } catch (error) {
       console.error("Error during registration:", error);
       if (error.response) {
