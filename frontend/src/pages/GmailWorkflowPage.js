@@ -5,6 +5,7 @@ import VerticalNavbar from '../components/VerticalNavbar';
 import {useNavigate, useParams} from 'react-router-dom';
 import api from '../api';
 import { UserContext } from "../context/UserContext";
+import {useDropzone} from "react-dropzone";
 
 // I think I'mma need the id from create page
 const GmailWorkflowPage = () => {
@@ -17,6 +18,23 @@ const GmailWorkflowPage = () => {
         title: '',
         body: ''
     });
+    const onDrop = async (acceptedFiles) => {
+        const formData = new FormData();
+        formData.append('file', acceptedFiles[0]); // Append the first file
+
+        try {
+            const response = await api.post('/workflow/import/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            console.log(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
     // Fetch workflows whhich is not actually being used (yet)
     const fetchFlows = async () => {
@@ -51,7 +69,7 @@ const GmailWorkflowPage = () => {
 
     useEffect(() => {
         if (!user || user.id !== parseInt(id, 10)) {
-            navigate('/home');
+            navigate(`/home/${user.id}`);
         }
     }, [user, id, navigate]);
 
@@ -61,7 +79,18 @@ const GmailWorkflowPage = () => {
             <div className="d-flex">
                 <VerticalNavbar />
                 <div className="container d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
-                    <h2 className="text-center py-5">My Workflows</h2>
+                    <h2 className="text-center py-5">Workflow Name</h2>
+                    {/* Dropzone */}
+                    <div className="col-md-6 mb-4">
+                        <div className="card h-100">
+                            <div className="card-body d-flex flex-column">
+                                <div {...getRootProps()} className="dropzone-section" style={{ border: '2px dashed #cccccc', padding: '20px', textAlign: 'center' }}>
+                                    <input {...getInputProps()} />
+                                    <p>Drag and drop your excel file here, or click to select file</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body">
@@ -77,7 +106,15 @@ const GmailWorkflowPage = () => {
                                     </div>
                                     <div className='mb-3'>
                                         <label htmlFor='body' className='form-label'>Body:</label>
-                                        <input type='text' className='form-control' id='body' name='body' onChange={handleInputChange} value={flowData.body} />
+                                        <textarea
+                                            className='form-control'
+                                            id='body'
+                                            name='body'
+                                            rows="3"
+                                            onChange={handleInputChange}
+                                            value={flowData.body}
+                                            style={{resize: 'vertical'}} // allows vertical resizing only
+                                        />
                                     </div>
                                     <button type='submit' className="btn btn-primary mt-2 w-100">Send</button>
                                 </form>
@@ -86,7 +123,7 @@ const GmailWorkflowPage = () => {
                     </div>
                 </div>
             </div>
-            <Footer />
+            <Footer/>
         </div>
     );
 };
