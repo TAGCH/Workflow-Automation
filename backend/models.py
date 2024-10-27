@@ -12,6 +12,9 @@ class User(Base):
     def verify_password(self, password: str):
         return bcrypt.verify(password, self.hashed_password)
 
+    def __repr__(self):
+        return f"<User(id={self.id}, email={self.email})>"
+
 #gmailWorkflow 
 class Workflow(Base):
     __tablename__ = 'workflows'
@@ -32,7 +35,7 @@ class spreadSheetWorkflow(Base):
     first_name = Column(JSON)
     last_name = Column(JSON)
     tel_number = Column(JSON)
-    
+
 # class Workflow(Base):
 #     __tablename__ = 'workflows'
 
