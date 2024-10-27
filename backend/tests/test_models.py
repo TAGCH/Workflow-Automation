@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import User, Workflow, Workflow2, spreadSheetWorkflow, Base
+from models import User, Workflow, spreadSheetWorkflow, Base
 from passlib.hash import bcrypt
 
 # Database setup for testing
@@ -49,16 +49,6 @@ def test_workflow_creation(test_db):
     assert workflow.id is not None
     assert workflow.email == "workflow@example.com"
     assert workflow.title == "My Workflow"
-
-def test_workflow2_creation(test_db):
-    # Test creation of a new Workflow2
-    workflow2 = Workflow2(name="Workflow 2 Name", select_mode="Mode A")
-    test_db.add(workflow2)
-    test_db.commit()
-
-    # Ensure the workflow2 is created successfully
-    assert workflow2.id is not None
-    assert workflow2.name == "Workflow 2 Name"
 
 def test_spreadsheet_workflow_creation(test_db):
     # Test creation of a new spreadsheet workflow
