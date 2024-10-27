@@ -1,3 +1,4 @@
+[![Jest](https://github.com/TAGCH/Workflow-Automation/actions/workflows/frontend-jest.yml/badge.svg)](https://github.com/TAGCH/Workflow-Automation/actions/workflows/frontend-jest.yml)
 [![Pytest](https://github.com/TAGCH/Workflow-Automation/actions/workflows/workflows-pytest.yml/badge.svg)](https://github.com/TAGCH/Workflow-Automation/actions/workflows/workflows-pytest.yml)
 [![Coverage](https://codecov.io/gh/TAGCH/Workflow-Automation/branch/main/graph/badge.svg)](https://codecov.io/gh/TAGCH/Workflow-Automation)
 # Workflow Automation
