@@ -1,17 +1,27 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import gmail from "../images/gmail.png";
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import VerticalNavbar from "../components/VerticalNavbar";
 import { UserContext } from '../context/UserContext';
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
     const { user } = useContext(UserContext);
+    const navigate = useNavigate();
 
     // Function to extract the username from the email
     const getUsernameFromEmail = (email) => {
+        if (!email) return '';
         return email.split('@')[0]; // Get the part before '@'
     };
+
+    useEffect(() => {
+        if (user && user.id) {
+            navigate(`/home/${user.id}`);
+        }
+    }, [user, navigate]);
+
     return (
         <div>
             <Navbar />

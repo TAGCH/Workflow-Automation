@@ -31,9 +31,9 @@ const PrehomePage = () => {
                 </div>
             </div>
             <div className="d-flex justify-content-center align-items-center py-xl-5">
-                <Link to={user ? "/home" : "/login"}>
+                <Link to={user ? `/home/${user.id}` : "/login"}>
                     <div className="get-started font-size25">
-                        <a>{user ? "Home" : "Get Started"}</a>
+                        {user ? "Home" : "Get Started"}
                     </div>
                 </Link>
             </div>

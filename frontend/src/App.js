@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PrehomePage from "./pages/PrehomePage";
 import HomePage from "./pages/HomePage";
@@ -17,7 +18,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route
-                path="/home"
+                path="/home/:id"
                 element={
                     <ProtectedRoute>
                         <HomePage />
