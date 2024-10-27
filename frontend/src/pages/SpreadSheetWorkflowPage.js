@@ -33,7 +33,7 @@ const SpreadSheetWorkflowPage = () => {
 
     useEffect(() => {
         if (!user || user.id !== parseInt(id, 10)) {
-            navigate('/home');
+            navigate(`/home/${user.id}`);
         }
     }, [user, id, navigate]);
 
