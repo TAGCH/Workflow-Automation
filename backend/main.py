@@ -178,9 +178,9 @@ async def import_workflow( db: db_dependency, file: UploadFile = File()):
     return spreadsheet_workflow
 
 conf = ConnectionConfig(
-    MAIL_USERNAME = credentials["EMAIL"],
-    MAIL_PASSWORD = credentials["PASS"],
-    MAIL_FROM = credentials["EMAIL"],
+    MAIL_USERNAME=MAIL_USERNAME,
+    MAIL_PASSWORD=MAIL_PASSWORD,
+    MAIL_FROM=MAIL_USERNAME,
     MAIL_PORT = 465,
     MAIL_SERVER = "smtp.gmail.com",
     MAIL_STARTTLS = False,
