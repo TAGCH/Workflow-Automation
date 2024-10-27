@@ -9,6 +9,7 @@ import models
 from typing import Annotated, List
 
 #email
+from fastapi import BackgroundTasks
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
@@ -18,8 +19,13 @@ import sqlalchemy.orm as _orm
 
 import services as _services
 import schemas as _schemas
+import os
 
-app = _fastapi.FastAPI()
+MAIL_USERNAME = os.getenv("EMAIL")
+MAIL_PASSWORD = os.getenv("PASS")
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+app = FastAPI()
 
 # Configure CORS
 app.add_middleware(
@@ -40,17 +46,18 @@ class WorkflowModel(WorkflowBase):
 
     # class Config:
     #     orm_mode = True
-    
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-        
+
 db_dependency = Annotated[Session, Depends(get_db)]
 
 models.Base.metadata.create_all(bind=engine)
+
 
 @app.post("/api/users")
 async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Depends(_services.get_db)):
@@ -82,27 +89,33 @@ async def get_user(user: _schemas.User = _fastapi.Depends(_services.get_current_
     return user
 
 
-
 @app.get("/api")
 async def root():
     return {"message": "Awesome Leads Manager"}
+
 
 @app.post("/api/login")
 async def login(username: str, password: str):
     # Placeholder for actual authentication logic
     return {"username": username, "status": "logged in"}
 
-@app.get("/workflow/", response_model=List[WorkflowModel])
-async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
+
+@app.get("/workflow/{flow_id}/", response_model=List[WorkflowModel])
+async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: int=100):
     workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+    print(f'get flow with id {flow_id}')
     return workflows
 
-@app.post("/workflow/", response_model=WorkflowModel)
-async def create_workflow(workflow: WorkflowBase, db: db_dependency):
+
+@app.post("/workflow/{flow_id}/", response_model=WorkflowModel)
+async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
     db_workflow = models.Workflow(**workflow.model_dump())
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
+    print(f'posted with id: {flow_id}')
+    print(db_workflow.email)
+    print(type(db_workflow.email))
     return db_workflow
 
 
@@ -122,39 +135,42 @@ async def import_workflow( db: db_dependency, file: UploadFile = File()):
     db.refresh(spreadsheet_workflow)
     return spreadsheet_workflow
 
-# class EmailSchema(BaseModel):
-#     email: List[EmailStr]
+
+class EmailSchema(BaseModel):
+    email: List[EmailStr]
 
 
-# conf = ConnectionConfig(
-#     MAIL_USERNAME ="username",
-#     MAIL_PASSWORD = "**********",
-#     MAIL_FROM = "test@email.com",
-#     MAIL_PORT = 465,
-#     MAIL_SERVER = "mail server",
-#     MAIL_STARTTLS = False,
-#     MAIL_SSL_TLS = True,
-#     USE_CREDENTIALS = True,
-#     VALIDATE_CERTS = True
-# )
+conf = ConnectionConfig(
+    MAIL_USERNAME=MAIL_USERNAME,
+    MAIL_PASSWORD=MAIL_PASSWORD,
+    MAIL_FROM=MAIL_USERNAME,
+    MAIL_PORT=465,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=False,
+    MAIL_SSL_TLS=True,
+    USE_CREDENTIALS=True,
+)
 
-# app = FastAPI()
+@app.post("/email/{workflow_id}", response_model=WorkflowModel)
+async def send_email(content: WorkflowBase):
+    workflow = models.Workflow(**content.model_dump())
+    email = workflow.email
+    print(email)
+    html = """
+    <p>Thanks for using Fastapi-mail</p>
+    <br>
+    <p> {content.email}</p>
+    <br> 
+    <p> {content.title}</p>
+    <br> 
+    <p> {content.body}</p>
+    """
+    message = MessageSchema(
+            subject={content.title},
+            recipients= email,
+            body=html,
+            subtype=MessageType.html)
 
-
-# html = """
-# <p>Thanks for using Fastapi-mail</p>
-# """
-
-
-# @app.post("/email")
-# async def simple_send(email: EmailSchema) -> JSONResponse:
-
-#     message = MessageSchema(
-#         subject="Fastapi-Mail module",
-#         recipients=email.dict().get("email"),
-#         body=html,
-#         subtype=MessageType.html)
-
-#     fm = FastMail(conf)
-#     await fm.send_message(message)
-#     return JSONResponse(status_code=200, content={"message": "email has been sent"})
+    fm = FastMail(conf)
+    await fm.send_message(message)
+    return JSONResponse(status_code=200, content={"message": "email has been sent"})
