@@ -24,6 +24,12 @@ MAIL_USERNAME = os.getenv("EMAIL")
 MAIL_PASSWORD = os.getenv("PASS")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+#dotenv
+from dotenv import dotenv_values
+
+#credentials
+credentials = dotenv_values("../.env")
+
 app = FastAPI()
 
 # Configure CORS
@@ -45,6 +51,20 @@ class WorkflowModel(WorkflowBase):
 
     # class Config:
     #     orm_mode = True
+  
+class SpreadSheetBase(BaseModel):
+    emails : List[str]
+    first_name : List[str]
+    last_name : List[str]
+    tel_number : List[str]
+    
+     
+class SpreadSheetModel(SpreadSheetBase):
+    id : int
+    
+    class Config:
+        orm_mode = True
+        
 
 def get_db():
     db = SessionLocal()
@@ -101,7 +121,7 @@ async def login(username: str, password: str):
 
 @app.get("/workflow/{flow_id}/", response_model=List[WorkflowModel])
 async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: int=100):
-    workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+    workflows = db.query(models.Workflow).filter(models.Workflow.id == flow_id).offset(skip).limit(limit).all()
     print(f'get flow with id {flow_id}')
     return workflows
 
@@ -115,10 +135,33 @@ async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependenc
     print(f'posted with id: {flow_id}')
     print(db_workflow.email)
     print(type(db_workflow.email))
+    workflow = models.Workflow(**workflow.model_dump())
+    email = workflow.email
+    print(email)
+    html = f"""
+    <p>Thanks for using Fastapi-mail</p>
+    </br> 
+    <p> from: {email} </p>
+    </br> 
+    <p> Body: {workflow.body}</p>
+    """
+    message = MessageSchema(
+            subject=workflow.title,
+            recipients= [email],
+            body=html,
+            subtype=MessageType.html)
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
     return db_workflow
 
+@app.get("/workflow/import/", response_model=List[SpreadSheetModel])
+async def read_flow_sheets(db: db_dependency, skip: int=0, limit: int=100):
+    sheets = db.query(models.spreadSheetWorkflow).offset(skip).limit(limit).all()
+    return sheets
 
-@app.post("/workflow/import")
+
+@app.post("/workflow/import/")
 async def import_workflow( db: db_dependency, file: UploadFile = File()):
     '''Using pandas to read excel file and return dict of data.'''
 
@@ -134,42 +177,13 @@ async def import_workflow( db: db_dependency, file: UploadFile = File()):
     db.refresh(spreadsheet_workflow)
     return spreadsheet_workflow
 
-
-class EmailSchema(BaseModel):
-    email: List[EmailStr]
-
-
 conf = ConnectionConfig(
     MAIL_USERNAME=MAIL_USERNAME,
     MAIL_PASSWORD=MAIL_PASSWORD,
     MAIL_FROM=MAIL_USERNAME,
-    MAIL_PORT=465,
-    MAIL_SERVER="smtp.gmail.com",
-    MAIL_STARTTLS=False,
-    MAIL_SSL_TLS=True,
-    USE_CREDENTIALS=True,
+    MAIL_PORT = 465,
+    MAIL_SERVER = "smtp.gmail.com",
+    MAIL_STARTTLS = False,
+    MAIL_SSL_TLS = True,
+    USE_CREDENTIALS = True,
 )
-
-@app.post("/email/{workflow_id}", response_model=WorkflowModel)
-async def send_email(content: WorkflowBase):
-    workflow = models.Workflow(**content.model_dump())
-    email = workflow.email
-    print(email)
-    html = """
-    <p>Thanks for using Fastapi-mail</p>
-    <br>
-    <p> {content.email}</p>
-    <br> 
-    <p> {content.title}</p>
-    <br> 
-    <p> {content.body}</p>
-    """
-    message = MessageSchema(
-            subject={content.title},
-            recipients= email,
-            body=html,
-            subtype=MessageType.html)
-
-    fm = FastMail(conf)
-    await fm.send_message(message)
-    return JSONResponse(status_code=200, content={"message": "email has been sent"})

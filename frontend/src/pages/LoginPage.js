@@ -29,7 +29,7 @@ const LoginPage = () => {
       });
 
       setToken(response.data.access_token);
-      navigate('/home');
+      navigate(`/home/${setToken.id}`);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.detail) {
         const errorDetail = error.response.data.detail;
@@ -50,7 +50,7 @@ const LoginPage = () => {
   };
 
   const handleBack = () => {
-    navigate('/home'); // Navigates to the previous page
+    navigate(`/home/${setToken.id}`); // Navigates to the previous page
   };
 
   return (
