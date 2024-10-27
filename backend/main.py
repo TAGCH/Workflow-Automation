@@ -47,6 +47,20 @@ class WorkflowModel(WorkflowBase):
     # class Config:
     #     orm_mode = True
     
+class SpreadSheetBase(BaseModel):
+    emails : List[str]
+    first_name : List[str]
+    last_name : List[str]
+    tel_number : List[str]
+    
+    
+    
+class SpreadSheetModel(SpreadSheetBase):
+    id : int
+    
+    class Config:
+        orm_mode = True
+        
 def get_db():
     db = SessionLocal()
     try:
@@ -115,8 +129,13 @@ async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependenc
     print(type(db_workflow.email))
     return db_workflow
 
+@app.get("/workflow/import/", response_model=List[SpreadSheetModel])
+async def read_flow_sheets(db: db_dependency, skip: int=0, limit: int=100):
+    sheets = db.query(models.spreadSheetWorkflow).offset(skip).limit(limit).all()
+    return sheets
 
-@app.post("/workflow/import")
+
+@app.post("/workflow/import/")
 async def import_workflow( db: db_dependency, file: UploadFile = File()):
     '''Using pandas to read excel file and return dict of data.'''
 
