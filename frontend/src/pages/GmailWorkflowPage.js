@@ -1,26 +1,31 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import VerticalNavbar from '../components/VerticalNavbar';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { UserContext } from "../context/UserContext";
-import {useDropzone} from "react-dropzone";
+import { useDropzone } from "react-dropzone";
 
-// I think I'mma need the id from create page
 const GmailWorkflowPage = () => {
     const { id } = useParams();
     const { user } = useContext(UserContext);
     const navigate = useNavigate();
+
+    const [keyNames, setKeyNames] = useState([]);
+    const [showAutocomplete, setShowAutocomplete] = useState(false);
+    const [currentField, setCurrentField] = useState(null);
     const [workflows, setWorkflows] = useState([]);
     const [flowData, setFlowData] = useState({
         email: '',
         title: '',
         body: ''
     });
+    const [emails, setEmails] = useState([]); // New state for storing emails
+
     const onDrop = async (acceptedFiles) => {
         const formData = new FormData();
-        formData.append('file', acceptedFiles[0]); // Append the first file
+        formData.append('file', acceptedFiles[0]);
 
         try {
             const response = await api.post(`/workflow/${id}/import/`, formData, {
@@ -28,7 +33,13 @@ const GmailWorkflowPage = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+            const columns = Object.keys(response.data);
+            setKeyNames(columns);
+            if (response.data.emails) {
+                setEmails(response.data.emails); // Set emails from response
+            }
             console.log(response.data);
+            console.log("keyNames:", keyNames);
         } catch (error) {
             console.error(error);
         }
@@ -36,7 +47,6 @@ const GmailWorkflowPage = () => {
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-    // Fetch workflows whhich is not actually being used (yet)
     const fetchFlows = async () => {
         const response = await api.get(`/workflow/${id}/`);
         setWorkflows(response.data);
@@ -46,25 +56,52 @@ const GmailWorkflowPage = () => {
         fetchFlows();
     }, []);
 
-    // Handle form input changes
     const handleInputChange = (event) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        const fieldName = event.target.name;
+
+        if (value.includes("/")) {
+            console.log("Autocomplete triggered for field:", fieldName);
+            setShowAutocomplete(true);
+            setCurrentField(fieldName);
+        } else {
+            setShowAutocomplete(false);
+        }
         setFlowData({
             ...flowData,
-            [event.target.name]: value,
+            [fieldName]: value,
         });
     };
 
-    // Handle form submission
+    const handleAutocompleteClick = (keyName) => {
+        const updatedValue = flowData[currentField].replace(/\/\w*/, keyName);
+        
+        setFlowData({
+            ...flowData,
+            [currentField]: updatedValue,
+        });
+        setShowAutocomplete(false);
+    };
+
     const handleFormSubmit = async (event) => {
         event.preventDefault();
-        await api.post(`/workflow/${id}/`, flowData);
-        fetchFlows();
-        setFlowData({
-            email: '',
-            title: '',
-            body: ''
-        });
+        try {
+            const workflowResponse = await api.post(`/workflow/${id}/`, flowData);
+            const emailResponse = await api.post(`/send-emails`, { 
+                emails, 
+                message: flowData.body, 
+            });
+
+            console.log("Emails sent successfully:", emailResponse.data);
+            fetchFlows();
+            setFlowData({
+                email: '',
+                title: '',
+                body: ''
+            });
+        } catch (error) {
+            console.error("Error submitting the form:", error);
+        }
     };
 
     useEffect(() => {
@@ -80,7 +117,6 @@ const GmailWorkflowPage = () => {
                 <VerticalNavbar />
                 <div className="container d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
                     <h2 className="text-center py-5">Workflow Name</h2>
-                    {/* Dropzone */}
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body d-flex flex-column">
@@ -96,26 +132,30 @@ const GmailWorkflowPage = () => {
                             <div className="card-body">
                                 <h5 className="text-center mb-4">Workflow {id}</h5>
                                 <form onSubmit={handleFormSubmit}>
-                                    <div className='mb-3'>
-                                        <label htmlFor='email' className='form-label'>Email:</label>
-                                        <input type='text' className='form-control' id='email' name='email' onChange={handleInputChange} value={flowData.email} />
-                                    </div>
-                                    <div className='mb-3'>
-                                        <label htmlFor='title' className='form-label'>Title:</label>
-                                        <input type='text' className='form-control' id='title' name='title' onChange={handleInputChange} value={flowData.title} />
-                                    </div>
-                                    <div className='mb-3'>
-                                        <label htmlFor='body' className='form-label'>Body:</label>
-                                        <textarea
-                                            className='form-control'
-                                            id='body'
-                                            name='body'
-                                            rows="3"
-                                            onChange={handleInputChange}
-                                            value={flowData.body}
-                                            style={{resize: 'vertical'}} // allows vertical resizing only
-                                        />
-                                    </div>
+                                    {['email', 'title', 'body'].map((field) => (
+                                        <div className='mb-3' key={field}>
+                                            <label htmlFor={field} className='form-label'>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+                                            <div style={{ position: 'relative' }}>
+                                                <input
+                                                    type={field === 'body' ? 'textarea' : 'text'}
+                                                    className='form-control'
+                                                    id={field}
+                                                    name={field}
+                                                    onChange={handleInputChange}
+                                                    value={flowData[field]}
+                                                />
+                                                {showAutocomplete && currentField === field && keyNames.length > 0 && (
+                                                    <div className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'white', border: '1px solid #ccc', width: '100%' }}>
+                                                        {keyNames.map((name) => (
+                                                            <div key={name} onClick={() => handleAutocompleteClick(name)} style={{ padding: '5px', cursor: 'pointer' }}>
+                                                                {name}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
                                     <button type='submit' className="btn btn-primary mt-2 w-100">Send</button>
                                 </form>
                             </div>
@@ -123,7 +163,7 @@ const GmailWorkflowPage = () => {
                     </div>
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </div>
     );
 };
