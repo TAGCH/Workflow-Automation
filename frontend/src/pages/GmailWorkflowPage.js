@@ -23,7 +23,7 @@ const GmailWorkflowPage = () => {
         formData.append('file', acceptedFiles[0]); // Append the first file
 
         try {
-            const response = await api.post('/workflow/import/', formData, {
+            const response = await api.post(`/workflow/${id}/import/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

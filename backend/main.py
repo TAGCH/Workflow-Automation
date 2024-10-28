@@ -3,6 +3,7 @@ import fastapi as _fastapi
 import fastapi.security as _security
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+import io
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
@@ -127,15 +128,12 @@ async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: in
     return workflows
 
 
-@app.post("/workflow/{flow_id}/", response_model=WorkflowModel)
+@app.post("/workflow/{flow_id}/")
 async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
-    db_workflow = models.Workflow(**workflow.model_dump())
-    db.add(db_workflow)
-    db.commit()
-    db.refresh(db_workflow)
-    print(f'posted with id: {flow_id}')
-    print(db_workflow.email)
-    print(type(db_workflow.email))
+    # db_workflow = models.Workflow(**workflow.model_dump())
+    # db.add(db_workflow)
+    # db.commit()
+    # db.refresh(db_workflow)
     workflow = models.Workflow(**workflow.model_dump())
     email = workflow.email
     print(email)
@@ -154,19 +152,20 @@ async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependenc
 
     fm = FastMail(conf)
     await fm.send_message(message)
-    return db_workflow
+    return workflow
 
-@app.get("/workflow/import/", response_model=List[SpreadSheetModel])
+@app.get("/workflow/{flow_id}/import/", response_model=List[SpreadSheetModel])
 async def read_flow_sheets(db: db_dependency, skip: int=0, limit: int=100):
     sheets = db.query(models.spreadSheetWorkflow).offset(skip).limit(limit).all()
     return sheets
 
 
-@app.post("/workflow/import/")
+@app.post("/workflow/{flow_id}/import/")
 async def import_workflow( db: db_dependency, file: UploadFile = File()):
     '''Using pandas to read excel file and return dict of data.'''
 
-    df = pd.read_excel(file.file)
+    contents = await file.read()
+    df = pd.read_excel(io.BytesIO(contents))
     spreadsheet_workflow = models.spreadSheetWorkflow(
         emails=df['email'].to_list(),
         first_name=df['first'].to_list(),
