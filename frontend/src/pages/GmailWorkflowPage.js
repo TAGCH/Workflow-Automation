@@ -7,7 +7,6 @@ import api from '../api';
 import { UserContext } from "../context/UserContext";
 import { useDropzone } from "react-dropzone";
 
-// I think I'mma need the id from create page
 const GmailWorkflowPage = () => {
     const { id } = useParams();
     const { user } = useContext(UserContext);
@@ -26,10 +25,11 @@ const GmailWorkflowPage = () => {
         title: '',
         body: ''
     });
-    
+    const [emails, setEmails] = useState([]); // New state for storing emails
+
     const onDrop = async (acceptedFiles) => {
         const formData = new FormData();
-        formData.append('file', acceptedFiles[0]); // Append the first file
+        formData.append('file', acceptedFiles[0]);
 
         try {
             const response = await api.post(`/workflow/${id}/import/`, formData, {
@@ -39,6 +39,9 @@ const GmailWorkflowPage = () => {
             });
             const columns = Object.keys(response.data);
             setKeyNames(columns);
+            if (response.data.emails) {
+                setEmails(response.data.emails); // Set emails from response
+            }
             console.log(response.data);
             console.log("keyNames:", keyNames);
         } catch (error) {
@@ -48,7 +51,6 @@ const GmailWorkflowPage = () => {
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-    // Fetch workflows which is not actually being used (yet)
     const fetchFlows = async () => {
         const response = await api.get(`/workflow/${id}/`);
         setWorkflows(response.data);
@@ -58,7 +60,6 @@ const GmailWorkflowPage = () => {
         fetchFlows();
     }, []);
 
-    // Handle form input changes
     const handleInputChange = (event) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         const fieldName = event.target.name;
@@ -89,16 +90,25 @@ const GmailWorkflowPage = () => {
         setShowAutocomplete(false); // Hide dropdown after finish.
     };
 
-    // Handle form submission
     const handleFormSubmit = async (event) => {
         event.preventDefault();
-        await api.post(`/workflow/${id}/`, flowData);
-        fetchFlows();
-        setFlowData({
-            email: '',
-            title: '',
-            body: ''
-        });
+        try {
+            const workflowResponse = await api.post(`/workflow/${id}/`, flowData);
+            const emailResponse = await api.post(`/send-emails`, { 
+                emails, 
+                message: flowData.body, 
+            });
+
+            console.log("Emails sent successfully:", emailResponse.data);
+            fetchFlows();
+            setFlowData({
+                email: '',
+                title: '',
+                body: ''
+            });
+        } catch (error) {
+            console.error("Error submitting the form:", error);
+        }
     };
 
     useEffect(() => {
