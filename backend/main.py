@@ -166,7 +166,7 @@ async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
 @app.post("/workflow/{flow_id}/import/")
 async def import_workflow( db: db_dependency, file: UploadFile = File()):
     '''Using pandas to read excel file and return dict of data.'''
-
+    # Todo change this format
     contents = await file.read()
     df = pd.read_excel(io.BytesIO(contents))
     spreadsheet_workflow = models.spreadSheetWorkflow(
