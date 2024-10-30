@@ -17,7 +17,7 @@ class User(Base):
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"
 
-#gmailWorkflow 
+# Workflow 
 class Workflow(Base):
     __tablename__ = 'workflows'
 
@@ -27,14 +27,19 @@ class Workflow(Base):
     owner_id = Column(String, ForeignKey('users.id'))
     sender_email = Column(String)
     hashed_password = Column(String)
-    owner = relationship("User", back_populates="workflows")
 
-# Spreadsheet workflow
+    # Relationship
+    owner = relationship("User", back_populates="workflows")
+    imported_data = relationship("WorkflowImportedData", back_populates="workflow")
+
+# Imported data
 class WorkflowImportedData(Base):
-    '''Model for spreadsheet workflows.'''
-    __tablename__ = 'spreadSheetWorkflows'
+    '''Model for workflow datas.'''
+    __tablename__ = 'workflowData'
 
     id = Column(Integer, primary_key=True, index=True)
     data = Column(JSON)
-    workflow_id = Column(String, ForeignKey('workflows.id'))
+    workflow_id = Column(Integer, ForeignKey('workflows.id'))
+
+    # Add back_populates to link with Workflow
     workflow = relationship("Workflow", back_populates="imported_data")

@@ -37,13 +37,23 @@ const GmailWorkflowPage = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            const columns = Object.keys(response.data);
-            setKeyNames(columns);
-            if (response.data.emails) {
-                setEmails(response.data.emails); // Set emails from response
+
+            // JSON parse
+            const workflowData = response.data.data;
+
+            // Extract keys from workflow_data
+            if (workflowData.length > 0) {
+                const workflowKeys = Object.keys(workflowData[0]);
+                setKeyNames(workflowKeys);
             }
+            
+            if (workflowData.emails) {
+                setEmails(workflowData.emails); // Set emails from response
+            }
+
             console.log(response.data);
             console.log("keyNames:", keyNames);
+
         } catch (error) {
             console.error(error);
         }
@@ -80,27 +90,55 @@ const GmailWorkflowPage = () => {
 
     // Autocomplete trigger when '/' detected.
     const handleAutocompleteClick = (keyName) => {
-        // Replace "/" with the selected column name and highlight it
-        const updatedValue = flowData[currentField].replace(/\/\w*/, keyName);
+        // Add key placeholder with '/' and set it in the current field
+        const updatedValue = flowData[currentField] + `/${keyName}`;
         
         setFlowData({
             ...flowData,
             [currentField]: updatedValue,
         });
-        setShowAutocomplete(false); // Hide dropdown after finish.
+        setShowAutocomplete(false); // Hide the dropdown after selection
     };
+    
 
     const handleFormSubmit = async (event) => {
         event.preventDefault();
         try {
-            const workflowResponse = await api.post(`/workflow/${id}/`, flowData);
-            const emailResponse = await api.post(`/send-emails`, { 
-                emails, 
-                message: flowData.body, 
+            // First, create the workflow in the backend (it won't store email, title, body)
+            await api.post(`/workflow/${id}/`, flowData);
+            fetchFlows;
+            setFlowData({
+                email: '',
+                title: '',
+                body: ''
+            });
+            console.log("Workflow created:", workflowResponse.data);
+
+            // Create an array of promises to send individualized emails
+            const emailPromises = emails.map((recipient) => {
+                const personalizedEmail = {
+                    email: flowData.email.replace(/\/\w+/g, (match) => recipient[match.slice(1)] || match),
+                    title: flowData.title.replace(/\/\w+/g, (match) => recipient[match.slice(1)] || match),
+                    body: flowData.body.replace(/\/\w+/g, (match) => recipient[match.slice(1)] || match),
+                };
+
+                // Return the promise for each API call
+                return api.post(`/workflow/${id}/`, { 
+                    name: "My New Workflow",
+                    type: "Email Workflow",
+                    email: personalizedEmail.email,
+                    title: personalizedEmail.title,
+                    body: personalizedEmail.body,
+                });
             });
 
-            console.log("Emails sent successfully:", emailResponse.data);
+            // Wait for all email-sending promises to complete
+            await Promise.all(emailPromises);
+
+            console.log("Emails sent successfully:");
             fetchFlows();
+
+            // Clear form after sent
             setFlowData({
                 email: '',
                 title: '',

@@ -3,7 +3,7 @@ import fastapi as _fastapi
 import fastapi.security as _security
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
-import io
+import io, json
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
@@ -12,7 +12,7 @@ from typing import Annotated, List
 #email
 from fastapi import BackgroundTasks
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ValidationError, Field
 from starlette.responses import JSONResponse
 # import openpyxl
 
@@ -21,6 +21,8 @@ import sqlalchemy.orm as _orm
 import services as _services
 import schemas as _schemas
 import os
+
+from typing import Dict, List, Any
 
 MAIL_USERNAME = os.getenv("EMAIL")
 MAIL_PASSWORD = os.getenv("PASS")
@@ -44,29 +46,33 @@ app.add_middleware(
 )
 
 class WorkflowBase(BaseModel):
-    email: str
+    name : str
+    type : str
+    owner_id : int
+    sender_email : EmailStr
+    hashed_password: str
+
+class WorkflowModel(WorkflowBase):
+    id : int
+
+class EmailFlowBase(BaseModel):
+    email: EmailStr
     title: str
     body: str
 
-class WorkflowModel(WorkflowBase):
+class EmailFlowModel(EmailFlowBase):
     id: int
 
     # class Config:
     #     orm_mode = True
   
-class SpreadSheetBase(BaseModel):
-    emails : List[str]
-    first_name : List[str]
-    last_name : List[str]
-    tel_number : List[str]
-    
-     
-class SpreadSheetModel(SpreadSheetBase):
+class WorkflowImportedDataBase(BaseModel):
+    data : List[Dict[str, Any]]
+    workflow_id : int
+
+class WorkflowImportedDataModel(WorkflowImportedDataBase):
     id : int
-    
-    class Config:
-        orm_mode = True
-        
+
 
 def get_db():
     db = SessionLocal()
@@ -121,64 +127,77 @@ async def login(username: str, password: str):
     return {"username": username, "status": "logged in"}
 
 
-@app.get("/workflow/{flow_id}/", response_model=List[WorkflowModel])
+@app.get("/workflow/{flow_id}/", response_model=WorkflowModel)
 async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: int=100):
-    workflows = db.query(models.Workflow).filter(models.Workflow.id == flow_id).offset(skip).limit(limit).all()
+    workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
+
+    if workflow is None:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
     print(f'get flow with id {flow_id}')
-    return workflows
+    return workflow
 
 
-@app.post("/workflow/{flow_id}/", response_model=WorkflowModel)
-async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
-    db_workflow = models.Workflow(**workflow.model_dump())
+@app.post("/workflow/{flow_id}/", response_model=EmailFlowModel)
+async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
+    # Fetch flow by id
+    db_workflow = models.Workflow(name='Test Workflow name', type="Email Workflow", owner_id=flow_id, sender_email=MAIL_USERNAME, hashed_password=MAIL_PASSWORD)
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
-    print(f'posted with id: {flow_id}')
-    print(db_workflow.email)
-    print(type(db_workflow.email))
-    workflow = models.Workflow(**workflow.model_dump())
-    email = workflow.email
-    print(email)
+
+    # Fetch the associated WorkflowImportedData using the flow_id
+    imported_data = db.query(models.WorkflowImportedData).filter_by(workflow_id=flow_id).first()
+    if not imported_data:
+        raise HTTPException(status_code=404, detail="No imported data found for this workflow")
+    
+    # Extract emails from the imported data
+    email = [entry['email'] for entry in imported_data.data]
+
     html = f"""
     <p>Thanks for using Fastapi-mail</p>
-    </br> 
-    <p> from: {email} </p>
     </br> 
     <p> Body: {workflow.body}</p>
     """
     message = MessageSchema(
-            subject=workflow.title,
-            recipients= [email],
-            body=html,
-            subtype=MessageType.html)
+        subject=workflow.title,
+        recipients=email,
+        body=html,
+        subtype=MessageType.html
+    )
 
     fm = FastMail(conf)
     await fm.send_message(message)
-    return db_workflow
+    return EmailFlowModel(
+        id=db_workflow.id,
+        name=db_workflow.name,
+        type=db_workflow.type,
+        email=workflow.email,  # Add this if `EmailFlowModel` requires `email`
+        title='TesterFlow',
+        body='Somebody'
+    )
 
-@app.get("/workflow/{flow_id}/import/", response_model=List[SpreadSheetModel])
+@app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportedDataModel])
 async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
-    sheets = db.query(models.spreadSheetWorkflow).offset(skip).limit(limit).all()
+    sheets = db.query(models.WorkflowImportedData).offset(skip).limit(limit).all()
     return sheets
 
 
 @app.post("/workflow/{flow_id}/import/")
-async def import_workflow( db: db_dependency, file: UploadFile = File()):
+async def import_workflow( flow_id : int, db: db_dependency, file: UploadFile = File()):
     '''Using pandas to read excel file and return dict of data.'''
-    # Todo change this format
     contents = await file.read()
     df = pd.read_excel(io.BytesIO(contents))
-    spreadsheet_workflow = models.spreadSheetWorkflow(
-        emails=df['email'].to_list(),
-        first_name=df['first'].to_list(),
-        last_name=df['last'].to_list(),
-        tel_number=df['tel'].to_list()
+    data = df.to_json(orient="records")
+    json_data = json.loads(data)
+    workflow_data = models.WorkflowImportedData(
+        data = json_data,
+        workflow_id = flow_id
     )
-    db.add(spreadsheet_workflow)
+    db.add(workflow_data)
     db.commit()
-    db.refresh(spreadsheet_workflow)
-    return spreadsheet_workflow
+    db.refresh(workflow_data)
+    return workflow_data
 
 conf = ConnectionConfig(
     MAIL_USERNAME=MAIL_USERNAME,
