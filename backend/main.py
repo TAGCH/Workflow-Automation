@@ -24,9 +24,9 @@ import os
 
 from typing import Dict, List, Any
 
-MAIL_USERNAME = os.getenv("EMAIL")
-MAIL_PASSWORD = os.getenv("PASS")
-DATABASE_URL = os.getenv("DATABASE_URL")
+MAIL_USERNAME = "chamarak2546@gmail.com"
+MAIL_PASSWORD = "bvqtdxbjufxlcoqx"
+DATABASE_URL = "sqlite:///./database.db"
 
 #dotenv
 from dotenv import dotenv_values
@@ -138,10 +138,11 @@ async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: in
     return workflow
 
 
-@app.post("/workflow/{flow_id}/", response_model=EmailFlowModel)
-async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
+@app.post("/workflow/{flow_id}/")
+async def create_workflow(flow_id: int, workflow: EmailFlowBase, db: db_dependency):
     # Fetch flow by id
     db_workflow = models.Workflow(name='Test Workflow name', type="Email Workflow", owner_id=flow_id, sender_email=MAIL_USERNAME, hashed_password=MAIL_PASSWORD)
+    print(db_workflow)
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
@@ -152,6 +153,7 @@ async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependen
         raise HTTPException(status_code=404, detail="No imported data found for this workflow")
     
     # Extract emails from the imported data
+    print('arrive at email entry')
     email = [entry['email'] for entry in imported_data.data]
 
     html = f"""
@@ -168,6 +170,7 @@ async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependen
 
     fm = FastMail(conf)
     await fm.send_message(message)
+    print('Mail sent.')
     return EmailFlowModel(
         id=db_workflow.id,
         name=db_workflow.name,

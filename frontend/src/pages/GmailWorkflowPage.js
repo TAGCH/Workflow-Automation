@@ -105,15 +105,16 @@ const GmailWorkflowPage = () => {
         event.preventDefault();
         try {
             // First, create the workflow in the backend (it won't store email, title, body)
+            console.log("Sending flow data: ", flowData);
             await api.post(`/workflow/${id}/`, flowData);
-            fetchFlows;
+            fetchFlows();
             setFlowData({
                 email: '',
                 title: '',
                 body: ''
             });
-            console.log("Workflow created:", workflowResponse.data);
 
+            console.log('Pass initial stage')
             // Create an array of promises to send individualized emails
             const emailPromises = emails.map((recipient) => {
                 const personalizedEmail = {
@@ -121,6 +122,7 @@ const GmailWorkflowPage = () => {
                     title: flowData.title.replace(/\/\w+/g, (match) => recipient[match.slice(1)] || match),
                     body: flowData.body.replace(/\/\w+/g, (match) => recipient[match.slice(1)] || match),
                 };
+                console.log('Creating personalizedEmail')
 
                 // Return the promise for each API call
                 return api.post(`/workflow/${id}/`, { 
@@ -132,6 +134,7 @@ const GmailWorkflowPage = () => {
                 });
             });
 
+            console.log('Awaiting promise')
             // Wait for all email-sending promises to complete
             await Promise.all(emailPromises);
 
