@@ -24,10 +24,9 @@ import os
 
 from typing import Dict, List, Any
 
-MAIL_USERNAME = "chamarak2546@gmail.com"
-MAIL_PASSWORD = "bvqtdxbjufxlcoqx"
-DATABASE_URL = "sqlite:///./database.db"
-
+MAIL_USERNAME = os.getenv("EMAIL")
+MAIL_PASSWORD = os.getenv("PASS")
+DATABASE_URL = os.getenv("DATABASE_URL")
 #dotenv
 from dotenv import dotenv_values
 
