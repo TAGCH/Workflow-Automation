@@ -127,14 +127,18 @@ async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: in
     print(f'get flow with id {flow_id}')
     return workflows
 
+@app.get("/workflows/", response_model=List[WorkflowModel])
+async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
+    workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+    return workflows
+
 
 @app.post("/workflow/{flow_id}/")
 async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
-    # db_workflow = models.Workflow(**workflow.model_dump())
-    # db.add(db_workflow)
-    # db.commit()
-    # db.refresh(db_workflow)
     workflow = models.Workflow(**workflow.model_dump())
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
     email = workflow.email
     print(email)
     html = f"""

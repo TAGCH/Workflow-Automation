@@ -19,7 +19,7 @@ const GmailWorkflowPage = () => {
     const [flowData, setFlowData] = useState({
         email: '',
         title: '',
-        body: ''
+        body: '',
     });
     const [emails, setEmails] = useState([]); // New state for storing emails
 
@@ -87,12 +87,12 @@ const GmailWorkflowPage = () => {
         event.preventDefault();
         try {
             const workflowResponse = await api.post(`/workflow/${id}/`, flowData);
-            const emailResponse = await api.post(`/send-emails`, { 
-                emails, 
-                message: flowData.body, 
-            });
+            // const emailResponse = await api.post(`/send-emails`, { 
+            //     emails, 
+            //     message: flowData.body, 
+            // });
 
-            console.log("Emails sent successfully:", emailResponse.data);
+            console.log("Emails sent successfully:", workflowResponse.data);
             fetchFlows();
             setFlowData({
                 email: '',
