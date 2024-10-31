@@ -53,20 +53,20 @@ class WorkflowModel(WorkflowBase):
 
     # class Config:
     #     orm_mode = True
-  
+
 class SpreadSheetBase(BaseModel):
     emails : List[str]
     first_name : List[str]
     last_name : List[str]
     tel_number : List[str]
-    
-     
+
+
 class SpreadSheetModel(SpreadSheetBase):
     id : int
-    
+
     class Config:
         orm_mode = True
-        
+
 
 def get_db():
     db = SessionLocal()
