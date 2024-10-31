@@ -47,6 +47,7 @@ class WorkflowBase(BaseModel):
     email: str
     title: str
     body: str
+    name: str
 
 class WorkflowModel(WorkflowBase):
     id: int
@@ -133,7 +134,7 @@ async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
     return workflows
 
 
-@app.post("/workflow/{flow_id}/")
+@app.post("/workflow/{flow_id}/", response_model=WorkflowModel)
 async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
     workflow = models.Workflow(**workflow.model_dump())
     db.add(workflow)

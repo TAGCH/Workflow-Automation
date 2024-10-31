@@ -20,6 +20,7 @@ const GmailWorkflowPage = () => {
         email: '',
         title: '',
         body: '',
+        name:''
     });
     const [emails, setEmails] = useState([]); // New state for storing emails
 
@@ -130,9 +131,9 @@ const GmailWorkflowPage = () => {
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body">
-                                <h5 className="text-center mb-4">Workflow {id}</h5>
+                                <h5 className="text-center mb-4">Workflow user id: {id}</h5>
                                 <form onSubmit={handleFormSubmit}>
-                                    {['email', 'title', 'body'].map((field) => (
+                                    {['email', 'title', 'body','name'].map((field) => (
                                         <div className='mb-3' key={field}>
                                             <label htmlFor={field} className='form-label'>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
                                             <div style={{ position: 'relative' }}>
