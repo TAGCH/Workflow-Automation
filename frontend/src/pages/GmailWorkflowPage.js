@@ -25,7 +25,7 @@ const GmailWorkflowPage = () => {
         title: '',
         body: ''
     });
-    const [emails, setEmails] = useState([]); // New state for storing emails
+    const [workflowObjects, setWorkflowObjects] = useState([]); // New state for storing emails
 
     const onDrop = async (acceptedFiles) => {
         const formData = new FormData();
@@ -38,8 +38,9 @@ const GmailWorkflowPage = () => {
                 },
             });
 
-            // JSON parse
+            // List of object, or row of excel imported file.
             const workflowData = response.data.data;
+            console.log(workflowData)
 
             // Extract keys from workflow_data
             if (workflowData.length > 0) {
@@ -47,12 +48,15 @@ const GmailWorkflowPage = () => {
                 setKeyNames(workflowKeys);
             }
             
-            if (workflowData.emails) {
-                setEmails(workflowData.emails); // Set emails from response
+            if (workflowData) {
+                const workflowObjectEntry = Object(workflowData)
+                setWorkflowObjects(workflowObjectEntry); // Set emails from response
             }
 
             console.log(response.data);
             console.log("keyNames:", keyNames);
+            console.log("Bool data", !!workflowData);
+            console.log("State of data", workflowObjects);
 
         } catch (error) {
             console.error(error);
@@ -91,7 +95,12 @@ const GmailWorkflowPage = () => {
     // Autocomplete trigger when '/' detected.
     const handleAutocompleteClick = (keyName) => {
         // Add key placeholder with '/' and set it in the current field
-        const updatedValue = flowData[currentField] + `/${keyName}`;
+        const currentValue = flowData[currentField];
+
+        // If the last character is a '/', replace it with the keyName; otherwise, append `/${keyName}`
+        const updatedValue = currentValue.endsWith("/")
+            ? currentValue.slice(0, -1) + `/${keyName}`
+            : currentValue + `/${keyName}`;
         
         setFlowData({
             ...flowData,
@@ -104,34 +113,27 @@ const GmailWorkflowPage = () => {
     const handleFormSubmit = async (event) => {
         event.preventDefault();
         try {
-            // First, create the workflow in the backend (it won't store email, title, body)
-            console.log("Sending flow data: ", flowData);
-            await api.post(`/workflow/${id}/`, flowData);
+            // await api.post(`/workflow/${id}/create`, flowData);
             fetchFlows();
             setFlowData({
                 email: '',
                 title: '',
                 body: ''
             });
-
+            
+            console.log("Sending flow data: ", flowData);
             console.log('Pass initial stage')
             // Create an array of promises to send individualized emails
-            const emailPromises = emails.map((recipient) => {
+            const emailPromises = workflowObjects.map((recipient) => {
                 const personalizedEmail = {
                     email: flowData.email.replace(/\/\w+/g, (match) => recipient[match.slice(1)] || match),
                     title: flowData.title.replace(/\/\w+/g, (match) => recipient[match.slice(1)] || match),
                     body: flowData.body.replace(/\/\w+/g, (match) => recipient[match.slice(1)] || match),
                 };
-                console.log('Creating personalizedEmail')
+                console.log('Creating personalizedEmail', personalizedEmail);
 
                 // Return the promise for each API call
-                return api.post(`/workflow/${id}/`, { 
-                    name: "My New Workflow",
-                    type: "Email Workflow",
-                    email: personalizedEmail.email,
-                    title: personalizedEmail.title,
-                    body: personalizedEmail.body,
-                });
+                return api.post(`/workflow/${id}/sendEmail`, personalizedEmail);
             });
 
             console.log('Awaiting promise')

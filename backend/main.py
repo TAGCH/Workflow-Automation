@@ -48,6 +48,7 @@ class WorkflowBase(BaseModel):
     name : str
     type : str
     owner_id : int
+    workflow_data_id : int
     sender_email : EmailStr
     hashed_password: str
 
@@ -137,46 +138,33 @@ async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: in
     return workflow
 
 
-@app.post("/workflow/{flow_id}/")
-async def create_workflow(flow_id: int, workflow: EmailFlowBase, db: db_dependency):
+@app.post("/workflow/{flow_id}/create")
+async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
     # Fetch flow by id
-    db_workflow = models.Workflow(name='Test Workflow name', type="Email Workflow", owner_id=flow_id, sender_email=MAIL_USERNAME, hashed_password=MAIL_PASSWORD)
+    db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id, workflow_data_id = workflow.workflow_data_id, sender_email=MAIL_USERNAME, hashed_password=MAIL_PASSWORD)
     print(db_workflow)
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
+    return db_workflow
 
-    # Fetch the associated WorkflowImportedData using the flow_id
-    imported_data = db.query(models.WorkflowImportedData).filter_by(workflow_id=flow_id).first()
-    if not imported_data:
-        raise HTTPException(status_code=404, detail="No imported data found for this workflow")
-    
-    # Extract emails from the imported data
+@app.post("/workflow/{flow_id}/sendEmail")
+async def send_email(workflow: EmailFlowBase):
     print('arrive at email entry')
-    email = [entry['email'] for entry in imported_data.data]
-
-    html = f"""
-    <p>Thanks for using Fastapi-mail</p>
-    </br> 
-    <p> Body: {workflow.body}</p>
-    """
     message = MessageSchema(
         subject=workflow.title,
-        recipients=email,
-        body=html,
+        recipients=[workflow.email],
+        body=workflow.body,
         subtype=MessageType.html
     )
 
     fm = FastMail(conf)
     await fm.send_message(message)
     print('Mail sent.')
-    return EmailFlowModel(
-        id=db_workflow.id,
-        name=db_workflow.name,
-        type=db_workflow.type,
-        email=workflow.email,  # Add this if `EmailFlowModel` requires `email`
-        title='TesterFlow',
-        body='Somebody'
+    return EmailFlowBase(
+        email=workflow.email,
+        title=workflow.title,
+        body=workflow.body
     )
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportedDataModel])

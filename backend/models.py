@@ -25,12 +25,20 @@ class Workflow(Base):
     name = Column(String)
     type = Column(String)
     owner_id = Column(String, ForeignKey('users.id'))
+    workflow_data_id = Column(Integer, ForeignKey('workflowData.id'))
     sender_email = Column(String)
     hashed_password = Column(String)
 
     # Relationship
-    owner = relationship("User", back_populates="workflows")
-    imported_data = relationship("WorkflowImportedData", back_populates="workflow")
+    owner = relationship(
+        "User",
+        back_populates="workflows"
+        )
+    imported_data = relationship(
+        "WorkflowImportedData",
+        back_populates="workflow",
+        foreign_keys="WorkflowImportedData.workflow_id"
+        )
 
 # Imported data
 class WorkflowImportedData(Base):
@@ -41,5 +49,9 @@ class WorkflowImportedData(Base):
     data = Column(JSON)
     workflow_id = Column(Integer, ForeignKey('workflows.id'))
 
-    # Add back_populates to link with Workflow
-    workflow = relationship("Workflow", back_populates="imported_data")
+    # Relationship
+    workflow = relationship(
+        "Workflow",
+        back_populates="imported_data",
+        foreign_keys=[workflow_id]
+    )
