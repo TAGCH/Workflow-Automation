@@ -47,8 +47,18 @@ class WorkflowBase(BaseModel):
     email: str
     title: str
     body: str
+    name: str
 
 class WorkflowModel(WorkflowBase):
+    id: int
+
+class GmailflowBase(BaseModel):
+    email: str
+    title: str
+    body: str
+    name: str
+
+class GmailflowModel(GmailflowBase):
     id: int
 
     # class Config:
@@ -127,32 +137,36 @@ async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: in
     print(f'get flow with id {flow_id}')
     return workflows
 
+@app.get("/workflows/", response_model=List[WorkflowModel])
+async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
+    workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+    return workflows
 
-@app.post("/workflow/{flow_id}/")
-async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
-    # db_workflow = models.Workflow(**workflow.model_dump())
-    # db.add(db_workflow)
-    # db.commit()
-    # db.refresh(db_workflow)
-    workflow = models.Workflow(**workflow.model_dump())
-    email = workflow.email
+
+@app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
+async def create_workflow(flow_id: int, gmailflow: GmailflowBase, db: db_dependency):
+    gmailflow = models.Gmailflow(**gmailflow.model_dump())
+    db.add(gmailflow)
+    db.commit()
+    db.refresh(gmailflow)
+    email = gmailflow.email
     print(email)
     html = f"""
     <p>Thanks for using Fastapi-mail</p>
     </br> 
     <p> from: {email} </p>
     </br> 
-    <p> Body: {workflow.body}</p>
+    <p> Body: {gmailflow.body}</p>
     """
     message = MessageSchema(
-            subject=workflow.title,
+            subject=gmailflow.title,
             recipients= [email],
             body=html,
             subtype=MessageType.html)
 
     fm = FastMail(conf)
     await fm.send_message(message)
-    return workflow
+    return gmailflow
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[SpreadSheetModel])
 async def read_flow_sheets(db: db_dependency, skip: int=0, limit: int=100):

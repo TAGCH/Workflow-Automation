@@ -35,20 +35,15 @@ class Workflow(Base):
 
     def __repr__(self):
         return f"<Workflow(id={self.id}, name={self.name}, type={self.type}, owner_id={self.owner_id})>"
-
-
-class WorkflowsImportsData(Base):
-    __tablename__ = 'workflows_imports_data'
+    
+class Gmailflow(Base):
+    __tablename__ = 'gmailflow'
 
     id = Column(Integer, primary_key=True, index=True)
-    data = Column(JSON, nullable=False)  # Store data as a dictionary
-    workflow_id = Column(Integer, ForeignKey('workflows.id'), nullable=False)
-
-    workflow = relationship("Workflow", back_populates="imports_data")
-
-    def __repr__(self):
-        return f"<WorkflowsImportsData(id={self.id}, workflow_id={self.workflow_id})>"
-
+    email = Column(String(255), index=True)
+    title = Column(String(255))
+    body = Column(String(255))
+    name =  Column(String(255))
 
 class EmailLog(Base):
     __tablename__ = 'email_logs_table'
@@ -65,6 +60,17 @@ class EmailLog(Base):
     def __repr__(self):
         return f"<EmailLog(id={self.id}, workflow_id={self.workflow_id}, recipient_email={self.recipient_email}, status={self.status})>"
 
+class WorkflowsImportsData(Base):
+    __tablename__ = 'workflows_imports_data'
+
+    id = Column(Integer, primary_key=True, index=True)
+    data = Column(JSON, nullable=False)  # Store data as a dictionary
+    workflow_id = Column(Integer, ForeignKey('workflows.id'), nullable=False)
+
+    workflow = relationship("Workflow", back_populates="imports_data")
+
+    def __repr__(self):
+        return f"<WorkflowsImportsData(id={self.id}, workflow_id={self.workflow_id})>"
 
 # Back_populates to establish relationships
 User.workflows = relationship("Workflow", order_by=Workflow.id, back_populates="owner")
