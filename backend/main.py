@@ -59,6 +59,7 @@ class EmailFlowBase(BaseModel):
     email: EmailStr
     title: str
     body: str
+    name: str
 
 class EmailFlowModel(EmailFlowBase):
     id: int

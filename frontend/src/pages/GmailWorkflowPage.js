@@ -23,15 +23,18 @@ const GmailWorkflowPage = () => {
     const [flowData, setFlowData] = useState({
         email: '',
         title: '',
-        body: ''
+        body: '',
+        name:''
     });
     const [workflowObjects, setWorkflowObjects] = useState([]); // New state for storing emails
 
     const onDrop = async (acceptedFiles) => {
         const formData = new FormData();
         formData.append('file', acceptedFiles[0]);
+        formData.append('file', acceptedFiles[0]);
 
         try {
+            const response = await api.post(`/workflow/${id}/import/`, formData, {
             const response = await api.post(`/workflow/${id}/import/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -70,9 +73,9 @@ const GmailWorkflowPage = () => {
         setWorkflows(response.data);
     };
 
-    useEffect(() => {
-        fetchFlows();
-    }, []);
+    // useEffect(() => {
+    //     fetchFlows();
+    // }, []);
 
     const handleInputChange = (event) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
@@ -88,6 +91,7 @@ const GmailWorkflowPage = () => {
         }
         setFlowData({
             ...flowData,
+            [fieldName]: value,
             [fieldName]: value,
         });
     };
@@ -180,7 +184,7 @@ const GmailWorkflowPage = () => {
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body">
-                                <h5 className="text-center mb-4">Workflow {id}</h5>
+                                <h5 className="text-center mb-4">Workflow user id: {id}</h5>
                                 <form onSubmit={handleFormSubmit}>
                                     {['email', 'title', 'body'].map((field) => (
                                         <div className='mb-3' key={field}>
