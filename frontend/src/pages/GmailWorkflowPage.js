@@ -31,10 +31,8 @@ const GmailWorkflowPage = () => {
     const onDrop = async (acceptedFiles) => {
         const formData = new FormData();
         formData.append('file', acceptedFiles[0]);
-        formData.append('file', acceptedFiles[0]);
 
         try {
-            const response = await api.post(`/workflow/${id}/import/`, formData, {
             const response = await api.post(`/workflow/${id}/import/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -91,7 +89,6 @@ const GmailWorkflowPage = () => {
         }
         setFlowData({
             ...flowData,
-            [fieldName]: value,
             [fieldName]: value,
         });
     };

@@ -48,9 +48,8 @@ class WorkflowBase(BaseModel):
     name : str
     type : str
     owner_id : int
-    workflow_data_id : int
     sender_email : EmailStr
-    hashed_password: str
+    sender_hashed_password: str
 
 class WorkflowModel(WorkflowBase):
     id : int
@@ -59,7 +58,7 @@ class EmailFlowBase(BaseModel):
     email: EmailStr
     title: str
     body: str
-    name: str
+    # name: str
 
 class EmailFlowModel(EmailFlowBase):
     id: int
@@ -142,7 +141,7 @@ async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: in
 @app.post("/workflow/{flow_id}/create")
 async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
     # Fetch flow by id
-    db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id, workflow_data_id = workflow.workflow_data_id, sender_email=MAIL_USERNAME, hashed_password=MAIL_PASSWORD)
+    db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id,  sender_email=MAIL_USERNAME, sender_hashed_password=MAIL_PASSWORD)
     print(db_workflow)
     db.add(db_workflow)
     db.commit()
