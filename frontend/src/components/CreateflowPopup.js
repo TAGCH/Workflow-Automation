@@ -1,18 +1,47 @@
-import React, {useContext} from 'react';
+import React, { useState, useContext } from 'react';
 import gmailIcon from '../images/gmail.png';
 import ggsheetIcon from '../images/googlesheet.png';
 import { useNavigate } from "react-router-dom";
 import { UserContext } from '../context/UserContext';
+import api from '../services/api'; // Make sure this path is correct
 
 const CreateflowPopup = ({ closePopup }) => {
     const navigate = useNavigate();
     const { user } = useContext(UserContext);
 
+    // State to manage the selected workflow type and input values
+    const [workflowType, setWorkflowType] = useState('');
+    const [workflowName, setWorkflowName] = useState('');
+    const [senderEmail, setSenderEmail] = useState('');
+    const [senderPassword, setSenderPassword] = useState('');
+
     const handleOptionClick = (option) => {
-        if (option === 'Send Email') {
-            navigate(`/gmailworkflow/${user.id}`);
-        } else if (option === 'Update') {
-            navigate(`/spreadsheetflow/${user.id}`);
+        setWorkflowType(option);
+    };
+
+    const handleCreateWorkflow = async () => {
+        if (!user) return; // Ensure user is available before sending data
+
+        try {
+            const response = await api.post('/workflows/', {
+                name: workflowName,
+                type: workflowType,
+                owner_id: user.id,
+                sender_email: senderEmail,
+                sender_hashed_password: senderPassword, // Make sure this is hashed if required
+                trigger_time: null, // Adjust based on your requirements
+                trigger_frequency: null, // Adjust based on your requirements
+                trigger_day: null, // Adjust based on your requirements
+                status: false // Default status
+            });
+            
+            console.log('Workflow created:', response.data);
+            // Optionally navigate to the new workflow page or refresh the data
+            closePopup();
+            navigate(`/workflow/${response.data.id}`); // Adjust based on your route
+        } catch (error) {
+            console.error('Error creating workflow:', error);
+            // Handle error (show a notification, etc.)
         }
     };
 
@@ -73,22 +102,66 @@ const CreateflowPopup = ({ closePopup }) => {
                 <h2>Select an Action</h2>
                 <div className="options-container" style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px' }}>
                     <div
-                        className="option"
+                        className={`option ${workflowType === 'Send Email' ? 'selected' : ''}`}
                         onClick={() => handleOptionClick('Send Email')}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', border: workflowType === 'Send Email' ? '2px solid blue' : 'none' }}
                     >
                         <img src={gmailIcon} alt="Gmail Icon" style={{ width: '50px', height: '50px' }} />
                         <p className="pt-3">Send Email</p>
                     </div>
                     <div
-                        className="option"
+                        className={`option ${workflowType === 'Update' ? 'selected' : ''}`}
                         onClick={() => handleOptionClick('Update')}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', border: workflowType === 'Update' ? '2px solid blue' : 'none' }}
                     >
                         <img src={ggsheetIcon} alt="Google Sheets Icon" style={{ width: '50px', height: '50px' }} />
                         <p className="pt-3">Update</p>
                     </div>
                 </div>
+
+                {/* Input Fields */}
+                <div style={{ marginTop: '20px' }}>
+                    <input
+                        type="text"
+                        placeholder="Workflow Name"
+                        value={workflowName}
+                        onChange={(e) => setWorkflowName(e.target.value)}
+                        style={{ width: '90%', margin: '10px 0', padding: '10px' }}
+                        required
+                    />
+                    <input
+                        type="email"
+                        placeholder="Sender Email"
+                        value={senderEmail}
+                        onChange={(e) => setSenderEmail(e.target.value)}
+                        style={{ width: '90%', margin: '10px 0', padding: '10px' }}
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Sender Password"
+                        value={senderPassword}
+                        onChange={(e) => setSenderPassword(e.target.value)}
+                        style={{ width: '90%', margin: '10px 0', padding: '10px' }}
+                        required
+                    />
+                </div>
+
+                {/* Create Workflow Button */}
+                <button
+                    onClick={handleCreateWorkflow}
+                    style={{
+                        marginTop: '20px',
+                        padding: '10px 20px',
+                        backgroundColor: 'blue',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                    }}
+                >
+                    Create Workflow
+                </button>
             </div>
         </div>
     );

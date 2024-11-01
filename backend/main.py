@@ -20,6 +20,7 @@ import sqlalchemy.orm as _orm
 
 import services as _services
 import schemas as _schemas
+from schemas import *
 import os
 
 MAIL_USERNAME = os.getenv("EMAIL")
@@ -42,41 +43,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE)
     allow_headers=["*"],  # Allow all headers (Content-Type, Authorization, etc.)
 )
-
-class WorkflowBase(BaseModel):
-    email: str
-    title: str
-    body: str
-    name: str
-
-class WorkflowModel(WorkflowBase):
-    id: int
-
-class GmailflowBase(BaseModel):
-    email: str
-    title: str
-    body: str
-    name: str
-
-class GmailflowModel(GmailflowBase):
-    id: int
-
-    # class Config:
-    #     orm_mode = True
-
-class SpreadSheetBase(BaseModel):
-    emails : List[str]
-    first_name : List[str]
-    last_name : List[str]
-    tel_number : List[str]
-
-
-class SpreadSheetModel(SpreadSheetBase):
-    id : int
-
-    class Config:
-        orm_mode = True
-
 
 def get_db():
     db = SessionLocal()
@@ -142,6 +108,13 @@ async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
     workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
     return workflows
 
+@app.post("/workflows/", response_model=WorkflowModel)
+async def read_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=0, limit: int=100):
+    workflow = models.Workflow(**workflow.model_dump())
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
+    return workflow
 
 @app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
 async def create_workflow(flow_id: int, gmailflow: GmailflowBase, db: db_dependency):
