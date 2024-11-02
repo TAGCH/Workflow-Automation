@@ -26,7 +26,7 @@ function App() {
                 }
             />
             <Route
-                path="/myflows"
+                path="/myflows/:user_id"
                 element={
                     <ProtectedRoute>
                         <MyflowPage />

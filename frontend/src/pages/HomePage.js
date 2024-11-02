@@ -1,14 +1,15 @@
-import React, { useContext, useEffect } from 'react';
-import gmail from "../images/gmail.png";
+import React, { useContext, useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import VerticalNavbar from "../components/VerticalNavbar";
+import WorkflowCard from "../components/WorkflowCard";
 import { UserContext } from '../context/UserContext';
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
     const { user } = useContext(UserContext);
     const navigate = useNavigate();
+    const [workflows, setWorkflows] = useState([]);
 
     // Function to extract the username from the email
     const getUsernameFromEmail = (email) => {
@@ -19,8 +20,20 @@ const HomePage = () => {
     useEffect(() => {
         if (user && user.id) {
             navigate(`/home/${user.id}`);
+            fetchWorkflows()
         }
     }, [user, navigate]);
+
+    const fetchWorkflows = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/workflows');
+            const data = await response.json();
+            const lastTwoWorkflows = data.filter(workflow => workflow.owner_id === user.id).slice(-2);
+            setWorkflows(lastTwoWorkflows);
+        } catch (error) {
+            console.error('Error fetching workflows:', error);
+        }
+    };
 
     return (
         <div>
@@ -30,35 +43,29 @@ const HomePage = () => {
                 <div className="welcome-container">
                     <div className="bg-black p-4 rounded mb-4">
                         <div className="d-flex align-items-center">
-                            <h1 className="font-weight-bold">
+                            <h1 className="font-weight-bold pl-40">
                                 Welcome back, {user ? getUsernameFromEmail(user.email) : "User"}!
                             </h1>
                         </div>
-                        <p>Hope you enjoy your lucky day! 🍀</p>
+                        <p className="pl-40">Hope you enjoy your lucky day! 🍀</p>
                     </div>
                     <div className="bg-light p-3 rounded mb-4">
-                        <h4>Notifications</h4>
-                        <p>No new notifications</p>
+                        <h4 className="pl-40">Notifications</h4>
+                        <p className="pl-40">No new notifications</p>
                     </div>
                     <div className="bg-light p-3 rounded">
-                        <h4>Recent Workflows</h4>
-                        <div className="col-md-4 mb-4">
-                            <div className="card h-100">
-                                <div className="card-body d-flex flex-column">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h5>Workflow 2</h5>
-                                            <p>Status: Completed</p>
-                                        </div>
-                                        <div className="d-flex">
-                                            <img src={gmail} alt="gmail" className="img-fit"/>
-                                        </div>
-                                    </div>
-                                    <button className="btn btn-primary mt-2">
-                                        View Workflow
-                                    </button>
-                                </div>
-                            </div>
+                        <h4 className="pl-40 py-1">Recent Workflows</h4>
+                        <div className="row pl-40">
+                            {workflows.map(workflow => (
+                                <WorkflowCard
+                                    key={workflow.id}
+                                    id={workflow.id}
+                                    name={workflow.name}
+                                    type={workflow.type}
+                                    status={workflow.status}
+                                    userId={user.id} // Assuming the user_id is in the workflow data
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
