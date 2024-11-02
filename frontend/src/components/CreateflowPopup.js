@@ -14,9 +14,11 @@ const CreateflowPopup = ({ closePopup }) => {
     const [workflowName, setWorkflowName] = useState('');
     const [senderEmail, setSenderEmail] = useState('');
     const [senderPassword, setSenderPassword] = useState('');
+    const [showFields, setShowFields] = useState(false);
 
     const handleOptionClick = (option) => {
         setWorkflowType(option);
+        setShowFields(true);
     };
 
     const handleCreateWorkflow = async () => {
@@ -37,12 +39,11 @@ const CreateflowPopup = ({ closePopup }) => {
             });
             
             console.log('Workflow created:', response.data);
-            // Optionally navigate to the new workflow page or refresh the data
             closePopup();
             if (workflowType === 'Send Email') {
-                navigate(`/gmailworkflow/${user.id}/${response.data.id}`); // Adjust this route as needed
+                navigate(`/gmailworkflow/${user.id}/${response.data.id}`);
             } else if (workflowType === 'Update') {
-                navigate(`/spreadsheetflow/${user.id}/${response.data.id}`); // Adjust this route as needed
+                navigate(`/spreadsheetflow/${user.id}/${response.data.id}`);
             }
         } catch (error) {
             console.error('Error creating workflow:', error);
@@ -109,7 +110,16 @@ const CreateflowPopup = ({ closePopup }) => {
                     <div
                         className={`option ${workflowType === 'Send Email' ? 'selected' : ''}`}
                         onClick={() => handleOptionClick('Send Email')}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', border: workflowType === 'Send Email' ? '2px solid blue' : 'none' }}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            padding: '10px',
+                            borderRadius: '8px',
+                            border: workflowType === 'Send Email' ? '2px solid #20c997' : '2px solid transparent',
+                            transition: 'all 0.3s ease'
+                        }}
                     >
                         <img src={gmailIcon} alt="Gmail Icon" style={{ width: '50px', height: '50px' }} />
                         <p className="pt-3">Send Email</p>
@@ -117,56 +127,98 @@ const CreateflowPopup = ({ closePopup }) => {
                     <div
                         className={`option ${workflowType === 'Update' ? 'selected' : ''}`}
                         onClick={() => handleOptionClick('Update')}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', border: workflowType === 'Update' ? '2px solid blue' : 'none' }}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            padding: '10px',
+                            borderRadius: '8px',
+                            border: workflowType === 'Update' ? '2px solid #20c997' : '2px solid transparent',
+                            transition: 'all 0.3s ease'
+                        }}
                     >
                         <img src={ggsheetIcon} alt="Google Sheets Icon" style={{ width: '50px', height: '50px' }} />
                         <p className="pt-3">Update</p>
                     </div>
                 </div>
 
-                {/* Input Fields */}
-                <div style={{ marginTop: '20px' }}>
-                    <input
-                        type="text"
-                        placeholder="Workflow Name"
-                        value={workflowName}
-                        onChange={(e) => setWorkflowName(e.target.value)}
-                        style={{ width: '90%', margin: '10px 0', padding: '10px' }}
-                        required
-                    />
-                    <input
-                        type="email"
-                        placeholder="Sender Email"
-                        value={senderEmail}
-                        onChange={(e) => setSenderEmail(e.target.value)}
-                        style={{ width: '90%', margin: '10px 0', padding: '10px' }}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Sender Password"
-                        value={senderPassword}
-                        onChange={(e) => setSenderPassword(e.target.value)}
-                        style={{ width: '90%', margin: '10px 0', padding: '10px' }}
-                        required
-                    />
-                </div>
-
-                {/* Create Workflow Button */}
-                <button
-                    onClick={handleCreateWorkflow}
+                <div
+                    className="input-fields"
                     style={{
-                        marginTop: '20px',
-                        padding: '10px 20px',
-                        backgroundColor: 'blue',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
+                        maxHeight: showFields ? '300px' : '0',
+                        overflow: 'hidden',
+                        transition: 'max-height 0.4s ease',
+                        marginTop: showFields ? '20px' : '0',
                     }}
                 >
-                    Create Workflow
-                </button>
+                    {showFields && (
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Workflow Name"
+                                value={workflowName}
+                                onChange={(e) => setWorkflowName(e.target.value)}
+                                style={{
+                                    width: '90%',
+                                    margin: '10px 0',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #e2e8f0'
+                                }}
+                                required
+                            />
+                            <input
+                                type="email"
+                                placeholder="Sender Email"
+                                value={senderEmail}
+                                onChange={(e) => setSenderEmail(e.target.value)}
+                                style={{
+                                    width: '90%',
+                                    margin: '10px 0',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #e2e8f0'
+                                }}
+                                required
+                            />
+                            <input
+                                type="password"
+                                placeholder="Sender Password"
+                                value={senderPassword}
+                                onChange={(e) => setSenderPassword(e.target.value)}
+                                style={{
+                                    width: '90%',
+                                    margin: '10px 0',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #e2e8f0'
+                                }}
+                                required
+                            />
+                        </div>
+                    )}
+
+                    <button
+                        onClick={handleCreateWorkflow}
+                        style={{
+                            marginTop: '20px',
+                            padding: '10px 20px',
+                            backgroundColor: 'black',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.3s ease',
+                            width: '90%',
+                            fontWeight: '500'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#20c997')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'black')}
+                    >
+                        Create Workflow
+                    </button>
+                </div>
             </div>
         </div>
     );
