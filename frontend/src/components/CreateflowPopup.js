@@ -53,7 +53,6 @@ const CreateflowPopup = ({ closePopup }) => {
 
     return (
         <div
-            className="popup-overlay"
             style={{
                 position: 'fixed',
                 top: 0,
@@ -64,11 +63,9 @@ const CreateflowPopup = ({ closePopup }) => {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                zIndex: 1000,
             }}
         >
             <div
-                className="popup-content"
                 style={{
                     position: 'relative',
                     backgroundColor: 'white',
