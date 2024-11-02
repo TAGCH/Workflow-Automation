@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -7,10 +8,16 @@ from alembic import context
 from database import Base
 from models import Workflow
 
+from dotenv import load_dotenv
+load_dotenv()  # This loads the .env file
+
+# Get the database URL from the environment variable
+db_url = os.getenv('DATABASE_URL', "mysql+pymysql://root:@127.0.0.1:3306/workflows")
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option('sqlalchemy.url', "mysql+pymysql://root:@127.0.0.1:3306/workflows")
+config.set_main_option('sqlalchemy.url', db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
