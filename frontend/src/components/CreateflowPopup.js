@@ -22,6 +22,7 @@ const CreateflowPopup = ({ closePopup }) => {
     const handleCreateWorkflow = async () => {
         if (!user) return; // Ensure user is available before sending data
 
+        
         try {
             const response = await api.post('/workflows/', {
                 name: workflowName,
@@ -38,7 +39,11 @@ const CreateflowPopup = ({ closePopup }) => {
             console.log('Workflow created:', response.data);
             // Optionally navigate to the new workflow page or refresh the data
             closePopup();
-            navigate(`/workflow/${response.data.id}`); // Adjust based on your route
+            if (workflowType === 'Send Email') {
+                navigate(`/gmailworkflow/${user.id}/${response.data.id}`); // Adjust this route as needed
+            } else if (workflowType === 'Update') {
+                navigate(`/spreadsheetflow/${user.id}/${response.data.id}`); // Adjust this route as needed
+            }
         } catch (error) {
             console.error('Error creating workflow:', error);
             // Handle error (show a notification, etc.)

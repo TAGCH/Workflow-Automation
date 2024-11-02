@@ -34,7 +34,7 @@ function App() {
                 }
             />
             <Route
-                path="/gmailworkflow/:id"
+                path="/gmailworkflow/:user_id/:id"
                 element={
                     <ProtectedRoute>
                         <GmailWorkflowPage />
@@ -42,7 +42,7 @@ function App() {
                 }
             />
             <Route
-                path="/spreadsheetflow/:id"
+                path="/spreadsheetflow/:user_id/:id"
                 element={
                     <ProtectedRoute>
                         <SpreadSheetWorkflowPage />
