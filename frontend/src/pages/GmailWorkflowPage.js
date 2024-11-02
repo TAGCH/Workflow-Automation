@@ -98,7 +98,8 @@ const GmailWorkflowPage = () => {
             setFlowData({
                 email: '',
                 title: '',
-                body: ''
+                body: '',
+                name:''
             });
         } catch (error) {
             console.error("Error submitting the form:", error);
