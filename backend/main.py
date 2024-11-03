@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
 from typing import Annotated, List
+import io, json
 
 #email
 from fastapi import BackgroundTasks
@@ -141,28 +142,28 @@ async def create_workflow(flow_id: int, gmailflow: GmailflowBase, db: db_depende
     await fm.send_message(message)
     return gmailflow
 
-@app.get("/workflow/{flow_id}/import/", response_model=List[SpreadSheetModel])
-async def read_flow_sheets(db: db_dependency, skip: int=0, limit: int=100):
-    sheets = db.query(models.spreadSheetWorkflow).offset(skip).limit(limit).all()
+
+@app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
+async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
+    sheets = db.query(models.WorkflowsImportsData).offset(skip).limit(limit).all()
     return sheets
 
 
 @app.post("/workflow/{flow_id}/import/")
-async def import_workflow( db: db_dependency, file: UploadFile = File()):
-    '''Using pandas to read excel file and return dict of data.'''
-
+async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = File()):
+    """Using pandas to read excel file and return dict of data."""
     contents = await file.read()
     df = pd.read_excel(io.BytesIO(contents))
-    spreadsheet_workflow = models.spreadSheetWorkflow(
-        emails=df['email'].to_list(),
-        first_name=df['first'].to_list(),
-        last_name=df['last'].to_list(),
-        tel_number=df['tel'].to_list()
+    data = df.to_json(orient="records")
+    json_data = json.loads(data)
+    workflow_data = models.WorkflowsImportsData(
+        data = json_data,
+        workflow_id = flow_id
     )
-    db.add(spreadsheet_workflow)
+    db.add(workflow_data)
     db.commit()
-    db.refresh(spreadsheet_workflow)
-    return spreadsheet_workflow
+    db.refresh(workflow_data)
+    return workflow_data
 
 conf = ConnectionConfig(
     MAIL_USERNAME=MAIL_USERNAME,

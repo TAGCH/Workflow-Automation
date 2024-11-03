@@ -35,7 +35,7 @@ class Workflow(Base):
 
     def __repr__(self):
         return f"<Workflow(id={self.id}, name={self.name}, type={self.type}, owner_id={self.owner_id})>"
-    
+
 class Gmailflow(Base):
     __tablename__ = 'gmailflow'
 

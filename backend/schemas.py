@@ -2,6 +2,7 @@ import datetime as _dt
 from pydantic import BaseModel, EmailStr
 import pydantic as _pydantic
 from typing import Optional, List
+from typing import Dict, List, Any
 
 class _UserBase(_pydantic.BaseModel):
     email: EmailStr
@@ -52,15 +53,9 @@ class GmailflowModel(GmailflowBase):
     # class Config:
     #     orm_mode = True
 
-class SpreadSheetBase(BaseModel):
-    emails : List[str]
-    first_name : List[str]
-    last_name : List[str]
-    tel_number : List[str]
+class WorkflowImportsDataBase(BaseModel):
+    data: List[Dict[str, Any]]
+    workflow_id: int
 
-
-class SpreadSheetModel(SpreadSheetBase):
-    id : int
-
-    class Config:
-        orm_mode = True
+class WorkflowImportsDataModel(WorkflowImportsDataBase):
+    id: int
