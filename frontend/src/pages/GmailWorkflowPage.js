@@ -23,6 +23,7 @@ const GmailWorkflowPage = () => {
         body: '',
         name:''
     });
+    const [workflowObjects, setWorkflowObjects] = useState([]);
 
     const onDrop = async (acceptedFiles) => {
         const formData = new FormData();
@@ -34,13 +35,27 @@ const GmailWorkflowPage = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            const columns = Object.keys(response.data);
-            setKeyNames(columns);
-            if (response.data.emails) {
-                setEmails(response.data.emails); // Set emails from response
+
+            // List of object, or row of excel imported file.
+            const workflowData = response.data.data;
+            console.log(workflowData)
+
+            // Extract keys from workflow_data
+            if (workflowData.length > 0) {
+                const workflowKeys = Object.keys(workflowData[0]);
+                setKeyNames(workflowKeys);
             }
+            
+            if (workflowData) {
+                const workflowObjectEntry = Object(workflowData)
+                setWorkflowObjects(workflowObjectEntry); // Set emails from response
+            }
+
             console.log(response.data);
             console.log("keyNames:", keyNames);
+            console.log("Bool data", !!workflowData);
+            console.log("State of data", workflowObjects);
+
         } catch (error) {
             console.error(error);
         }
@@ -61,10 +76,11 @@ const GmailWorkflowPage = () => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         const fieldName = event.target.name;
 
+        // Check for '/' to trigger autocompletion
         if (value.includes("/")) {
             console.log("Autocomplete triggered for field:", fieldName);
-            setShowAutocomplete(true);
-            setCurrentField(fieldName);
+            setShowAutocomplete(true); // Dropdown state
+            setCurrentField(fieldName); // Track current field
         } else {
             setShowAutocomplete(false);
         }
@@ -74,14 +90,21 @@ const GmailWorkflowPage = () => {
         });
     };
 
+    // Autocomplete trigger when '/' detected.
     const handleAutocompleteClick = (keyName) => {
-        const updatedValue = flowData[currentField].replace(/\/\w*/, keyName);
+        // Add key placeholder with '/' and set it in the current field
+        const currentValue = flowData[currentField];
+
+        // If the last character is a '/', replace it with the keyName; otherwise, append `/${keyName}`
+        const updatedValue = currentValue.endsWith("/")
+            ? currentValue.slice(0, -1) + `/${keyName}`
+            : currentValue + `/${keyName}`;
         
         setFlowData({
             ...flowData,
             [currentField]: updatedValue,
         });
-        setShowAutocomplete(false);
+        setShowAutocomplete(false); // Hide the dropdown after selection
     };
 
     const handleFormSubmit = async (event) => {

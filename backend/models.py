@@ -32,9 +32,11 @@ class Workflow(Base):
     status = Column(Boolean, default=False)  # False means stopped, True means started
 
     owner = relationship("User", back_populates="workflows")
+    gmailflows = relationship("Gmailflow", back_populates="workflow", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Workflow(id={self.id}, name={self.name}, type={self.type}, owner_id={self.owner_id})>"
+
 
 class Gmailflow(Base):
     __tablename__ = 'gmailflow'
@@ -43,7 +45,16 @@ class Gmailflow(Base):
     email = Column(String(255), index=True)
     title = Column(String(255))
     body = Column(String(255))
-    name =  Column(String(255))
+    name = Column(String(255))
+
+    # Define the foreign key if needed
+    workflow_id = Column(Integer, ForeignKey('workflows.id'))
+
+    # Establish the back reference
+    workflow = relationship("Workflow", back_populates="gmailflows")
+
+    def __repr__(self):
+        return f"<Gmailflow(id={self.id}, email={self.email}, title={self.title})>"
 
 class EmailLog(Base):
     __tablename__ = 'email_logs_table'
