@@ -56,16 +56,22 @@ const HomePage = () => {
                     <div className="bg-light p-3 rounded">
                         <h4 className="pl-40 py-1">Recent Workflows</h4>
                         <div className="row pl-40">
-                            {workflows.map(workflow => (
-                                <WorkflowCard
-                                    key={workflow.id}
-                                    id={workflow.id}
-                                    name={workflow.name}
-                                    type={workflow.type}
-                                    status={workflow.status}
-                                    userId={user.id} // Assuming the user_id is in the workflow data
-                                />
-                            ))}
+                            {workflows.length > 0 ? (
+                                workflows.map(workflow => (
+                                    <WorkflowCard
+                                        key={workflow.id}
+                                        id={workflow.id}
+                                        name={workflow.name}
+                                        type={workflow.type}
+                                        status={workflow.status}
+                                        userId={user.id}
+                                    />
+                                ))
+                            ) : (
+                                <div>
+                                    <p>You have no workflows</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
