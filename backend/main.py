@@ -20,6 +20,7 @@ import sqlalchemy.orm as _orm
 
 import services as _services
 import schemas as _schemas
+from schemas import *
 import os
 
 MAIL_USERNAME = os.getenv("EMAIL")
@@ -42,31 +43,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE)
     allow_headers=["*"],  # Allow all headers (Content-Type, Authorization, etc.)
 )
-
-class WorkflowBase(BaseModel):
-    email: str
-    title: str
-    body: str
-
-class WorkflowModel(WorkflowBase):
-    id: int
-
-    # class Config:
-    #     orm_mode = True
-  
-class SpreadSheetBase(BaseModel):
-    emails : List[str]
-    first_name : List[str]
-    last_name : List[str]
-    tel_number : List[str]
-    
-     
-class SpreadSheetModel(SpreadSheetBase):
-    id : int
-    
-    class Config:
-        orm_mode = True
-        
 
 def get_db():
     db = SessionLocal()
@@ -127,32 +103,43 @@ async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: in
     print(f'get flow with id {flow_id}')
     return workflows
 
+@app.get("/workflows/", response_model=List[WorkflowModel])
+async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
+    workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+    return workflows
 
-@app.post("/workflow/{flow_id}/")
-async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
-    # db_workflow = models.Workflow(**workflow.model_dump())
-    # db.add(db_workflow)
-    # db.commit()
-    # db.refresh(db_workflow)
+@app.post("/workflows/", response_model=WorkflowModel)
+async def read_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=0, limit: int=100):
     workflow = models.Workflow(**workflow.model_dump())
-    email = workflow.email
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
+    return workflow
+
+@app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
+async def create_workflow(flow_id: int, gmailflow: GmailflowBase, db: db_dependency):
+    gmailflow = models.Gmailflow(**gmailflow.model_dump())
+    db.add(gmailflow)
+    db.commit()
+    db.refresh(gmailflow)
+    email = gmailflow.email
     print(email)
     html = f"""
     <p>Thanks for using Fastapi-mail</p>
     </br> 
     <p> from: {email} </p>
     </br> 
-    <p> Body: {workflow.body}</p>
+    <p> Body: {gmailflow.body}</p>
     """
     message = MessageSchema(
-            subject=workflow.title,
+            subject=gmailflow.title,
             recipients= [email],
             body=html,
             subtype=MessageType.html)
 
     fm = FastMail(conf)
     await fm.send_message(message)
-    return workflow
+    return gmailflow
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[SpreadSheetModel])
 async def read_flow_sheets(db: db_dependency, skip: int=0, limit: int=100):

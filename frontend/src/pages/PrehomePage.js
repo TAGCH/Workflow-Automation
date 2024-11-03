@@ -39,7 +39,7 @@ const PrehomePage = () => {
             </div>
             <div className="bg-white py-xl-5 d-flex justify-content-center">
                 <div className="text-overlay d-flex align-items-center justify-content-between"
-                     style={{maxWidth: '900px'}}>
+                     style={{maxWidth: '900px', zIndex: "unset"}}>
                     <div className="px-30">
                         <h1 className="font-size52 font-weight-bold gradient-text2 mb-2">
                             Get started in seconds
@@ -55,7 +55,7 @@ const PrehomePage = () => {
             </div>
             <div className="bg-white py-xl-5 d-flex justify-content-center">
                 <div className="text-overlay d-flex align-items-center justify-content-between"
-                     style={{maxWidth: '900px'}}>
+                     style={{maxWidth: '900px', zIndex: "unset"}}>
                     <div className="ml-4">
                         <i className="bi bi-check-circle font-size200 px-30"></i>
                     </div>

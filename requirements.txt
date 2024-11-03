@@ -28,3 +28,6 @@ PyJWT==2.9.0
 pytest
 pytest-asyncio
 pytest-cov
+
+# Database
+pymysql

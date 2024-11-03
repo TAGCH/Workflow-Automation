@@ -6,6 +6,7 @@ export const UserContext = createContext();
 export const UserProvider = (props) => {
     const [token, setToken] = useState(localStorage.getItem("awesomeUsersToken"));
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -24,6 +25,7 @@ export const UserProvider = (props) => {
                     localStorage.removeItem("awesomeUsersToken");
                 }
             }
+            setLoading(false);
         };
         fetchUser();
     }, [token]);
@@ -38,7 +40,7 @@ export const UserProvider = (props) => {
     }, [token]);
 
     return (
-        <UserContext.Provider value={{ token, setToken, user, setUser }}>
+        <UserContext.Provider value={{ token, setToken, user, setUser, loading }}>
             {props.children}
         </UserContext.Provider>
     );
