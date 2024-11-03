@@ -117,30 +117,35 @@ async def read_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=0,
     db.refresh(workflow)
     return workflow
 
-@app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
-async def create_workflow(flow_id: int, gmailflow: GmailflowBase, db: db_dependency):
-    gmailflow = models.Gmailflow(**gmailflow.model_dump())
-    db.add(gmailflow)
+@app.post("/workflow/{flow_id}/create")
+async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
+    # Fetch flow by id
+    db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id,  sender_email=MAIL_USERNAME, sender_hashed_password=MAIL_PASSWORD)
+    print(db_workflow)
+    db.add(db_workflow)
     db.commit()
-    db.refresh(gmailflow)
-    email = gmailflow.email
-    print(email)
-    html = f"""
-    <p>Thanks for using Fastapi-mail</p>
-    </br> 
-    <p> from: {email} </p>
-    </br> 
-    <p> Body: {gmailflow.body}</p>
-    """
+    db.refresh(db_workflow)
+    return db_workflow
+
+@app.post("/workflow/{flow_id}/sendEmail")
+async def send_email(workflow: GmailflowBase):
+    print('arrive at email entry')
     message = MessageSchema(
-            subject=gmailflow.title,
-            recipients= [email],
-            body=html,
-            subtype=MessageType.html)
+        subject=workflow.title,
+        recipients=[workflow.email],
+        body=workflow.body,
+        subtype=MessageType.html
+    )
 
     fm = FastMail(conf)
     await fm.send_message(message)
-    return gmailflow
+    print('Mail sent.')
+    return GmailflowBase(
+        email=workflow.email,
+        title=workflow.title,
+        body=workflow.body,
+        name=workflow.name
+    )
 
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
