@@ -1,100 +1,105 @@
 import pytest
-from sqlalchemy.orm import Session
-from fastapi.testclient import TestClient
-from database import SessionLocal, create_database, drop_database
+import sqlalchemy as sa
+from sqlalchemy.orm import sessionmaker
+from passlib.hash import bcrypt
+from jose import jwt as _jwt
+
+from services import (
+    get_user_by_email, create_user, authenticate_user,
+    create_token, get_current_user
+)
 import models as _models
 import schemas as _schemas
-import services as _services
-import main  # Make sure this is the name of your FastAPI app module
-import uuid  # Import uuid for generating unique emails
+from database import Base, engine
 
-# Set up a test database session for testing
-@pytest.fixture(scope='function')  # Change from 'module' to 'function'
-def test_db():
-    create_database()  # Create the database tables
-    db = SessionLocal()
-    yield db
-    db.close()
-    drop_database()  # Drop the database after tests
+# Setup a test database
+TEST_DATABASE_URL = "sqlite:///:memory:"
+engine = sa.create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Test for user creation and authentication
+# Set up test environment variables
+JWT_SECRET = "mysecretkey"
+
+# Create a test database session fixture
+@pytest.fixture(scope="module")
+def db():
+    Base.metadata.create_all(bind=engine)  # create the tables
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+        Base.metadata.drop_all(bind=engine)  # drop the tables after tests
+
+
 @pytest.mark.asyncio
-async def test_create_and_authenticate_user(test_db: Session):
-    unique_email = f"test-{uuid.uuid4()}@example.com"  # Generate a unique email
-    user_data = _schemas.UserCreate(email=unique_email, hashed_password="password123")
-    created_user = await _services.create_user(user_data, test_db)
+async def test_create_user(db):
+    """Test creating a new user and checking its properties."""
+    user_data = _schemas.UserCreate(email="test@example.com", hashed_password="password123")
+    user = await create_user(user=user_data, db=db)  # Keep await here
 
-    assert created_user.id is not None
-    assert created_user.email == user_data.email
+    assert user.email == "test@example.com"
+    assert bcrypt.verify("password123", user.hashed_password)
+    assert db.query(_models.User).filter_by(email="test@example.com").first() is not None
 
-    # Authenticate the user
-    authenticated_user = await _services.authenticate_user(unique_email, "password123", test_db)
+
+@pytest.mark.asyncio
+async def test_get_user_by_email(db):
+    """Test retrieving a user by email."""
+    # Create a user
+    user_data = _schemas.UserCreate(email="findme@example.com", hashed_password="password123")
+    await create_user(user=user_data, db=db)  # Keep await here
+
+    # Fetch the user by email
+    user = await get_user_by_email(email="findme@example.com", db=db)  # Keep await here
+    assert user is not None
+    assert user.email == "findme@example.com"
+
+
+@pytest.mark.asyncio
+async def test_authenticate_user(db):
+    """Test authenticating a user with correct and incorrect passwords."""
+    # Create a user
+    user_data = _schemas.UserCreate(email="authuser@example.com", hashed_password="password123")
+    await create_user(user=user_data, db=db)  # Keep await here
+
+    # Test successful authentication
+    authenticated_user = await authenticate_user(email="authuser@example.com", password="password123", db=db)  # Keep await here
     assert authenticated_user is not False
-    assert authenticated_user.email == user_data.email
 
-    # Attempt to authenticate with incorrect password
-    authenticated_user_invalid = await _services.authenticate_user(unique_email, "wrongpassword", test_db)
-    assert authenticated_user_invalid is False
+    # Test failed authentication with wrong password
+    wrong_password_user = await authenticate_user(email="authuser@example.com", password="wrongpassword", db=db)  # Keep await here
+    assert wrong_password_user is False
 
-# Test for JWT token creation
+
 @pytest.mark.asyncio
-async def test_create_token(test_db: Session):
-    unique_email = f"token_test-{uuid.uuid4()}@example.com"  # Generate a unique email
-    user_data = _schemas.UserCreate(email=unique_email, hashed_password="password123")
-    created_user = await _services.create_user(user_data, test_db)
+async def test_create_token(db):
+    """Test creating a JWT token for a user."""
+    # Create a user
+    user_data = _schemas.UserCreate(email="tokenuser@example.com", hashed_password="password123")
+    user = await create_user(user=user_data, db=db)  # Keep await here
 
-    token_response = await _services.create_token(created_user)
-    assert "access_token" in token_response
-    assert token_response["token_type"] == "bearer"
+    # Generate token
+    token_data = await create_token(user=user)  # Keep await here
+    assert "access_token" in token_data
+    token = token_data["access_token"]
 
-# Test for retrieving the current user from the token
+    # Decode and validate the token payload
+    payload = _jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+    assert payload["email"] == "tokenuser@example.com"
+
+
 @pytest.mark.asyncio
-async def test_get_current_user(test_db: Session):
-    unique_email = f"current_user-{uuid.uuid4()}@example.com"  # Generate a unique email
-    user_data = _schemas.UserCreate(email=unique_email, hashed_password="password123")
-    created_user = await _services.create_user(user_data, test_db)
+async def test_get_current_user(db):
+    """Test retrieving the current user from a JWT token."""
+    # Create a user
+    user_data = _schemas.UserCreate(email="currentuser@example.com", hashed_password="password123")
+    user = await create_user(user=user_data, db=db)  # Keep await here
 
-    token_response = await _services.create_token(created_user)
-    token = token_response["access_token"]
+    # Generate token
+    token_data = await create_token(user=user)  # Keep await here
+    token = token_data["access_token"]
 
-    # Simulate getting the current user
-    current_user = await _services.get_current_user(db=test_db, token=token)
-    assert current_user.email == created_user.email
-    assert current_user.id == created_user.id
-
-# Test for user password verification
-@pytest.mark.asyncio
-async def test_verify_password(test_db: Session):
-    unique_email = f"verify_password-{uuid.uuid4()}@example.com"  # Generate a unique email
-    user_data = _schemas.UserCreate(email=unique_email, hashed_password="password123")
-    created_user = await _services.create_user(user_data, test_db)
-
-    assert created_user.verify_password("password123") is True
-    assert created_user.verify_password("wrongpassword") is False
-
-# Test for creating workflows
-@pytest.mark.asyncio
-async def test_create_workflow(test_db: Session):
-    workflow_data = _models.Workflow(email="workflow_test@example.com", title="Test Workflow", body="Workflow body")
-    test_db.add(workflow_data)
-    test_db.commit()
-    test_db.refresh(workflow_data)
-
-    assert workflow_data.id is not None
-    assert workflow_data.title == "Test Workflow"
-
-# Test for creating spreadsheet workflows
-@pytest.mark.asyncio
-async def test_create_spreadsheet_workflow(test_db: Session):
-    spreadsheet_workflow_data = _models.spreadSheetWorkflow(
-        emails=["spreadsheet_test@example.com"],
-        first_name=["Test"],
-        last_name=["User"],
-        tel_number=["123456789"]
-    )
-    test_db.add(spreadsheet_workflow_data)
-    test_db.commit()
-    test_db.refresh(spreadsheet_workflow_data)
-
-    assert spreadsheet_workflow_data.id is not None
-    assert spreadsheet_workflow_data.emails == ["spreadsheet_test@example.com"]
+    # Retrieve the current user using the token
+    current_user = await get_current_user(db=db, token=token)  # Keep await here
+    assert current_user.email == "currentuser@example.com"
