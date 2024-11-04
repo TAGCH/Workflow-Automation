@@ -15,6 +15,7 @@ from fastapi import BackgroundTasks
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
+
 # import openpyxl
 
 import sqlalchemy.orm as _orm
@@ -117,30 +118,59 @@ async def read_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=0,
     db.refresh(workflow)
     return workflow
 
-@app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
-async def create_workflow(flow_id: int, gmailflow: GmailflowBase, db: db_dependency):
-    gmailflow = models.Gmailflow(**gmailflow.model_dump())
-    db.add(gmailflow)
+@app.post("/workflow/{flow_id}/create")
+async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
+    # Fetch flow by id
+    db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id,  sender_email=MAIL_USERNAME, sender_hashed_password=MAIL_PASSWORD)
+    print(db_workflow)
+    db.add(db_workflow)
     db.commit()
-    db.refresh(gmailflow)
-    email = gmailflow.email
-    print(email)
-    html = f"""
-    <p>Thanks for using Fastapi-mail</p>
-    </br> 
-    <p> from: {email} </p>
-    </br> 
-    <p> Body: {gmailflow.body}</p>
-    """
-    message = MessageSchema(
-            subject=gmailflow.title,
-            recipients= [email],
-            body=html,
-            subtype=MessageType.html)
+    db.refresh(db_workflow)
+    return db_workflow
 
-    fm = FastMail(conf)
-    await fm.send_message(message)
-    return gmailflow
+
+@app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
+async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
+    print('arrive at email entry')
+
+    try:
+        # Create the message to send
+        message = MessageSchema(
+            subject=workflow.title,
+            recipients=[workflow.email],
+            body=workflow.body,
+            subtype=MessageType.html
+        )
+
+        fm = FastMail(conf)
+        await fm.send_message(message)
+        print('Mail sent.')
+
+        # Create a new Gmailflow entry to save in the database
+        new_gmailflow = models.Gmailflow(
+            email=workflow.email,
+            title=workflow.title,
+            body=workflow.body,
+            name=workflow.name,
+            workflow_id=flow_id  # Foreign key association
+        )
+
+        # Save the new entry to the database
+        db.add(new_gmailflow)
+        db.commit()
+        db.refresh(new_gmailflow)
+
+        # Return the newly created GmailflowModel
+        return GmailflowModel(
+            id=new_gmailflow.id,
+            email=new_gmailflow.email,
+            title=new_gmailflow.title,
+            body=new_gmailflow.body,
+            name=new_gmailflow.name
+        )
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
