@@ -13,6 +13,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:5.7  # Specify the MySQL version you need
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: workflows  # Create your test database
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=3
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -33,7 +47,7 @@ jobs:
           echo "EMAIL=test@example.com" >> $GITHUB_ENV
           echo "PASS=testpassword" >> $GITHUB_ENV
           echo "JWT_SECRET=mysecretkey" >> $GITHUB_ENV
-          echo "DATABASE_URL=sqlite:///./database.db" >> $GITHUB_ENV
+          echo "DATABASE_URL=mysql+pymysql://root:rootpassword@localhost:3306/workflows" >> $GITHUB_ENV
 
       - name: Print all environment variables  # Debugging step
         run: |
@@ -48,3 +62,4 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
