@@ -11,6 +11,10 @@ from services import (
 import models as _models
 import schemas as _schemas
 from database import Base, engine
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Setup a test database
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -18,7 +22,7 @@ engine = sa.create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Set up test environment variables
-JWT_SECRET = "mysecretkey"
+JWT_SECRET = os.getenv("JWT_SECRET", "myjwtsecret")
 
 # Create a test database session fixture
 @pytest.fixture(scope="module")
