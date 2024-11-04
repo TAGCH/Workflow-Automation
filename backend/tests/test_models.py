@@ -6,10 +6,14 @@ from jose import jwt, JWTError
 from models import Base, User, Workflow  # Update to match your actual imports
 import schemas as _schemas  # Update to match your actual imports
 from services import create_user, create_token  # Update to match your actual imports
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Update these to match your MySQL database configuration
-DATABASE_URL = "mysql+pymysql://root:@127.0.0.1:3307/workflows"
-JWT_SECRET = "testjwtsecret"  # Should match the secret key in your actual JWT configuration
+DATABASE_URL = os.getenv('DATABASE_URL', 'mysql+pymysql://root:@127.0.0.1:3306/workflows')
+JWT_SECRET = os.getenv("JWT_SECRET", "myjwtsecret")  # Should match the secret key in your actual JWT configuration
 
 # Set up a test database
 engine = create_engine(DATABASE_URL, echo=True)

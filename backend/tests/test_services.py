@@ -3,6 +3,10 @@ import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from passlib.hash import bcrypt
 from jose import jwt as _jwt
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 from services import (
     get_user_by_email, create_user, authenticate_user,
@@ -18,7 +22,7 @@ engine = sa.create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Set up test environment variables
-JWT_SECRET = "mysecretkey"
+JWT_SECRET = os.getenv("JWT_SECRET", "myjwtsecret")
 
 # Create a test database session fixture
 @pytest.fixture(scope="module")
