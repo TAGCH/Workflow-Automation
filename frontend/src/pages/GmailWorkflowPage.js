@@ -15,19 +15,21 @@ const GmailWorkflowPage = () => {
     const [keyNames, setKeyNames] = useState([]);
     const [showAutocomplete, setShowAutocomplete] = useState(false);
     const [currentField, setCurrentField] = useState(null);
-    // const [workflows, setWorkflows] = useState([]);
     const [emails, setEmails] = useState([]); // New state for storing emails
     const [flowData, setFlowData] = useState({
         email: '',
         title: '',
         body: '',
-        name:''
+        name: ''
     });
     const [workflowObjects, setWorkflowObjects] = useState([]);
+    const [uploadedFileName, setUploadedFileName] = useState(''); // State for storing file name
 
     const onDrop = async (acceptedFiles) => {
+        const file = acceptedFiles[0];
+        setUploadedFileName(file.name); // Set the file name to display
         const formData = new FormData();
-        formData.append('file', acceptedFiles[0]);
+        formData.append('file', file);
 
         try {
             const response = await api.post(`/workflow/${id}/import/`, formData, {
@@ -36,66 +38,49 @@ const GmailWorkflowPage = () => {
                 },
             });
 
-            // List of object, or row of excel imported file.
             const workflowData = response.data.data;
-            console.log(workflowData)
+            console.log(workflowData);
 
-            // Extract keys from workflow_data
             if (workflowData.length > 0) {
                 const workflowKeys = Object.keys(workflowData[0]);
                 setKeyNames(workflowKeys);
             }
             
             if (workflowData) {
-                const workflowObjectEntry = Object(workflowData)
-                setWorkflowObjects(workflowObjectEntry); // Set emails from response
+                const workflowObjectEntry = Object(workflowData);
+                setWorkflowObjects(workflowObjectEntry);
             }
-
-            console.log(response.data);
-            console.log("keyNames:", keyNames);
-            console.log("Bool data", !!workflowData);
-            console.log("State of data", workflowObjects);
 
         } catch (error) {
             console.error(error);
         }
     };
 
-    const { getRootProps, getInputProps } = useDropzone({ onDrop });
-
-    // const fetchFlows = async () => {
-    //     const response = await api.get(`/gmailflow/${id}/`);
-    //     setEmails(response.data);
-    // };
-
-    // useEffect(() => {
-    //     fetchFlows();
-    // }, []);
+    const { getRootProps, getInputProps, open } = useDropzone({
+        onDrop,
+        noClick: false,
+        noKeyboard: true,
+    });
 
     const handleInputChange = (event) => {
-        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        const value = event.target.value;
         const fieldName = event.target.name;
 
-        // Check for '/' to trigger autocompletion
         if (value.includes("/")) {
-            console.log("Autocomplete triggered for field:", fieldName);
-            setShowAutocomplete(true); // Dropdown state
-            setCurrentField(fieldName); // Track current field
+            setShowAutocomplete(true);
+            setCurrentField(fieldName);
         } else {
             setShowAutocomplete(false);
         }
+
         setFlowData({
             ...flowData,
             [fieldName]: value,
         });
     };
 
-    // Autocomplete trigger when '/' detected.
     const handleAutocompleteClick = (keyName) => {
-        // Add key placeholder with '/' and set it in the current field
         const currentValue = flowData[currentField];
-
-        // If the last character is a '/', replace it with the keyName; otherwise, append `/${keyName}`
         const updatedValue = currentValue.endsWith("/")
             ? currentValue.slice(0, -1) + `/${keyName}`
             : currentValue + `/${keyName}`;
@@ -104,36 +89,24 @@ const GmailWorkflowPage = () => {
             ...flowData,
             [currentField]: updatedValue,
         });
-        setShowAutocomplete(false); // Hide the dropdown after selection
+        setShowAutocomplete(false);
     };
 
     const handleFormSubmit = async (event) => {
         event.preventDefault();
         try {
             const gmailflowResponse = await api.post(`/gmailflow/${id}/`, flowData);
-            // const emailResponse = await api.post(`/send-emails`, { 
-            //     emails, 
-            //     message: flowData.body, 
-            // });
-
             console.log("Emails sent successfully:", gmailflowResponse.data);
-            // fetchFlows();
             setFlowData({
                 email: '',
                 title: '',
                 body: '',
-                name:''
+                name: ''
             });
         } catch (error) {
             console.error("Error submitting the form:", error);
         }
     };
-
-    // useEffect(() => {
-    //     if (!user || user.id !== parseInt(id, 10)) {
-    //         navigate(`/home/${user.id}`);
-    //     }
-    // }, [user, id, navigate]);
 
     return (
         <div>
@@ -147,7 +120,14 @@ const GmailWorkflowPage = () => {
                             <div className="card-body d-flex flex-column">
                                 <div {...getRootProps()} className="dropzone-section" style={{ border: '2px dashed #cccccc', padding: '20px', textAlign: 'center' }}>
                                     <input {...getInputProps()} />
-                                    <p>Drag and drop your excel file here, or click to select file</p>
+                                    {uploadedFileName ? (
+                                        <div>
+                                            <p>Uploaded File: <strong>{uploadedFileName}</strong></p>
+                                            <button type="button" className="btn btn-secondary" onClick={open}>Change File</button>
+                                        </div>
+                                    ) : (
+                                        <p>Drag and drop your Excel file here, or click to select file</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -157,7 +137,7 @@ const GmailWorkflowPage = () => {
                             <div className="card-body">
                                 <h5 className="text-center mb-4">Workflow user id: {id}</h5>
                                 <form onSubmit={handleFormSubmit}>
-                                    {['email', 'title', 'body','name'].map((field) => (
+                                    {['email', 'title', 'body', 'name'].map((field) => (
                                         <div className='mb-3' key={field}>
                                             <label htmlFor={field} className='form-label'>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
                                             <div style={{ position: 'relative' }}>

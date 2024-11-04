@@ -15,7 +15,7 @@ from fastapi import BackgroundTasks
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
-from fastapi import HTTPException
+
 # import openpyxl
 
 import sqlalchemy.orm as _orm
