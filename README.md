@@ -5,9 +5,9 @@
 
 The application is a web-based automation tool designed for small teams and individual users. It enables users to create automated workflows that streamline repetitive tasks.
 
-## Install and Run
+## Installation
 
-Installation : follow the step in [Installation](https://github.com/TAGCH/Workflow-Automation/blob/main/Installation.md) 
+Installation : follow the step in [Installation](https://github.com/TAGCH/Workflow-Automation/blob/main/Installation.md)
 
 ## Running the Application
 
