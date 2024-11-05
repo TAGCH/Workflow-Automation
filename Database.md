@@ -75,6 +75,15 @@ Before you begin, ensure you have the following installed on your machine:
    - **status**: String, status of the email (e.g., 'sent', 'failed', etc.).
    - **error_message**: String, optional error message if the email sending failed.
 
+5. **gmailflow**
+   - **id**: Integer, primary key, unique identifier for each Gmail-specific workflow.
+   - **email**: String, email address of the recipient.
+   - **title**: String, subject line for the email.
+   - **body**: String, body content of the email.
+   - **name**: String, descriptive name for the Gmail flow.
+   - **workflow_id**: Integer, foreign key referencing the `workflows` table, linking this flow to a specific workflow.
+   - **workflow**: Relationship, establishes a back-reference to the associated `Workflow` object, enabling bi-directional association.
+
 ## Conclusion
 
 You have now set up your MySQL database using XAMPP and can visualize it via phpMyAdmin. You can manage your database tables and entries easily from the phpMyAdmin interface.
