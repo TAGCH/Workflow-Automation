@@ -1,5 +1,7 @@
 import React, {useContext} from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from "../src/components/Navbar"
+import Footer from "../src/components/Footer";
 import PrehomePage from "./pages/PrehomePage";
 import HomePage from "./pages/HomePage";
 import GmailWorkflowPage from "./pages/GmailWorkflowPage";
@@ -15,6 +17,7 @@ function App() {
     const {user} = useContext(UserContext);
   return (
       <Router>
+        <Navbar />
         <Routes>
             <Route
                 path="/"
@@ -55,6 +58,7 @@ function App() {
                 }
             />
         </Routes>
+        <Footer />
       </Router>
   );
 }

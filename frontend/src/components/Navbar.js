@@ -32,7 +32,7 @@ function MyNavbar() {
     return (
         <>
             <div className="pb-5">
-                <Navbar bg="light" variant="light" className="shadow-sm position-fixed w-100">
+                <Navbar bg="light" variant="light" className="shadow-sm fixed-top position-fixed w-100">
                     <Container>
                         <Link to="/home/${user.id}" style={{ textDecoration: 'none' }}>
                             <Navbar.Brand style={{ fontWeight: 'bold', fontFamily: 'Modak', fontSize: '32px' }}>
