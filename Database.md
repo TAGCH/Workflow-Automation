@@ -18,7 +18,7 @@ Before you begin, ensure you have the following installed on your machine:
    - In the "Create database" field, enter `workflows` and click **Create**.
 
 3. **Run Database Migrations:**
-   - Ensure you have set the `DATABASE_URL` in your `.env` file correctly as follows:
+   - Ensure you have set the `DATABASE_URL` in your `.env` file correctly as follows (or any port that you use to run MySQL):
      ```
      DATABASE_URL=mysql+pymysql://root:@127.0.0.1:3306/workflows
      ```
