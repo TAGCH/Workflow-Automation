@@ -42,7 +42,7 @@ const VerticalNavbar = () => {
                    onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}>
                 </i>
             </Link>
-            <Link to={"/myflows"} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
+            <Link to={`/myflows/${user.id}`} style={{ textDecoration: 'none', color: 'inherit', margin: '10px 0'}}>
                 <i className="bi bi-collection-fill" style={{fontSize: '2rem', margin: '10px 0'}}
                    onMouseEnter={(e) => (e.currentTarget.style.color = '#20c997')}
                    onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}>

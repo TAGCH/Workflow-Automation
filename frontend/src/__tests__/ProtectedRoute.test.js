@@ -36,18 +36,21 @@ describe('ProtectedRoute', () => {
         expect(screen.queryByText(/Home Page Content/i)).not.toBeInTheDocument();
     });
 
-    it('renders children if user is authenticated', () => {
+    it('redirects to /home/:id if user is authenticated', () => {
         const user = { id: '1', name: 'Test User' };
 
         renderWithUserContext(
             <ProtectedRoute>
                 <HomePage />
             </ProtectedRoute>,
-            user
+            user,
+            false, // loading = false
+            null   // no error
         );
 
-        expect(screen.getByText(/Welcome/i)).toBeInTheDocument();
-        expect(Navigate).not.toHaveBeenCalled();
+        // Check that Navigate was called to redirect to /home/1
+        expect(Navigate).toHaveBeenCalledWith({ to: '/home/1', replace: true }, {});
+        expect(screen.queryByText(/Home Page Content/i)).not.toBeInTheDocument();
     });
 
     it('shows loading state while checking authentication', () => {

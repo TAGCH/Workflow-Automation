@@ -8,18 +8,21 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
 from typing import Annotated, List
+import io, json
 
 #email
 from fastapi import BackgroundTasks
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
+
 # import openpyxl
 
 import sqlalchemy.orm as _orm
 
 import services as _services
 import schemas as _schemas
+from schemas import *
 import os
 
 MAIL_USERNAME = os.getenv("EMAIL")
@@ -42,31 +45,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE)
     allow_headers=["*"],  # Allow all headers (Content-Type, Authorization, etc.)
 )
-
-class WorkflowBase(BaseModel):
-    email: str
-    title: str
-    body: str
-
-class WorkflowModel(WorkflowBase):
-    id: int
-
-    # class Config:
-    #     orm_mode = True
-  
-class SpreadSheetBase(BaseModel):
-    emails : List[str]
-    first_name : List[str]
-    last_name : List[str]
-    tel_number : List[str]
-    
-     
-class SpreadSheetModel(SpreadSheetBase):
-    id : int
-    
-    class Config:
-        orm_mode = True
-        
 
 def get_db():
     db = SessionLocal()
@@ -127,58 +105,95 @@ async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: in
     print(f'get flow with id {flow_id}')
     return workflows
 
+@app.get("/workflows/", response_model=List[WorkflowModel])
+async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
+    workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+    return workflows
 
-@app.post("/workflow/{flow_id}/", response_model=WorkflowModel)
-async def create_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
-    db_workflow = models.Workflow(**workflow.model_dump())
+@app.post("/workflows/", response_model=WorkflowModel)
+async def read_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=0, limit: int=100):
+    workflow = models.Workflow(**workflow.model_dump())
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
+    return workflow
+
+@app.post("/workflow/{flow_id}/create")
+async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
+    # Fetch flow by id
+    db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id,  sender_email=MAIL_USERNAME, sender_hashed_password=MAIL_PASSWORD)
+    print(db_workflow)
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
-    print(f'posted with id: {flow_id}')
-    print(db_workflow.email)
-    print(type(db_workflow.email))
-    workflow = models.Workflow(**workflow.model_dump())
-    email = workflow.email
-    print(email)
-    html = f"""
-    <p>Thanks for using Fastapi-mail</p>
-    </br> 
-    <p> from: {email} </p>
-    </br> 
-    <p> Body: {workflow.body}</p>
-    """
-    message = MessageSchema(
-            subject=workflow.title,
-            recipients= [email],
-            body=html,
-            subtype=MessageType.html)
-
-    fm = FastMail(conf)
-    await fm.send_message(message)
     return db_workflow
 
-@app.get("/workflow/{flow_id}/import/", response_model=List[SpreadSheetModel])
+
+@app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
+async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
+    print('arrive at email entry')
+
+    try:
+        # Create the message to send
+        message = MessageSchema(
+            subject=workflow.title,
+            recipients=[workflow.email],
+            body=workflow.body,
+            subtype=MessageType.html
+        )
+
+        fm = FastMail(conf)
+        await fm.send_message(message)
+        print('Mail sent.')
+
+        # Create a new Gmailflow entry to save in the database
+        new_gmailflow = models.Gmailflow(
+            email=workflow.email,
+            title=workflow.title,
+            body=workflow.body,
+            name=workflow.name,
+            workflow_id=flow_id  # Foreign key association
+        )
+
+        # Save the new entry to the database
+        db.add(new_gmailflow)
+        db.commit()
+        db.refresh(new_gmailflow)
+
+        # Return the newly created GmailflowModel
+        return GmailflowModel(
+            id=new_gmailflow.id,
+            email=new_gmailflow.email,
+            title=new_gmailflow.title,
+            body=new_gmailflow.body,
+            name=new_gmailflow.name
+        )
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
 async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
-    sheets = db.query(models.spreadSheetWorkflow).offset(skip).limit(limit).all()
+    sheets = db.query(models.WorkflowsImportsData).offset(skip).limit(limit).all()
     return sheets
 
 
 @app.post("/workflow/{flow_id}/import/")
-async def import_workflow( db: db_dependency, file: UploadFile = File()):
-    '''Using pandas to read excel file and return dict of data.'''
-
+async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = File()):
+    """Using pandas to read excel file and return dict of data."""
     contents = await file.read()
     df = pd.read_excel(io.BytesIO(contents))
-    spreadsheet_workflow = models.spreadSheetWorkflow(
-        emails=df['email'].to_list(),
-        first_name=df['first'].to_list(),
-        last_name=df['last'].to_list(),
-        tel_number=df['tel'].to_list()
+    data = df.to_json(orient="records")
+    json_data = json.loads(data)
+    workflow_data = models.WorkflowsImportsData(
+        data = json_data,
+        workflow_id = flow_id
     )
-    db.add(spreadsheet_workflow)
+    db.add(workflow_data)
     db.commit()
-    db.refresh(spreadsheet_workflow)
-    return spreadsheet_workflow
+    db.refresh(workflow_data)
+    return workflow_data
 
 conf = ConnectionConfig(
     MAIL_USERNAME=MAIL_USERNAME,

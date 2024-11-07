@@ -5,7 +5,7 @@ import { FaGithub } from 'react-icons/fa';
 function MyFooter() {
     return (
         <div className="pt-5">
-            <footer className="bg-light fixed-bottom text-dark py-3 shadow-sm">
+            <footer className="bg-light fixed-bottom text-dark py-3 shadow-sm" style={{zIndex: "unset"}}>
                 <Container>
                     <Row className="align-items-center">
                         <Col xs={6}>

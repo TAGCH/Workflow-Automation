@@ -1,6 +1,6 @@
 # Installation steps
 
-## 1. Clone repository
+## 1. Clone repository.
 
 - Clone this repository to your local computer.
 
@@ -9,7 +9,7 @@ git clone https://github.com/TAGCH/Workflow-Automation.git DirectoryName
 ```
 **NOTED**: ```DirectoryName``` is your desired directory name.
 
-## 2. Create virtual environment and install dependencies
+## 2. Create virtual environment and install dependencies.
 
 - Create virtual environment.
 
@@ -34,20 +34,25 @@ env\Scripts\activate.bat
 pip install -r requirements.txt
 ```
 
-## 3. Set values for externalized variables
+## 3. Database Setup.
+
+Database Setup : follow the step in [Database Setup](https://github.com/TAGCH/Workflow-Automation/blob/main/Database.md)
+
+## 4. Set values for externalized variables.
 - Create file `.env` to configuration and get the secret key [Secret Key](https://djecrety.ir)
 
 - Copy code from [sample.env](sample.env) and paste it in `.env`
 
 - Set `JWT_SECRET=Secret_Key`
+- Set `DATABASE_URL=your_database_url`
 
-## 4. Run tests for backend.
+## 5. Run tests for backend.
 
 - Set the PYTHONPATH Environment Variable.
 
 ```
 cd backend
-set PYTHONPATH=project_path
+set PYTHONPATH=your_project_path
 ```
 
 
@@ -56,3 +61,5 @@ set PYTHONPATH=project_path
 ```
 pytest
 ```
+
+## 6. Reun tests for frontend.

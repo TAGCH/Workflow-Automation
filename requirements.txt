@@ -20,7 +20,7 @@ starlette==0.38.6
 typing_extensions==4.12.2
 python_multipart==0.0.12
 pandas==2.2.3
-openpyxl
+openpyxl==3.1.5
 bcrypt==3.1.7
 fastapi[all]
 fastapi-mail==1.4.1
@@ -28,3 +28,6 @@ PyJWT==2.9.0
 pytest
 pytest-asyncio
 pytest-cov
+
+# Database
+pymysql

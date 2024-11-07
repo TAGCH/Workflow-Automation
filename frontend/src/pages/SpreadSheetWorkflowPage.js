@@ -31,11 +31,11 @@ const SpreadSheetWorkflowPage = () => {
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-    useEffect(() => {
-        if (!user || user.id !== parseInt(id, 10)) {
-            navigate(`/home/${user.id}`);
-        }
-    }, [user, id, navigate]);
+    // useEffect(() => {
+    //     if (!user || user.id !== parseInt(id, 10)) {
+    //         navigate(`/home/${user.id}`);
+    //     }
+    // }, [user, id, navigate]);
 
     return (
         <div>
