@@ -46,6 +46,7 @@ class GmailflowBase(BaseModel):
     title: str
     body: str
     name: str
+    workflow_id : int
 
 class GmailflowModel(GmailflowBase):
     id: int

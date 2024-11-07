@@ -126,12 +126,15 @@ async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependen
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
+    print('workflow created and save to database')
     return db_workflow
 
 
 @app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
 async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
     print('arrive at email entry')
+    print(type(workflow))
+    print(workflow)
 
     try:
         # Create the message to send
@@ -152,7 +155,7 @@ async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
             title=workflow.title,
             body=workflow.body,
             name=workflow.name,
-            workflow_id=flow_id  # Foreign key association
+            workflow_id=flow_id
         )
 
         # Save the new entry to the database
@@ -166,7 +169,8 @@ async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
             email=new_gmailflow.email,
             title=new_gmailflow.title,
             body=new_gmailflow.body,
-            name=new_gmailflow.name
+            name=new_gmailflow.name,
+            workflow_id=new_gmailflow.workflow_id
         )
     except Exception as e:
         print(f"An error occurred: {e}")
