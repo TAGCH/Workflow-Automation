@@ -187,20 +187,33 @@ async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
 async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = File()):
     """Using pandas to read excel file and return dict of data."""
     contents = await file.read()
-    df = pd.read_excel(io.BytesIO(contents), dtype={'tel': str})
+
+    try:
+        df = pd.read_excel(io.BytesIO(contents), dtype={'tel': str})
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid file format.")
+
     data = df.to_json(orient="records")
     json_data = json.loads(data)
 
-    workflow_data = models.WorkflowsImportsData(
-        data = json_data,
-        workflow_id = flow_id,
-        filename = file.filename
-    )
+    existed_data = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
 
-    db.add(workflow_data)
+    if not existed_data:
+        # create new data
+        workflow_data = models.WorkflowsImportsData(
+            data = json_data,
+            workflow_id = flow_id,
+            filename = file.filename
+        )
+        db.add(workflow_data)
+    else:
+        # update data
+        existed_data.data = json_data
+        existed_data.filename = file.filename
+
     db.commit()
-    db.refresh(workflow_data)
-    return workflow_data
+    db.refresh(existed_data)
+    return existed_data
 
 # Endpoint to fetch the latest imported file's metadata for a workflow
 @app.get("/workflow/{flow_id}/file-metadata/")
