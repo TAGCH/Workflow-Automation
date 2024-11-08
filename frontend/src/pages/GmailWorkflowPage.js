@@ -33,11 +33,33 @@ const GmailWorkflowPage = () => {
         console.log('normal fetchflow')
         setWorkflows(response.data);
     };
+
+    // Function to fetch key names directly from the backend
+    const fetchKeyNames = async () => {
+        try {
+            const response = await api.get(`/workflow/${id}/keysname/`);
+            setKeyNames(response.data.keyNames || []);
+        } catch (error) {
+            console.error("Failed to fetch key names:", error);
+        }
+    };
+
+    // Function to fetch data from database
+    const fetchWorkflowData = async () => {
+        try {
+            const response = await api.get(`/workflow/${id}/data/`);
+            setWorkflowObjects(Object(response.data))
+            console.log(response.data)
+        } catch (error) {
+            console.error("Failed to fetch data from database");
+        }
+    };
     
     const dispatch = useDispatch(); // Send action to Redux store
     const uploadFile = useSelector((state) => state.files.uploadFile);
 
     useEffect(() => {
+        console.log("useEffect triggered");
         if (uploadFile) {
             setUploadedFileName(uploadFile.name); // Set file name from Redux
         } else {
@@ -55,7 +77,14 @@ const GmailWorkflowPage = () => {
             };
     
             fetchFileMetadata();
+            console.log('fetch file meta data');
         }
+        
+        // Fetch key names from the backend on component mound or id change
+        fetchKeyNames();
+        console.log('fetch key name from database');
+        fetchWorkflowData();
+        console.log('fetch flow object data');
     }, [dispatch, id, uploadFile]);
 
     const onDrop = async (acceptedFiles) => {
@@ -81,11 +110,7 @@ const GmailWorkflowPage = () => {
             if (workflowData.length > 0) {
                 const workflowKeys = Object.keys(workflowData[0]);
                 setKeyNames(workflowKeys);
-            }
-            
-            if (workflowData) {
-                const workflowObjectEntry = Object(workflowData);
-                setWorkflowObjects(workflowObjectEntry);
+                setWorkflowObjects(Object(workflowData));
             }
 
         } catch (error) {
@@ -155,9 +180,10 @@ const GmailWorkflowPage = () => {
             });
     
             console.log("Sending flow data:", flowData);
-    
+            console.log("Workflow object entries", workflowObjects)
             // Determine if any replacements are needed based on presence of '/' in flowData
             const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
+            console.log("Need replacement.", workflowObjects);
     
             let emailPromises;
             

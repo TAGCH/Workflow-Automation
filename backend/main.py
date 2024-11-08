@@ -187,7 +187,7 @@ async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
 async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = File()):
     """Using pandas to read excel file and return dict of data."""
     contents = await file.read()
-    df = pd.read_excel(io.BytesIO(contents))
+    df = pd.read_excel(io.BytesIO(contents), dtype={'tel': str})
     data = df.to_json(orient="records")
     json_data = json.loads(data)
 
@@ -202,8 +202,8 @@ async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = F
     db.refresh(workflow_data)
     return workflow_data
 
-# New endpoint to fetch the latest imported file's metadata for a workflow
-@app.get("/workflow/{flow_id}/file-metadata")
+# Endpoint to fetch the latest imported file's metadata for a workflow
+@app.get("/workflow/{flow_id}/file-metadata/")
 async def get_workflow_file_metadata(flow_id: int, db: db_dependency):
     """Fetch metadata of the latest imported file for a given workflow."""
     latest_file = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
@@ -212,6 +212,28 @@ async def get_workflow_file_metadata(flow_id: int, db: db_dependency):
 
     # Return only metadata, like file name
     return {"filename": latest_file.filename}
+
+@app.get("/workflow/{flow_id}/keysname/")
+async def get_data_keys(flow_id: int, db: db_dependency):
+    """Fetch unique keys from imported data."""
+
+    workflow_data = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
+    # No data is found
+    if not workflow_data or not workflow_data.data:
+        raise HTTPException(status_code=404, detail="Workflow data not found")
+
+    # Extract unique keys from all dictionaries in the list
+    unique_keys = {key for record in workflow_data.data for key in record.keys()}
+    return {"keyNames": list(unique_keys)}
+
+@app.get("/workflow/{flow_id}/data")
+async def get_data_records(flow_id: int, db: db_dependency):
+    """Fetch record's data from imported data."""
+    workflow_data = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
+    # No data is found
+    if not workflow_data or not workflow_data.data:
+        raise HTTPException(status_code=404, detail="Workflow data not found")
+    return workflow_data.data
 
 conf = ConnectionConfig(
     MAIL_USERNAME=MAIL_USERNAME,
