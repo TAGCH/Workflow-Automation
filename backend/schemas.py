@@ -57,6 +57,7 @@ class GmailflowModel(GmailflowBase):
 class WorkflowImportsDataBase(BaseModel):
     data: List[Dict[str, Any]]
     workflow_id: int
+    filename: str
 
 class WorkflowImportsDataModel(WorkflowImportsDataBase):
     id: int

@@ -190,14 +190,28 @@ async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = F
     df = pd.read_excel(io.BytesIO(contents))
     data = df.to_json(orient="records")
     json_data = json.loads(data)
+
     workflow_data = models.WorkflowsImportsData(
         data = json_data,
-        workflow_id = flow_id
+        workflow_id = flow_id,
+        filename = file.filename
     )
+
     db.add(workflow_data)
     db.commit()
     db.refresh(workflow_data)
     return workflow_data
+
+# New endpoint to fetch the latest imported file's metadata for a workflow
+@app.get("/workflow/{flow_id}/file-metadata")
+async def get_workflow_file_metadata(flow_id: int, db: db_dependency):
+    """Fetch metadata of the latest imported file for a given workflow."""
+    latest_file = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
+    if not latest_file:
+        raise HTTPException(status_code=404, detail="No imported files found for this workflow.")
+
+    # Return only metadata, like file name
+    return {"filename": latest_file.filename}
 
 conf = ConnectionConfig(
     MAIL_USERNAME=MAIL_USERNAME,

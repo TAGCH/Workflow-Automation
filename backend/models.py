@@ -77,6 +77,7 @@ class WorkflowsImportsData(Base):
     id = Column(Integer, primary_key=True, index=True)
     data = Column(JSON, nullable=False)  # Store data as a dictionary
     workflow_id = Column(Integer, ForeignKey('workflows.id'), nullable=False)
+    filename = Column(String(265), nullable=False)
 
     workflow = relationship("Workflow", back_populates="imports_data")
 

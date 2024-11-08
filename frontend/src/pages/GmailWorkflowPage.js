@@ -6,6 +6,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { UserContext } from "../context/UserContext";
 import { useDropzone } from "react-dropzone";
+import { useDispatch, useSelector } from 'react-redux';
+import { addFile, clearFile } from '../redux/fileSlice';
 
 const GmailWorkflowPage = () => {
     const { id } = useParams();
@@ -28,12 +30,41 @@ const GmailWorkflowPage = () => {
 
     const fetchFlows = async () => {
         const response = await api.get(`/workflow/${id}/`);
+        console.log('normal fetchflow')
         setWorkflows(response.data);
     };
+    
+    const dispatch = useDispatch(); // Send action to Redux store
+    const uploadFile = useSelector((state) => state.files.uploadFile);
+
+    useEffect(() => {
+        if (uploadFile) {
+            setUploadedFileName(uploadFile.name); // Set file name from Redux
+        } else {
+            // Fetch from the API if no file name is in the Redux store
+            const fetchFileMetadata = async () => {
+                try {
+                    const response = await api.get(`/workflow/${id}/file-metadata`);
+                    if (response.data.file_name) {
+                        setUploadedFileName(response.data.file_name);
+                        dispatch(addFile({ name: response.data.file_name }));
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch file metadata:", error);
+                }
+            };
+    
+            fetchFileMetadata();
+        }
+    }, [dispatch, id, uploadFile]);
 
     const onDrop = async (acceptedFiles) => {
         const file = acceptedFiles[0];
-        setUploadedFileName(file.name); // Set the file name to display
+
+        dispatch(clearFile());
+        dispatch(addFile({ name: file.name }));
+        setUploadedFileName(file.name);
+
         const formData = new FormData();
         formData.append('file', file);
 
