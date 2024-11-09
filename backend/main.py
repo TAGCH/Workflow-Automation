@@ -99,11 +99,10 @@ async def login(username: str, password: str):
     return {"username": username, "status": "logged in"}
 
 
-@app.get("/workflow/{flow_id}/", response_model=List[WorkflowModel])
-async def read_workflows(flow_id: int, db: db_dependency, skip: int=0, limit: int=100):
-    workflows = db.query(models.Workflow).filter(models.Workflow.id == flow_id).offset(skip).limit(limit).all()
-    print(f'get flow with id {flow_id}')
-    return workflows
+@app.get("/workflow/{flow_id}/", response_model=WorkflowModel)
+async def read_workflow(flow_id: int, db: db_dependency):
+    workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
+    return workflow
 
 @app.get("/workflows/", response_model=List[WorkflowModel])
 async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
@@ -111,38 +110,55 @@ async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
     return workflows
 
 @app.post("/workflows/", response_model=WorkflowModel)
-async def read_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=0, limit: int=100):
+async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=0, limit: int=100):
     workflow = models.Workflow(**workflow.model_dump())
     db.add(workflow)
     db.commit()
     db.refresh(workflow)
+    print('workflow created and save to database')
     return workflow
 
-@app.post("/workflow/{flow_id}/create")
-async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
-    # Fetch flow by id
-    db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id,  sender_email=MAIL_USERNAME, sender_hashed_password=MAIL_PASSWORD)
-    print(db_workflow)
-    db.add(db_workflow)
-    db.commit()
-    db.refresh(db_workflow)
-    print('workflow created and save to database')
-    return db_workflow
+# @app.post("/workflow/{flow_id}/create")
+# async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
+#     # Fetch flow by id
+#     db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id,  sender_email=MAIL_USERNAME, sender_hashed_password=MAIL_PASSWORD)
+#     print(db_workflow)
+#     db.add(db_workflow)
+#     db.commit()
+#     db.refresh(db_workflow)
+#     print('workflow created and save to database')
+#     return db_workflow
 
 
 @app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
-async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
-    print('arrive at email entry')
-    print(type(workflow))
-    print(workflow)
+async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,skip: int=0, limit: int=100):
+    # print('arrive at email entry')
+    # print(type(gmailflow))
+    # print(gmailflow)
+    
+    
 
     try:
+        workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
+        print(workflow)
         # Create the message to send
         message = MessageSchema(
-            subject=workflow.title,
-            recipients=[workflow.email],
-            body=workflow.body,
+            subject=gmailflow.title,
+            recipients=[gmailflow.email],
+            body=gmailflow.body,
             subtype=MessageType.html
+        )
+        
+        
+        conf = ConnectionConfig(
+            MAIL_USERNAME=workflow.sender_email,
+            MAIL_PASSWORD=workflow.sender_hashed_password,
+            MAIL_FROM=workflow.sender_email,
+            MAIL_PORT = 465,
+            MAIL_SERVER = "smtp.gmail.com",
+            MAIL_STARTTLS = False,
+            MAIL_SSL_TLS = True,
+            USE_CREDENTIALS = True,
         )
 
         fm = FastMail(conf)
@@ -151,10 +167,10 @@ async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
 
         # Create a new Gmailflow entry to save in the database
         new_gmailflow = models.Gmailflow(
-            email=workflow.email,
-            title=workflow.title,
-            body=workflow.body,
-            name=workflow.name,
+            email=gmailflow.email,
+            title=gmailflow.title,
+            body=gmailflow.body,
+            name=gmailflow.name,
             workflow_id=flow_id
         )
 
@@ -247,14 +263,3 @@ async def get_data_records(flow_id: int, db: db_dependency):
     if not workflow_data or not workflow_data.data:
         raise HTTPException(status_code=404, detail="Workflow data not found")
     return workflow_data.data
-
-conf = ConnectionConfig(
-    MAIL_USERNAME=MAIL_USERNAME,
-    MAIL_PASSWORD=MAIL_PASSWORD,
-    MAIL_FROM=MAIL_USERNAME,
-    MAIL_PORT = 465,
-    MAIL_SERVER = "smtp.gmail.com",
-    MAIL_STARTTLS = False,
-    MAIL_SSL_TLS = True,
-    USE_CREDENTIALS = True,
-)
