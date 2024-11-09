@@ -55,36 +55,40 @@ const GmailWorkflowPage = () => {
         }
     };
     
+    // Fetch from the API if no file name is in the Redux store
+    const fetchFileMetadata = async () => {
+        try {
+            const response = await api.get(`/workflow/${id}/file-metadata`);
+            if (response.data.filename) {
+                setUploadedFileName(response.data.filename);
+                dispatch(addFile({ name: response.data.filename }));
+            }
+        } catch (error) {
+            console.error("Failed to fetch file metadata:", error);
+        }
+    };
+
     const dispatch = useDispatch(); // Send action to Redux store
     const uploadFile = useSelector((state) => state.files.uploadFile);
 
     useEffect(() => {
         console.log("useEffect triggered");
-        if (uploadFile) {
-            setUploadedFileName(uploadFile.name); // Set file name from Redux
-        } else {
-            // Fetch from the API if no file name is in the Redux store
-            const fetchFileMetadata = async () => {
-                try {
-                    const response = await api.get(`/workflow/${id}/file-metadata`);
-                    if (response.data.file_name) {
-                        setUploadedFileName(response.data.file_name);
-                        dispatch(addFile({ name: response.data.file_name }));
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch file metadata:", error);
-                }
-            };
-    
+        // Fetch key names from the backend on component mound or id change
+        if (!workflowObjects.length){
+            fetchKeyNames();
+            console.log('fetch key name from database');
+            fetchWorkflowData();
+            console.log('fetch flow object data');
+        }
+
+        // Fetch file metadata only if there's no file data in Redux or workflowObjects
+        if (!uploadedFileName && !workflowObjects.length) {
             fetchFileMetadata();
             console.log('fetch file meta data');
+        } else if (uploadFile) {
+            setUploadedFileName(uploadFile.name); // Set file name from Redux
         }
         
-        // Fetch key names from the backend on component mound or id change
-        fetchKeyNames();
-        console.log('fetch key name from database');
-        fetchWorkflowData();
-        console.log('fetch flow object data');
     }, [dispatch, id, uploadFile]);
 
     const onDrop = async (acceptedFiles) => {
@@ -237,6 +241,7 @@ const GmailWorkflowPage = () => {
         } catch (error) {
             console.error("Error submitting the form:", error);
         }
+        clearFile();
     };
     
 
