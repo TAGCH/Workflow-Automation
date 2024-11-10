@@ -3,6 +3,8 @@ from database import Base
 from sqlalchemy import Column, Integer, String, ForeignKey, Time, Boolean, JSON, DateTime
 from sqlalchemy.orm import relationship
 from passlib.hash import bcrypt
+from sqlalchemy_utils import EmailType
+import datetime
 
 class User(Base):
     __tablename__ = 'users'
@@ -26,7 +28,7 @@ class Workflow(Base):
     owner_id = Column(Integer, ForeignKey('users.id'))
     sender_email = Column(String(255))  # Set a max length for the sender email
     sender_hashed_password = Column(String(128))  # Set a max length for the sender hashed password
-    trigger_time = Column(Time)  # Time to trigger the workflow
+    trigger_time = Column(DateTime)  # Time to trigger the workflow
     trigger_frequency = Column(String(50))  # e.g., 'daily', 'weekly', 'monthly'
     trigger_day = Column(String(20))  # e.g., 'Monday' or '15' for day of the month
     status = Column(Boolean, default=False)  # False means stopped, True means started

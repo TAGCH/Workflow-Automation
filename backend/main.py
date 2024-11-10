@@ -17,7 +17,6 @@ from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
 
 # import openpyxl
-
 import sqlalchemy.orm as _orm
 
 import services as _services
@@ -118,25 +117,29 @@ async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=
     print('workflow created and save to database')
     return workflow
 
-# @app.post("/workflow/{flow_id}/create")
-# async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
-#     # Fetch flow by id
-#     db_workflow = models.Workflow(name=workflow.name, type=workflow.type, owner_id=flow_id,  sender_email=MAIL_USERNAME, sender_hashed_password=MAIL_PASSWORD)
-#     print(db_workflow)
-#     db.add(db_workflow)
-#     db.commit()
-#     db.refresh(db_workflow)
-#     print('workflow created and save to database')
-#     return db_workflow
+@app.put("/workflows/{flow_id}/", response_model=WorkflowModel)
+async def update_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
+    # Fetch the existing workflow from the database
+    db_workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
+
+    # If the workflow is not found, raise a 404 error
+    if not db_workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    # Update the fields of the existing workflow
+    for key, value in workflow.dict(exclude_unset=True).items():
+        setattr(db_workflow, key, value)
+
+    # Commit the changes to the database
+    db.commit()
+    db.refresh(db_workflow)
+
+    # Return the updated workflow
+    return db_workflow
 
 
 @app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
 async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,skip: int=0, limit: int=100):
-    # print('arrive at email entry')
-    # print(type(gmailflow))
-    # print(gmailflow)
-    
-    
 
     try:
         workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
