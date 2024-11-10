@@ -117,8 +117,8 @@ async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=
     print('workflow created and save to database')
     return workflow
 
-@app.put("/workflows/{flow_id}/", response_model=WorkflowModel)
-async def update_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependency):
+@app.put("/workflows/{flow_id}/", response_model=UpdateflowModel)
+async def update_workflow(flow_id: int, updatedflow: UpdateflowBase, db: db_dependency):
     # Fetch the existing workflow from the database
     db_workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
 
@@ -127,7 +127,7 @@ async def update_workflow(flow_id: int, workflow: WorkflowBase, db: db_dependenc
         raise HTTPException(status_code=404, detail="Workflow not found")
 
     # Update the fields of the existing workflow
-    for key, value in workflow.dict(exclude_unset=True).items():
+    for key, value in updatedflow.dict(exclude_unset=True).items():
         setattr(db_workflow, key, value)
 
     # Commit the changes to the database

@@ -14,6 +14,7 @@ const CreateflowPopup = ({ closePopup }) => {
     const [workflowName, setWorkflowName] = useState('');
     const [senderEmail, setSenderEmail] = useState('');
     const [senderPassword, setSenderPassword] = useState('');
+    const [triggerTime, setTriggertime] = useState('');
     const [showFields, setShowFields] = useState(false);
 
     const handleOptionClick = (option) => {
@@ -32,9 +33,9 @@ const CreateflowPopup = ({ closePopup }) => {
                 owner_id: user.id,
                 sender_email: senderEmail,
                 sender_hashed_password: senderPassword, // Make sure this is hashed if required
-                trigger_time: null, // Adjust based on your requirements
-                trigger_frequency: null, // Adjust based on your requirements
-                trigger_day: null, // Adjust based on your requirements
+                trigger_time: triggerTime, 
+                trigger_frequency: null, 
+                trigger_day: null, 
                 status: false // Default status
             });
             
