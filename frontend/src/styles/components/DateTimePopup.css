@@ -1,0 +1,313 @@
+.month-selector {
+    position: relative;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.month-selector::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: #20c997;
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    transition: width 0.3s ease;
+}
+
+.month-selector:hover::after {
+    width: 0;
+}
+
+.month-input {
+    font-weight: bold;
+    text-align: center;
+    width: 180px;
+    padding: 8px 12px;
+    font-size: 1.1rem;
+    color: #333;
+    background-color: #f7f9fc;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.month-input:hover {
+    background-color: #e1e7f0;
+}
+
+.month-input i {
+    font-size: 1.2rem;
+    color: #666;
+    transition: transform 0.3s ease;
+}
+
+.month-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    margin-top: 4px;
+    padding: 0;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.month-item {
+    padding: 10px 12px;
+    font-size: 1rem;
+    color: #333;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+}
+
+.month-item.selected {
+    background-color: #cbf5dd;
+    color: black;
+    font-weight: bold;
+}
+
+.month-item:hover {
+    background-color: #20c997;
+    color: white;
+}
+
+
+.date-time-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.date-time-popup-content {
+    position: relative;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.scrollable-time-selection {
+    max-height: 90px;
+    overflow-y: auto;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.scrollable-time-selection::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollable-time-selection::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+
+.scrollable-time-selection::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+.calendar-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.calendar-box {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    width: 100%;
+    max-width: 400px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.arrow-button {
+    background: none;
+    border: none;
+    padding: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.arrow-button i {
+    color: #333;
+}
+
+.arrow-button:hover i {
+    color: #20c997;
+}
+
+.arrow-button:disabled i {
+    color: #ddd;
+    cursor: not-allowed;
+}
+
+
+.calendar-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-gap: 5px;
+}
+
+.calendar-day {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    padding: 10px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.calendar-day:hover {
+    background-color: #cbf5dd;
+    transform: scale(1.1);
+}
+
+.calendar-day.selected {
+    background-color: #20c997;
+    color: white;
+}
+
+.calendar-day:disabled {
+    background-color: #f5f5f5;
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.calendar-day:disabled:hover {
+    background-color: #f5f5f5;
+    transform: none;
+    cursor: not-allowed;
+}
+
+.time-selector {
+    margin-top: 12px;
+}
+
+.time-selector h3 {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.time-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    margin-top: 8px;
+    transition: border 0.3s;
+}
+
+.time-input:focus {
+    border-color: #20c997;
+    outline: none;
+}
+
+select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+}
+
+.popup-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+}
+
+.close-popup-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.close-popup-button:hover {
+    background-color: #dc3545;
+}
+
+.confirm-button {
+    padding: 10px 16px;
+    border: none;
+    background: black;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.confirm-button:hover {
+    background-color: #20c997;
+}
+
+.confirm-button:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+}
+
+.popup-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
