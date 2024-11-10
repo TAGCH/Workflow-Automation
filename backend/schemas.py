@@ -42,11 +42,11 @@ class WorkflowModel(WorkflowBase):
         from_attributes = True
 
 class GmailflowBase(BaseModel):
-    email: str
+    email: EmailStr
     title: str
     body: str
     name: str
-    workflow_id : int
+    workflow_id: int
 
 class GmailflowModel(GmailflowBase):
     id: int
