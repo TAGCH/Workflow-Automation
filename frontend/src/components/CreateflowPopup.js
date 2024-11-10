@@ -63,6 +63,7 @@ const CreateflowPopup = ({ closePopup }) => {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
+                animation: 'fadeIn 0.3s ease-out'
             }}
         >
             <div

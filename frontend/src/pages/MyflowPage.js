@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import VerticalNavbar from "../components/VerticalNavbar";
 import WorkflowCard from "../components/WorkflowCard";
+import "../styles/pages/Myflow.css"
 import {UserContext} from "../context/UserContext";
 
 const MyflowPage = () => {
