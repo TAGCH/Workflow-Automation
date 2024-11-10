@@ -34,6 +34,7 @@ class Workflow(Base):
 
     owner = relationship("User", back_populates="workflows")
     gmailflows = relationship("Gmailflow", back_populates="workflow", cascade="all, delete-orphan")
+    workflow_imports_data = relationship('WorkflowsImportsData', back_populates="workflow", cascade= "all, delete-orphan")
 
     def __repr__(self):
         return f"<Workflow(id={self.id}, name={self.name}, type={self.type}, owner_id={self.owner_id})>"
