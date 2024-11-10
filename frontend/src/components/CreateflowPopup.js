@@ -14,7 +14,16 @@ const CreateflowPopup = ({ closePopup }) => {
     const [workflowName, setWorkflowName] = useState('');
     const [senderEmail, setSenderEmail] = useState('');
     const [senderPassword, setSenderPassword] = useState('');
+    const [triggerTime, setTriggertime] = useState(null);
     const [showFields, setShowFields] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            closePopup();
+        }, 300);
+    };
 
     const handleOptionClick = (option) => {
         setWorkflowType(option);
@@ -32,9 +41,9 @@ const CreateflowPopup = ({ closePopup }) => {
                 owner_id: user.id,
                 sender_email: senderEmail,
                 sender_hashed_password: senderPassword, // Make sure this is hashed if required
-                trigger_time: null, // Adjust based on your requirements
-                trigger_frequency: null, // Adjust based on your requirements
-                trigger_day: null, // Adjust based on your requirements
+                trigger_time: triggerTime, 
+                trigger_frequency: null, 
+                trigger_day: null, 
                 status: false // Default status
             });
             
@@ -63,6 +72,10 @@ const CreateflowPopup = ({ closePopup }) => {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
+                opacity: isClosing ? 0 : 1,  // Fade out when closing
+                visibility: isClosing ? 'hidden' : 'visible', // Hide the popup when faded out
+                transition: 'opacity 0.3s ease-out, visibility 0s 0.3s', // Fade out effect
+                animation: 'fadeIn 0.3s ease-out'
             }}
         >
             <div
@@ -74,10 +87,12 @@ const CreateflowPopup = ({ closePopup }) => {
                     boxShadow: '0px 0px 15px rgba(0,0,0,0.2)',
                     width: '450px',
                     textAlign: 'center',
+                    opacity: isClosing ? 0 : 1, // Fade out content when closing
+                    transition: 'opacity 0.3s ease-out', // Smooth transition for content fade-out
                 }}
             >
                 <button
-                    onClick={closePopup}
+                    onClick={handleClose}
                     style={{
                         position: 'absolute',
                         top: '10px',

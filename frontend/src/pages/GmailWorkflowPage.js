@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import VerticalNavbar from '../components/VerticalNavbar';
+import DateTimePopup from "../components/DateTimePopup";
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { UserContext } from "../context/UserContext";
@@ -27,6 +28,18 @@ const GmailWorkflowPage = () => {
     });
     const [workflowObjects, setWorkflowObjects] = useState([]);
     const [uploadedFileName, setUploadedFileName] = useState(''); // State for storing file name
+
+    const [isPopupOpen, setIsPopupOpen] = useState(false); // New state for popup visibility
+    const [selectedDatesAndTimes, setSelectedDatesAndTimes] = useState([]);
+
+    const openPopup = () => setIsPopupOpen(true);
+
+    // Function to handle confirmed selections from DateTimePopup
+    const handleConfirm = (selectedDatesAndTimes) => {
+        setSelectedDatesAndTimes(selectedDatesAndTimes);
+        setIsPopupOpen(false);
+        console.log("Confirmed dates and times:", selectedDatesAndTimes);
+    };
     const [fileUpdate, setFileUpdate] = useState(false);
 
     const inputRef = useRef(null);  // Ref for input field
@@ -174,7 +187,7 @@ const GmailWorkflowPage = () => {
         const updatedValue = currentValue.endsWith("/")
             ? currentValue.slice(0, -1) + `/${keyName}`
             : currentValue + `/${keyName}`;
-        
+
         setFlowData({
             ...flowData,
             [currentField]: updatedValue,
@@ -190,7 +203,7 @@ const GmailWorkflowPage = () => {
 
     const handleFormSubmit = async (event) => {
         event.preventDefault(); // Prevent default form submission behavior
-    
+
         try {
             // Clear flows and reset form data before starting email sending process
             fetchFlows();
@@ -201,15 +214,15 @@ const GmailWorkflowPage = () => {
                 name: '',
                 workflow_id: ''
             });
-    
+
             console.log("Sending flow data:", flowData);
             console.log("Workflow object entries", workflowObjects)
             // Determine if any replacements are needed based on presence of '/' in flowData
             const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
             console.log("Need replacement.", workflowObjects);
-    
+
             let emailPromises;
-            
+
             if (needsReplacement) {
                 // Generate an array of promises to send individualized emails
                 emailPromises = workflowObjects.map((recipient) => {
@@ -221,9 +234,9 @@ const GmailWorkflowPage = () => {
                         name: flowData.name, // Set name as-is from form data
                         workflow_id: id // Set workflow_id directly
                     };
-                    
+
                     console.log('Creating personalizedEmail:', personalizedEmail);
-    
+
                     // Send API request for each personalized email
                     return api.post(`/gmailflow/${id}/`, personalizedEmail);
                 });
@@ -236,19 +249,19 @@ const GmailWorkflowPage = () => {
                     name: flowData.name,
                     workflow_id: id
                 };
-    
+
                 console.log('Creating single email:', singleEmail);
                 emailPromises = [api.post(`/gmailflow/${id}/`, singleEmail)];
             }
-    
+
             // Wait for all email-sending promises to complete
             await Promise.all(emailPromises);
-    
+
             console.log("Emails sent successfully");
-    
+
             // Refetch flows after email sending is complete
             fetchFlows();
-    
+
             // Reset form data to initial state after successful email sending
             setFlowData({
                 email: '',
@@ -262,7 +275,7 @@ const GmailWorkflowPage = () => {
         }
         clearFile();
     };
-    
+
 
 
     return (
@@ -296,8 +309,9 @@ const GmailWorkflowPage = () => {
                                 <form onSubmit={handleFormSubmit}>
                                     {['email', 'title', 'body', 'name'].map((field) => (
                                         <div className='mb-3' key={field}>
-                                            <label htmlFor={field} className='form-label'>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
-                                            <div style={{ position: 'relative' }}>
+                                            <label htmlFor={field}
+                                                   className='form-label'>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+                                            <div style={{position: 'relative'}}>
                                                 <input
                                                     type={field === 'body' ? 'textarea' : 'text'}
                                                     className='form-control'
@@ -312,7 +326,9 @@ const GmailWorkflowPage = () => {
                                                 {showAutocomplete && currentField === field && keyNames.length > 0 && (
                                                     <div ref={dropdownRef} className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'white', border: '1px solid #ccc', width: '100%' }}>
                                                         {keyNames.map((name) => (
-                                                            <div key={name} onClick={() => handleAutocompleteClick(name)} style={{ padding: '5px', cursor: 'pointer' }}>
+                                                            <div key={name}
+                                                                 onClick={() => handleAutocompleteClick(name)}
+                                                                 style={{padding: '5px', cursor: 'pointer'}}>
                                                                 {name}
                                                             </div>
                                                         ))}
@@ -323,12 +339,22 @@ const GmailWorkflowPage = () => {
                                     ))}
                                     <button type='submit' className="btn btn-primary mt-2 w-100">Send</button>
                                 </form>
+                                <button onClick={openPopup} className="btn btn-secondary mt-3 w-100">
+                                    Select Date and Time
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <Footer />
+            {isPopupOpen && (
+                <DateTimePopup
+                    open={isPopupOpen}
+                    onClose={() => setIsPopupOpen(false)}
+                    onConfirm={handleConfirm}
+                />
+            )}
+            <Footer/>
         </div>
     );
 };

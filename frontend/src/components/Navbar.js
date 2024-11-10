@@ -77,7 +77,7 @@ function MyNavbar() {
                     <Modal.Body>
                         Are you sure you want to log out?
                     </Modal.Body>
-                    <Modal.Footer>
+                    <Modal.Footer className="text-center justify-content-center align-items-center">
                         <Button variant="secondary" onClick={handleCancelLogout}>
                             Cancel
                         </Button>

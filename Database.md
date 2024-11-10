@@ -22,14 +22,24 @@ Before you begin, ensure you have the following installed on your machine:
      ```
      DATABASE_URL=mysql+pymysql://root:@127.0.0.1:3306/workflows
      ```
-   - Open a terminal or command prompt.
-   - Navigate to the directory of your FastAPI project.
-   - Run the following command to create tables in the `workflows` database:
-     ```bash
-     python -c "from database import create_database; create_database()"
-     ```
+      **NOTED** : If the non-alembic ```database.db``` exist, then deletes that file before making initial migration.
 
-   This command will execute the `create_database` function, which creates all the tables defined in your SQLAlchemy models.
+
+   - Make migration according to latest model update.
+
+      ```
+      cd backend
+      alembic revision --autogenerate -m "migration message"
+      ```
+      **NOTED** : do this step first if the file is not up to date. 
+
+   - migrate the data
+
+      ```
+      alembic upgrade head
+      ```
+
+      This command will creates all the tables according to your SQLAlchemy models.
 
 ## Visualizing the Database
 
