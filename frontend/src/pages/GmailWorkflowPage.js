@@ -288,7 +288,7 @@ const GmailWorkflowPage = () => {
                                                     value={flowData[field]}
                                                 />
                                                 {showAutocomplete && currentField === field && keyNames.length > 0 && (
-                                                    <div className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'black', border: '1px solid #ccc', width: '100%' }}>
+                                                    <div className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'white', border: '1px solid #ccc', width: '100%' }}>
                                                         {keyNames.map((name) => (
                                                             <div key={name} onClick={() => handleAutocompleteClick(name)} style={{ padding: '5px', cursor: 'pointer' }}>
                                                                 {name}
