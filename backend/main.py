@@ -126,12 +126,15 @@ async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependen
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
+    print('workflow created and save to database')
     return db_workflow
 
 
 @app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
 async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
     print('arrive at email entry')
+    print(type(workflow))
+    print(workflow)
 
     try:
         # Create the message to send
@@ -152,7 +155,7 @@ async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
             title=workflow.title,
             body=workflow.body,
             name=workflow.name,
-            workflow_id=flow_id  # Foreign key association
+            workflow_id=flow_id
         )
 
         # Save the new entry to the database
@@ -166,7 +169,8 @@ async def send_email(flow_id: int, workflow: GmailflowBase, db: db_dependency):
             email=new_gmailflow.email,
             title=new_gmailflow.title,
             body=new_gmailflow.body,
-            name=new_gmailflow.name
+            name=new_gmailflow.name,
+            workflow_id=new_gmailflow.workflow_id
         )
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -183,17 +187,66 @@ async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
 async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = File()):
     """Using pandas to read excel file and return dict of data."""
     contents = await file.read()
-    df = pd.read_excel(io.BytesIO(contents))
+
+    try:
+        df = pd.read_excel(io.BytesIO(contents), dtype={'tel': str})
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid file format.")
+
     data = df.to_json(orient="records")
     json_data = json.loads(data)
-    workflow_data = models.WorkflowsImportsData(
-        data = json_data,
-        workflow_id = flow_id
-    )
-    db.add(workflow_data)
+
+    existed_data = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
+
+    if not existed_data:
+        # create new data
+        workflow_data = models.WorkflowsImportsData(
+            data = json_data,
+            workflow_id = flow_id,
+            filename = file.filename
+        )
+        db.add(workflow_data)
+    else:
+        # update data
+        existed_data.data = json_data
+        existed_data.filename = file.filename
+
     db.commit()
-    db.refresh(workflow_data)
-    return workflow_data
+    db.refresh(existed_data)
+    return existed_data
+
+# Endpoint to fetch the latest imported file's metadata for a workflow
+@app.get("/workflow/{flow_id}/file-metadata/")
+async def get_workflow_file_metadata(flow_id: int, db: db_dependency):
+    """Fetch metadata of the latest imported file for a given workflow."""
+    latest_file = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
+    if not latest_file:
+        raise HTTPException(status_code=404, detail="No imported files found for this workflow.")
+
+    # Return only metadata, like file name
+    return {"filename": latest_file.filename}
+
+@app.get("/workflow/{flow_id}/keysname/")
+async def get_data_keys(flow_id: int, db: db_dependency):
+    """Fetch unique keys from imported data."""
+
+    workflow_data = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
+    # No data is found
+    if not workflow_data or not workflow_data.data:
+        raise HTTPException(status_code=404, detail="Workflow data not found")
+
+    # Extract unique keys from all dictionaries in the list
+    unique_keys = {key for record in workflow_data.data for key in record.keys()}
+    return {"keyNames": list(unique_keys)}
+
+@app.get("/workflow/{flow_id}/data")
+async def get_data_records(flow_id: int, db: db_dependency):
+    """Fetch record's data from imported data."""
+    workflow_data = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
+    # No data is found
+    if not workflow_data or not workflow_data.data:
+        raise HTTPException(status_code=404, detail="Workflow data not found")
+    return workflow_data.data
 
 conf = ConnectionConfig(
     MAIL_USERNAME=MAIL_USERNAME,
