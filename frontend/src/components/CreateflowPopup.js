@@ -14,7 +14,7 @@ const CreateflowPopup = ({ closePopup }) => {
     const [workflowName, setWorkflowName] = useState('');
     const [senderEmail, setSenderEmail] = useState('');
     const [senderPassword, setSenderPassword] = useState('');
-    const [triggerTime, setTriggertime] = useState('');
+    const [triggerTime, setTriggertime] = useState(null);
     const [showFields, setShowFields] = useState(false);
 
     const handleOptionClick = (option) => {
