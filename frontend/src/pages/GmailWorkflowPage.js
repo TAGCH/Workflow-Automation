@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import VerticalNavbar from '../components/VerticalNavbar';
@@ -40,6 +40,10 @@ const GmailWorkflowPage = () => {
         setIsPopupOpen(false);
         console.log("Confirmed dates and times:", selectedDatesAndTimes);
     };
+    const [fileUpdate, setFileUpdate] = useState(false);
+
+    const inputRef = useRef(null);  // Ref for input field
+    const dropdownRef = useRef(null);  // Ref for dropdown container
 
     const fetchFlows = async () => {
         const response = await api.get(`/workflow/${id}/`);
@@ -62,9 +66,23 @@ const GmailWorkflowPage = () => {
         try {
             const response = await api.get(`/workflow/${id}/data/`);
             setWorkflowObjects(Object(response.data))
-            console.log(response.data)
+            console.log("fetchFlowdata", response.data)
         } catch (error) {
             console.error("Failed to fetch data from database");
+        }
+    };
+    
+    // Fetch from the API if no file name is in the Redux store
+    const fetchFileMetadata = async () => {
+        try {
+            const response = await api.get(`/workflow/${id}/file-metadata`);
+            if (response.data.filename) {
+                setUploadedFileName(response.data.filename);
+                console.log("File added:", uploadedFileName);
+                dispatch(addFile({ name: response.data.filename }));
+            }
+        } catch (error) {
+            console.error("Failed to fetch file metadata:", error);
         }
     };
 
@@ -72,40 +90,35 @@ const GmailWorkflowPage = () => {
     const uploadFile = useSelector((state) => state.files.uploadFile);
 
     useEffect(() => {
-        console.log("useEffect triggered");
-        if (uploadFile) {
-            setUploadedFileName(uploadFile.name); // Set file name from Redux
-        } else {
-            // Fetch from the API if no file name is in the Redux store
-            const fetchFileMetadata = async () => {
-                try {
-                    const response = await api.get(`/workflow/${id}/file-metadata`);
-                    if (response.data.file_name) {
-                        setUploadedFileName(response.data.file_name);
-                        dispatch(addFile({ name: response.data.file_name }));
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch file metadata:", error);
-                }
-            };
-
-            fetchFileMetadata();
-            console.log('fetch file meta data');
+        console.log("useEffect triggered", workflowObjects);
+        // Fetch key names from the backend on component mound or id change
+        if (!workflowObjects.length){
+            fetchKeyNames();
+            console.log('fetch key name from database');
+            fetchWorkflowData();
+            console.log('fetch flow object data');
         }
 
-        // Fetch key names from the backend on component mound or id change
-        fetchKeyNames();
-        console.log('fetch key name from database');
-        fetchWorkflowData();
-        console.log('fetch flow object data');
-    }, [dispatch, id, uploadFile]);
+        // Fetch file metadata only if there's no file data in Redux or workflowObjects
+        if (!uploadedFileName && !workflowObjects.length) {
+            fetchFileMetadata();
+            console.log('fetch file meta data');
+        } else if (uploadFile) {
+            setUploadedFileName(uploadFile.name); // Set file name from Redux
+        }
+        console.log("FileUpdate state:", fileUpdate);
+        setFileUpdate(false);
+        
+    }, [id, fileUpdate]);
 
     const onDrop = async (acceptedFiles) => {
         const file = acceptedFiles[0];
 
         dispatch(clearFile());
+        console.log("Redux file state:", uploadFile);
         dispatch(addFile({ name: file.name }));
         setUploadedFileName(file.name);
+        setFileUpdate(true);
 
         const formData = new FormData();
         formData.append('file', file);
@@ -144,7 +157,7 @@ const GmailWorkflowPage = () => {
         // Check value include '/' to trigger autocomplete
         if (value.includes("/")) {
             setShowAutocomplete(true); // drop down state
-            setCurrentField(fieldName); //
+            setCurrentField(fieldName);
         } else {
             setShowAutocomplete(false);
         }
@@ -153,6 +166,16 @@ const GmailWorkflowPage = () => {
             ...flowData,
             [fieldName]: value,
         });
+    };
+
+    // Hide dropdown if input loses focus without selection
+    const handleInputBlur = () => {
+        // Only hide autocomplete when input or dropdown isn't focused
+        setTimeout(() => {
+            if (dropdownRef.current && !dropdownRef.current.contains(document.activeElement)) {
+                setShowAutocomplete(false);
+            }
+        }, 100);  // Small delay to allow click on dropdown item
     };
 
     // Autocomplete functionality
@@ -250,6 +273,7 @@ const GmailWorkflowPage = () => {
         } catch (error) {
             console.error("Error submitting the form:", error);
         }
+        clearFile();
     };
 
 
@@ -269,7 +293,7 @@ const GmailWorkflowPage = () => {
                                     {uploadedFileName ? (
                                         <div>
                                             <p>Uploaded File: <strong>{uploadedFileName}</strong></p>
-                                            <button type="button" className="btn btn-secondary" onClick={open}>Change File</button>
+                                            <button type="button" className="btn btn-secondary">Change File</button>
                                         </div>
                                     ) : (
                                         <p>Drag and drop your Excel file here, or click to select file</p>
@@ -293,17 +317,14 @@ const GmailWorkflowPage = () => {
                                                     className='form-control'
                                                     id={field}
                                                     name={field}
-                                                    onChange={handleInputChange}
                                                     value={flowData[field]}
+                                                    onChange={handleInputChange}
+                                                    onBlur={handleInputBlur}  // Disable dropdown when user not focus    
+                                                    autoComplete='off'
+                                                    ref={inputRef}
                                                 />
                                                 {showAutocomplete && currentField === field && keyNames.length > 0 && (
-                                                    <div className="autocomplete-dropdown" style={{
-                                                        position: 'absolute',
-                                                        zIndex: 100,
-                                                        backgroundColor: 'black',
-                                                        border: '1px solid #ccc',
-                                                        width: '100%'
-                                                    }}>
+                                                    <div ref={dropdownRef} className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'white', border: '1px solid #ccc', width: '100%' }}>
                                                         {keyNames.map((name) => (
                                                             <div key={name}
                                                                  onClick={() => handleAutocompleteClick(name)}

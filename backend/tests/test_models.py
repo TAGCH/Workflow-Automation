@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from passlib.hash import bcrypt
 from jose import jwt, JWTError
-from models import Base, User, Workflow  # Update to match your actual imports
+from models import Base, User, Workflow, Gmailflow, WorkflowsImportsData, EmailLog
 import schemas as _schemas  # Update to match your actual imports
 from services import create_user, create_token  # Update to match your actual imports
 from dotenv import load_dotenv
@@ -50,8 +50,6 @@ class TestModels(unittest.TestCase):
         saved_user = self.db.query(User).filter_by(email="test@example.com").first()
         self.assertIsNotNone(saved_user)
         self.assertEqual(saved_user.email, "test@example.com")
-
-        # Use bcrypt to verify the password
         self.assertTrue(bcrypt.verify("hashedpassword", saved_user.hashed_password))
 
     def test_workflow_creation(self):
@@ -67,6 +65,63 @@ class TestModels(unittest.TestCase):
         saved_workflow = self.db.query(Workflow).filter_by(name="Test Workflow").first()
         self.assertIsNotNone(saved_workflow)
         self.assertEqual(saved_workflow.owner_id, user.id)
+
+    def test_workflow_import_data(self):
+        """Test creating WorkflowsImportsData and verifying its linkage to Workflow."""
+        user = User(email="importuser@example.com", hashed_password=bcrypt.hash("password123"))
+        self.db.add(user)
+        self.db.commit()
+
+        workflow = Workflow(name="Import Workflow", type="google_sheet", owner_id=user.id)
+        self.db.add(workflow)
+        self.db.commit()
+
+        import_data = WorkflowsImportsData(data={"key": "value"}, workflow_id=workflow.id, filename="data.xlsx")
+        self.db.add(import_data)
+        self.db.commit()
+
+        saved_import_data = self.db.query(WorkflowsImportsData).filter_by(workflow_id=workflow.id).first()
+        self.assertIsNotNone(saved_import_data)
+        self.assertEqual(saved_import_data.data, {"key": "value"})
+        self.assertEqual(saved_import_data.filename, "data.xlsx")
+
+    def test_gmailflow_creation(self):
+        """Test creating a Gmailflow associated with a Workflow."""
+        user = User(email="gmailuser@example.com", hashed_password=bcrypt.hash("password123"))
+        self.db.add(user)
+        self.db.commit()
+
+        workflow = Workflow(name="Gmail Workflow", type="gmail", owner_id=user.id)
+        self.db.add(workflow)
+        self.db.commit()
+
+        gmailflow = Gmailflow(email="recipient@example.com", title="Test Email", body="This is a test email", name="Test Name", workflow_id=workflow.id)
+        self.db.add(gmailflow)
+        self.db.commit()
+
+        saved_gmailflow = self.db.query(Gmailflow).filter_by(workflow_id=workflow.id).first()
+        self.assertIsNotNone(saved_gmailflow)
+        self.assertEqual(saved_gmailflow.email, "recipient@example.com")
+        self.assertEqual(saved_gmailflow.title, "Test Email")
+
+    def test_email_log_creation(self):
+        """Test creating an EmailLog entry for a Workflow."""
+        user = User(email="loguser@example.com", hashed_password=bcrypt.hash("password123"))
+        self.db.add(user)
+        self.db.commit()
+
+        workflow = Workflow(name="Log Workflow", type="email", owner_id=user.id)
+        self.db.add(workflow)
+        self.db.commit()
+
+        email_log = EmailLog(workflow_id=workflow.id, recipient_email="recipient@example.com", status="sent", error_message=None)
+        self.db.add(email_log)
+        self.db.commit()
+
+        saved_email_log = self.db.query(EmailLog).filter_by(workflow_id=workflow.id).first()
+        self.assertIsNotNone(saved_email_log)
+        self.assertEqual(saved_email_log.recipient_email, "recipient@example.com")
+        self.assertEqual(saved_email_log.status, "sent")
 
     async def test_create_token(self):
         """Test creating a JWT token for a user."""
@@ -86,6 +141,7 @@ class TestModels(unittest.TestCase):
             self.assertEqual(payload["id"], user.id)
         except JWTError:
             self.fail("Token verification failed")
+
 
 if __name__ == "__main__":
     unittest.main()
