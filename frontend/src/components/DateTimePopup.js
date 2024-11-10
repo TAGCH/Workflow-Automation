@@ -67,10 +67,16 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
             days.push(<div className="empty-day" key={`empty-${i}`} />);
         }
 
+        const isTodayOverMidnight = () => {
+            const currentTime = new Date();
+            const thirtyMinutesLater = addMinutes(currentTime, 30);
+            return thirtyMinutesLater.getDate() !== currentTime.getDate();
+        };
+
         for (let i = 1; i <= totalDays; i++) {
             const day = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
             const formattedDate = format(day, "yyyy-MM-dd");
-            const isDisabled = isPast(day) && !isToday(day);
+            const isDisabled = isPast(day) && !isToday(day) || (isToday(day) && isTodayOverMidnight());
 
             days.push(
                 <button
