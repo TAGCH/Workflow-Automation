@@ -102,7 +102,7 @@ const WorkflowCard = ({ id, name, type, status, userId }) => {
             </div>
             {showModal && (
                 <div className="modal-overlay">
-                    <div className="modal-content">
+                    <div className="modal-content" style={{backgroundColor: "white", borderRadius: "10px"}}>
                         <h5>Are you sure you want to delete this workflow?</h5>
                         <div className="modal-buttons">
                             <button

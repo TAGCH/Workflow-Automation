@@ -3,7 +3,6 @@ from database import Base
 from sqlalchemy import Column, Integer, String, ForeignKey, Time, Boolean, JSON, DateTime
 from sqlalchemy.orm import relationship
 from passlib.hash import bcrypt
-from sqlalchemy_utils import EmailType
 import datetime
 
 class User(Base):
