@@ -138,6 +138,16 @@ async def update_workflow(flow_id: int, updatedflow: UpdateflowBase, db: db_depe
     return db_workflow
 
 
+@app.delete("/workflows/{workflow_id}", response_model=WorkflowModel)
+async def delete_workflow(workflow_id: int, db: db_dependency):
+    workflow = db.query(models.Workflow).filter(models.Workflow.id == workflow_id).first()
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    db.delete(workflow)
+    db.commit()
+    return workflow
+
+
 @app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
 async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,skip: int=0, limit: int=100):
 
