@@ -118,6 +118,15 @@ async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=
     print('workflow created and save to database')
     return workflow
 
+@app.delete("/workflows/{workflow_id}", response_model=WorkflowModel)
+async def delete_workflow(workflow_id: int, db: db_dependency):
+    workflow = db.query(models.Workflow).filter(models.Workflow.id == workflow_id).first()
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    db.delete(workflow)
+    db.commit()
+    return workflow
+
 # @app.post("/workflow/{flow_id}/create")
 # async def create_workflow(flow_id: int, workflow: WorkflowModel, db: db_dependency):
 #     # Fetch flow by id
