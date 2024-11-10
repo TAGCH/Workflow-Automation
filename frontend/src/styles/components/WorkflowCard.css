@@ -1,0 +1,113 @@
+.workflow-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.workflow-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.workflow-image-container {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.workflow-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.workflow-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: auto;
+}
+
+.delete-workflow-btn {
+    color: white;
+    flex: 1;
+    margin-left: 10px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.workflow-card:hover .delete-workflow-btn {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.view-workflow-btn {
+    flex: 1;
+    margin-right: 10px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.workflow-card:hover .view-workflow-btn {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-content h5 {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn-secondary {
+    background-color: #423e53;
+    border: none;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #969a9d;
+}
+
+/* Confirm Button */
+.btn-danger {
+    background-color: #dc3545;
+    border: none;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #ff4f4b;
+}
