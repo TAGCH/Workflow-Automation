@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 import pydantic as _pydantic
 from typing import Optional, List
 from typing import Dict, List, Any
+from datetime import datetime
 
 class _UserBase(_pydantic.BaseModel):
     email: EmailStr
@@ -27,7 +28,7 @@ class WorkflowBase(BaseModel):
     owner_id: int
     sender_email: EmailStr
     sender_hashed_password: str
-    trigger_time: Optional[str] = None  # Adjust based on your requirements
+    trigger_time: datetime  # Adjust based on your requirements
     trigger_frequency: Optional[str] = None  # Adjust based on your requirements
     trigger_day: Optional[str] = None  # Adjust based on your requirements
     status: bool # E.g., "started", "stopped"
