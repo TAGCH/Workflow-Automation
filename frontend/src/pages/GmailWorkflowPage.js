@@ -89,7 +89,7 @@ const GmailWorkflowPage = () => {
             setUploadedFileName(uploadFile.name); // Set file name from Redux
         }
         
-    }, [dispatch, id, uploadFile]);
+    }, [id, uploadFile]);
 
     const onDrop = async (acceptedFiles) => {
         const file = acceptedFiles[0];
@@ -144,6 +144,11 @@ const GmailWorkflowPage = () => {
             ...flowData,
             [fieldName]: value,
         });
+    };
+
+    // Hide dropdown if input loses focus without selection
+    const handleInputBlur = () => {
+        setShowAutocomplete(false);
     };
 
     // Autocomplete functionality
@@ -285,6 +290,8 @@ const GmailWorkflowPage = () => {
                                                     id={field}
                                                     name={field}
                                                     onChange={handleInputChange}
+                                                    onBlur={handleInputBlur} // Disable dropdown when user not focus
+                                                    autoComplete='off' // Turn off browser autocomplete
                                                     value={flowData[field]}
                                                 />
                                                 {showAutocomplete && currentField === field && keyNames.length > 0 && (
