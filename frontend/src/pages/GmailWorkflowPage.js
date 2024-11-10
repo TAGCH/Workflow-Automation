@@ -27,6 +27,7 @@ const GmailWorkflowPage = () => {
     });
     const [workflowObjects, setWorkflowObjects] = useState([]);
     const [uploadedFileName, setUploadedFileName] = useState(''); // State for storing file name
+    const [fileUpdate, setFileUpdate] = useState(false);
 
     const fetchFlows = async () => {
         const response = await api.get(`/workflow/${id}/`);
@@ -49,7 +50,7 @@ const GmailWorkflowPage = () => {
         try {
             const response = await api.get(`/workflow/${id}/data/`);
             setWorkflowObjects(Object(response.data))
-            console.log(response.data)
+            console.log("fetchFlowdata", response.data)
         } catch (error) {
             console.error("Failed to fetch data from database");
         }
@@ -61,6 +62,7 @@ const GmailWorkflowPage = () => {
             const response = await api.get(`/workflow/${id}/file-metadata`);
             if (response.data.filename) {
                 setUploadedFileName(response.data.filename);
+                console.log("File added:", uploadedFileName);
                 dispatch(addFile({ name: response.data.filename }));
             }
         } catch (error) {
@@ -72,7 +74,7 @@ const GmailWorkflowPage = () => {
     const uploadFile = useSelector((state) => state.files.uploadFile);
 
     useEffect(() => {
-        console.log("useEffect triggered");
+        console.log("useEffect triggered", workflowObjects);
         // Fetch key names from the backend on component mound or id change
         if (!workflowObjects.length){
             fetchKeyNames();
@@ -88,15 +90,19 @@ const GmailWorkflowPage = () => {
         } else if (uploadFile) {
             setUploadedFileName(uploadFile.name); // Set file name from Redux
         }
+        console.log("FileUpdate state:", fileUpdate);
+        setFileUpdate(false);
         
-    }, [id, uploadFile]);
+    }, [id, fileUpdate]);
 
     const onDrop = async (acceptedFiles) => {
         const file = acceptedFiles[0];
 
         dispatch(clearFile());
+        console.log("Redux file state:", uploadFile);
         dispatch(addFile({ name: file.name }));
         setUploadedFileName(file.name);
+        setFileUpdate(true);
 
         const formData = new FormData();
         formData.append('file', file);
@@ -266,7 +272,7 @@ const GmailWorkflowPage = () => {
                                     {uploadedFileName ? (
                                         <div>
                                             <p>Uploaded File: <strong>{uploadedFileName}</strong></p>
-                                            <button type="button" className="btn btn-secondary" onClick={open}>Change File</button>
+                                            <button type="button" className="btn btn-secondary">Change File</button>
                                         </div>
                                     ) : (
                                         <p>Drag and drop your Excel file here, or click to select file</p>
