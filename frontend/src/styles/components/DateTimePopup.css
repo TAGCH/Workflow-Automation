@@ -301,6 +301,11 @@ select {
     color: white;
     border-radius: 6px;
     cursor: pointer;
+    transition: opacity 0.3s ease-out;
+}
+
+.confirm-button.fade-out {
+    opacity: 0;
 }
 
 .confirm-button:hover {

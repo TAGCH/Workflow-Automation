@@ -8,6 +8,7 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
+    const [isButtonClicked, setIsButtonClicked] = useState(false);
 
     const handleClose = () => {
         setIsClosing(true);
@@ -60,8 +61,14 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
     };
 
     const handleConfirm = () => {
-        onConfirm(selectedDates.map((date) => ({ date, time: times[date] })));
-        onClose();
+        setIsButtonClicked(true); // Trigger the button fade-out effect
+        setTimeout(() => {
+            onConfirm(selectedDates.map((date) => ({ date, time: times[date] })));
+            setIsClosing(true);
+            setTimeout(() => {
+                onClose();
+            }, 300);
+        }, 300); // Wait for the fade-out animation before confirming
     };
 
     const renderCalendarDays = () => {
@@ -120,7 +127,7 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
     };
 
     return (
-        <div className={`date-time-popup-overlay ${isClosing ? "fade-out" : ""}`}>
+        <div className={`date-time-popup-overlay ${isClosing ? "fade-out" : ""} ${isButtonClicked ? "fade-out" : ""}`}>
             <div className="date-time-popup-content">
                 <button onClick={handleClose} className="close-popup-button">
                     &times;
@@ -182,7 +189,7 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
                     ))}
                 </div>
                 <div className="popup-footer">
-                    <button className="confirm-button align-items-center" onClick={handleConfirm}
+                    <button className={`confirm-button align-items-center ${isButtonClicked ? "fade-out" : ""}`} onClick={handleConfirm}
                             disabled={!selectedDates.length || selectedDates.some((date) => !times[date])}>
                         Confirm Selection
                     </button>
