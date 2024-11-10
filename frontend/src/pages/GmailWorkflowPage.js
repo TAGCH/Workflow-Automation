@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import VerticalNavbar from '../components/VerticalNavbar';
@@ -28,6 +28,9 @@ const GmailWorkflowPage = () => {
     const [workflowObjects, setWorkflowObjects] = useState([]);
     const [uploadedFileName, setUploadedFileName] = useState(''); // State for storing file name
     const [fileUpdate, setFileUpdate] = useState(false);
+
+    const inputRef = useRef(null);  // Ref for input field
+    const dropdownRef = useRef(null);  // Ref for dropdown container
 
     const fetchFlows = async () => {
         const response = await api.get(`/workflow/${id}/`);
@@ -141,7 +144,7 @@ const GmailWorkflowPage = () => {
         // Check value include '/' to trigger autocomplete
         if (value.includes("/")) {
             setShowAutocomplete(true); // drop down state
-            setCurrentField(fieldName); // 
+            setCurrentField(fieldName);
         } else {
             setShowAutocomplete(false);
         }
@@ -154,7 +157,12 @@ const GmailWorkflowPage = () => {
 
     // Hide dropdown if input loses focus without selection
     const handleInputBlur = () => {
-        setShowAutocomplete(false);
+        // Only hide autocomplete when input or dropdown isn't focused
+        setTimeout(() => {
+            if (dropdownRef.current && !dropdownRef.current.contains(document.activeElement)) {
+                setShowAutocomplete(false);
+            }
+        }, 100);  // Small delay to allow click on dropdown item
     };
 
     // Autocomplete functionality
@@ -295,13 +303,14 @@ const GmailWorkflowPage = () => {
                                                     className='form-control'
                                                     id={field}
                                                     name={field}
-                                                    onChange={handleInputChange}
-                                                    onBlur={handleInputBlur} // Disable dropdown when user not focus
-                                                    autoComplete='off' // Turn off browser autocomplete
                                                     value={flowData[field]}
+                                                    onChange={handleInputChange}
+                                                    onBlur={handleInputBlur}  // Disable dropdown when user not focus    
+                                                    autoComplete='off'
+                                                    ref={inputRef}
                                                 />
                                                 {showAutocomplete && currentField === field && keyNames.length > 0 && (
-                                                    <div className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'white', border: '1px solid #ccc', width: '100%' }}>
+                                                    <div ref={dropdownRef} className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'white', border: '1px solid #ccc', width: '100%' }}>
                                                         {keyNames.map((name) => (
                                                             <div key={name} onClick={() => handleAutocompleteClick(name)} style={{ padding: '5px', cursor: 'pointer' }}>
                                                                 {name}
