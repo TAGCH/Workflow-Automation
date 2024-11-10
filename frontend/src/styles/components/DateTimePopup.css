@@ -101,6 +101,12 @@
     align-items: center;
     justify-content: center;
     z-index: 1;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.date-time-popup-overlay.fade-out {
+    opacity: 0;
 }
 
 .date-time-popup-content {

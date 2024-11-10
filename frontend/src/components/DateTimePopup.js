@@ -7,6 +7,14 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
     const [times, setTimes] = useState({});
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            onClose();
+        }, 300);
+    };
 
     const handleMonthSelect = (month) => {
         setCurrentMonth(month);
@@ -112,9 +120,9 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
     };
 
     return (
-        <div className="date-time-popup-overlay">
+        <div className={`date-time-popup-overlay ${isClosing ? "fade-out" : ""}`}>
             <div className="date-time-popup-content">
-                <button onClick={onClose} className="close-popup-button">
+                <button onClick={handleClose} className="close-popup-button">
                     &times;
                 </button>
                 <h2 className="text-center py-1">Select Dates and Times</h2>
