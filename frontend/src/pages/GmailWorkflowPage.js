@@ -9,12 +9,13 @@ import { UserContext } from "../context/UserContext";
 import { useDropzone } from "react-dropzone";
 import { useDispatch, useSelector } from 'react-redux';
 import { addFile, clearFile } from '../redux/fileSlice';
+import ErrorMessage from "../components/ErrorMessage";
 
 const GmailWorkflowPage = () => {
     const { id } = useParams();
     const { user } = useContext(UserContext);
     const navigate = useNavigate();
-
+    const [errorMessage, setErrorMessage] = useState("");
     const [keyNames, setKeyNames] = useState([]);
     const [showAutocomplete, setShowAutocomplete] = useState(false);
     const [currentField, setCurrentField] = useState(null);
@@ -272,6 +273,7 @@ const GmailWorkflowPage = () => {
             });
         } catch (error) {
             console.error("Error submitting the form:", error);
+            setErrorMessage("Invalid credentials. Please check sender's email and password.");
         }
         clearFile();
     };
@@ -302,6 +304,7 @@ const GmailWorkflowPage = () => {
                             </div>
                         </div>
                     </div>
+                    <ErrorMessage message={errorMessage} />
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body">
