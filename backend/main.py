@@ -10,8 +10,7 @@ import models
 from typing import Annotated, List
 import io, json
 
-#email
-from fastapi import BackgroundTasks
+# email
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
@@ -103,10 +102,12 @@ async def read_workflow(flow_id: int, db: db_dependency):
     workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
     return workflow
 
+
 @app.get("/workflows/", response_model=List[WorkflowModel])
 async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
     workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
     return workflows
+
 
 @app.post("/workflows/", response_model=WorkflowModel)
 async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=0, limit: int=100):
@@ -116,6 +117,7 @@ async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=
     db.refresh(workflow)
     print('workflow created and save to database')
     return workflow
+
 
 @app.put("/workflows/{flow_id}/", response_model=UpdateflowModel)
 async def update_workflow(flow_id: int, updatedflow: UpdateflowBase, db: db_dependency):
@@ -161,8 +163,7 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
             body=gmailflow.body,
             subtype=MessageType.html
         )
-        
-        
+
         conf = ConnectionConfig(
             MAIL_USERNAME=workflow.sender_email,
             MAIL_PASSWORD=workflow.sender_hashed_password,
@@ -244,6 +245,7 @@ async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = F
     db.refresh(existed_data)
     return existed_data
 
+
 # Endpoint to fetch the latest imported file's metadata for a workflow
 @app.get("/workflow/{flow_id}/file-metadata/")
 async def get_workflow_file_metadata(flow_id: int, db: db_dependency):
@@ -254,6 +256,7 @@ async def get_workflow_file_metadata(flow_id: int, db: db_dependency):
 
     # Return only metadata, like file name
     return {"filename": latest_file.filename}
+
 
 @app.get("/workflow/{flow_id}/keysname/")
 async def get_data_keys(flow_id: int, db: db_dependency):
@@ -268,6 +271,7 @@ async def get_data_keys(flow_id: int, db: db_dependency):
     unique_keys = {key for record in workflow_data.data for key in record.keys()}
     return {"keyNames": list(unique_keys)}
 
+
 @app.get("/workflow/{flow_id}/data")
 async def get_data_records(flow_id: int, db: db_dependency):
     """Fetch record's data from imported data."""
@@ -276,3 +280,34 @@ async def get_data_records(flow_id: int, db: db_dependency):
     if not workflow_data or not workflow_data.data:
         raise HTTPException(status_code=404, detail="Workflow data not found")
     return workflow_data.data
+
+
+# Endpoint to update sender email and password
+@app.put("/workflows/{flow_id}/update-sender", response_model=_schemas.WorkflowModel)
+async def update_sender_credentials(
+    flow_id: int,
+    sender_data: _schemas.UpdateSenderSchema,  # Use this schema for validation
+    db: db_dependency
+):
+    # Find the workflow by ID
+    workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    # Update the sender's email and hashed password
+    workflow.sender_email = sender_data.sender_email
+    workflow.sender_hashed_password = sender_data.sender_hashed_password
+
+    # Commit the updates
+    db.commit()
+    db.refresh(workflow)
+
+    return workflow
+
+
+@app.get("/workflows/{flow_id}/sender-email")
+async def get_sender_email(flow_id: int, db: db_dependency):
+    workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return {"sender_email": workflow.sender_email}

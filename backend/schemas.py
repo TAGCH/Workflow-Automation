@@ -22,13 +22,13 @@ class User(_UserBase):
     class Config:
         orm_mode = True
         from_attributes = True
-        
+
 class UpdateflowBase(BaseModel):
     trigger_time: datetime  # Adjust based on your requirements
     trigger_frequency: Optional[str] = None  # Adjust based on your requirements
     trigger_day: Optional[str] = None  # Adjust based on your requirements
     status: bool # E.g., "started", "stopped"
-    
+
     @field_validator('trigger_time')
     def convert_to_timezone(cls, v):
         if isinstance(v, datetime):
@@ -38,7 +38,7 @@ class UpdateflowBase(BaseModel):
 
     class Config:
         orm_mode = True
-        
+
 class UpdateflowModel(UpdateflowBase):
     id : int
 
@@ -52,7 +52,7 @@ class WorkflowBase(BaseModel):
     trigger_frequency: Optional[str] = None  # Adjust based on your requirements
     trigger_day: Optional[str] = None  # Adjust based on your requirements
     status: bool # E.g., "started", "stopped"
-    
+
     @field_validator('trigger_time')
     def convert_to_timezone(cls, v):
         if isinstance(v, datetime):
@@ -89,3 +89,10 @@ class WorkflowImportsDataBase(BaseModel):
 
 class WorkflowImportsDataModel(WorkflowImportsDataBase):
     id: int
+
+class UpdateSenderSchema(BaseModel):
+    sender_email: EmailStr
+    sender_hashed_password: str  # Ensure this password is hashed on the frontend
+
+    class Config:
+        orm_mode = True

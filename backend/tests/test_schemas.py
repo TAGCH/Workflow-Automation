@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 from pydantic import ValidationError
 from schemas import (
     UserCreate, User,
@@ -6,6 +7,7 @@ from schemas import (
     GmailflowBase, GmailflowModel,
     WorkflowImportsDataBase, WorkflowImportsDataModel
 )
+
 
 class TestSchemas(unittest.TestCase):
 
@@ -38,7 +40,7 @@ class TestSchemas(unittest.TestCase):
             "owner_id": 1,
             "sender_email": "sender@example.com",
             "sender_hashed_password": "hashedpassword123",
-            "trigger_time": "10:00",
+            "trigger_time": datetime.now(),
             "trigger_frequency": "daily",
             "trigger_day": "Monday",
             "status": True
@@ -68,7 +70,7 @@ class TestSchemas(unittest.TestCase):
             "owner_id": 1,
             "sender_email": "sender@example.com",
             "sender_hashed_password": "hashedpassword123",
-            "trigger_time": "10:00",
+            "trigger_time": datetime.now(),
             "trigger_frequency": "daily",
             "trigger_day": "Monday",
             "status": True
