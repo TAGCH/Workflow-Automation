@@ -9,6 +9,7 @@ import { UserContext } from "../context/UserContext";
 import { useDropzone } from "react-dropzone";
 import { useDispatch, useSelector } from 'react-redux';
 import { addFile, clearFile } from '../redux/fileSlice';
+import UpdateSenderPopup from '../components/UpdateSenderPopup';
 
 const GmailWorkflowPage = () => {
     const { id } = useParams();
@@ -31,8 +32,13 @@ const GmailWorkflowPage = () => {
 
     const [isPopupOpen, setIsPopupOpen] = useState(false); // New state for popup visibility
     const [selectedDatesAndTimes, setSelectedDatesAndTimes] = useState([]);
+    const [isSenderPopupOpen, setIsSenderPopupOpen] = useState(false); // State for managing the sender popup
 
     const openPopup = () => setIsPopupOpen(true);
+    const openSenderPopup = () => {
+        console.log("Opening sender popup");
+        setIsSenderPopupOpen(true)
+    };
 
     // Function to handle confirmed selections from DateTimePopup
     const handleConfirm = (selectedDatesAndTimes) => {
@@ -285,6 +291,13 @@ const GmailWorkflowPage = () => {
                 <VerticalNavbar />
                 <div className="container d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
                     <h2 className="text-center py-5">Workflow Name</h2>
+                    <button 
+                        className="btn btn-secondary" 
+                        style={{ position: 'absolute', top: '100px', right: '100px' }} 
+                        onClick={openSenderPopup}
+                    >
+                        Change Sender
+                    </button>
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body d-flex flex-column">
@@ -352,6 +365,14 @@ const GmailWorkflowPage = () => {
                     open={isPopupOpen}
                     onClose={() => setIsPopupOpen(false)}
                     onConfirm={handleConfirm}
+                />
+            )}
+            {/* Include the new UpdateSenderPopup */}
+            {isSenderPopupOpen && (
+                <UpdateSenderPopup
+                    open={isSenderPopupOpen}
+                    onClose={() => setIsSenderPopupOpen(false)}
+                    flowId={id} // Pass the workflow ID
                 />
             )}
             <Footer/>

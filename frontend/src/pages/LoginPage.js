@@ -4,7 +4,7 @@ import { FaArrowLeft } from 'react-icons/fa'; // Import the arrow icon from reac
 import ErrorMessage from "../components/ErrorMessage";
 import { UserContext } from "../context/UserContext";
 import api from "../services/api";
-import '../styles/pages/Login.css'; 
+import '../styles/pages/Login.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
