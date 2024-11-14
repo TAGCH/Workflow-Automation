@@ -92,7 +92,7 @@ class WorkflowImportsDataModel(WorkflowImportsDataBase):
 
 class UpdateSenderSchema(BaseModel):
     sender_email: EmailStr
-    sender_hashed_password: str  # Ensure this password is hashed on the frontend
+    sender_hashed_password: str
 
     class Config:
         orm_mode = True
