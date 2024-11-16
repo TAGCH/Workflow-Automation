@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 import fastapi as _fastapi
 import fastapi.security as _security
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,6 +9,8 @@ from database import SessionLocal, engine
 import models
 from typing import Annotated, List
 import io, json
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from datetime import datetime, timedelta
 
 #email
 from fastapi import BackgroundTasks
@@ -35,6 +37,8 @@ from dotenv import dotenv_values
 credentials = dotenv_values("../.env")
 
 app = FastAPI()
+
+scheduler = AsyncIOScheduler()
 
 # Configure CORS
 app.add_middleware(
@@ -68,7 +72,6 @@ async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Dep
     print("Token Response:", token_response)
 
     return token_response
-
 
 @app.post("/api/token")
 async def generate_token(form_data: _security.OAuth2PasswordRequestForm = _fastapi.Depends(), db: _orm.Session = _fastapi.Depends(_services.get_db)):
@@ -137,7 +140,6 @@ async def update_workflow(flow_id: int, updatedflow: UpdateflowBase, db: db_depe
     # Return the updated workflow
     return db_workflow
 
-
 @app.delete("/workflows/{workflow_id}", response_model=WorkflowModel)
 async def delete_workflow(workflow_id: int, db: db_dependency):
     workflow = db.query(models.Workflow).filter(models.Workflow.id == workflow_id).first()
@@ -157,7 +159,7 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
         # Create the message to send
         message = MessageSchema(
             subject=gmailflow.title,
-            recipients=[gmailflow.email],
+            recipients=[gmailflow.recipient_email],
             body=gmailflow.body,
             subtype=MessageType.html
         )
@@ -180,7 +182,7 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
 
         # Create a new Gmailflow entry to save in the database
         new_gmailflow = models.Gmailflow(
-            email=gmailflow.email,
+            recipient_email=gmailflow.recipient_email,
             title=gmailflow.title,
             body=gmailflow.body,
             name=gmailflow.name,
@@ -195,7 +197,7 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
         # Return the newly created GmailflowModel
         return GmailflowModel(
             id=new_gmailflow.id,
-            email=new_gmailflow.email,
+            recipient_email=new_gmailflow.recipient_email,
             title=new_gmailflow.title,
             body=new_gmailflow.body,
             name=new_gmailflow.name,
@@ -205,12 +207,71 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
+async def send_scheduled_mails():
+    print("scheduled mails sended")
+
+async def check_workflows_for_trigger():
+    # Function to check workflows and send emails for matching trigger times
+    db: Session = next(get_db())
+    current_time = datetime.now()
+    
+    # Query workflows where trigger_time is around the current time and status is True (started)
+    workflows = db.query(models.Workflow).filter(
+        models.Workflow.trigger_time != None,
+        models.Workflow.trigger_time <= current_time,
+        models.Workflow.status == True
+    ).all()
+
+    for workflow in workflows:
+        try:
+            # Send the email and handle errors if they arise
+            await send_email_for_scheduled_workflow(workflow, db)
+
+            workflow.trigger_time = None
+
+            # Update the next trigger time based on frequency
+            db.commit()
+        
+        except Exception as e:
+            # Log error and rollback changes if something fails
+            print(f"Error processing workflow {workflow.id}: {e}")
+            db.rollback()
+
+async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Session):
+    # Build email details and send
+
+    gmailflow = db.query(models.Gmailflow).filter(workflow.id == models.Gmailflow.workflow_id).first()
+    message = MessageSchema(
+        subject=gmailflow.title,
+        recipients=[gmailflow.recipient_email],
+        body=gmailflow.body,
+        subtype=MessageType.html
+    )
+
+    conf = ConnectionConfig(
+        MAIL_USERNAME=workflow.sender_email,
+        MAIL_PASSWORD=workflow.sender_hashed_password,
+        MAIL_FROM=workflow.sender_email,
+        MAIL_PORT=465,
+        MAIL_SERVER="smtp.gmail.com",
+        MAIL_STARTTLS=False,
+        MAIL_SSL_TLS=True,
+        USE_CREDENTIALS=True,
+    )
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
+
+@app.on_event("startup")
+async def start_scheduler():
+    pass
+    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=10)
+    scheduler.start()
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
 async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
     sheets = db.query(models.WorkflowsImportsData).offset(skip).limit(limit).all()
     return sheets
-
 
 @app.post("/workflow/{flow_id}/import/")
 async def import_workflow(flow_id : int, db: db_dependency, file: UploadFile = File()):

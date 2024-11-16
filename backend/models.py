@@ -44,7 +44,7 @@ class Gmailflow(Base):
     __tablename__ = 'gmailflow'
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(255), index=True)
+    recipient_email = Column(String(255), index=True)
     title = Column(String(255))
     body = Column(String(255))
     name = Column(String(255))

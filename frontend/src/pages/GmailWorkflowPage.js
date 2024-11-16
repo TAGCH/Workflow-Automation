@@ -22,7 +22,7 @@ const GmailWorkflowPage = () => {
     const [emails, setEmails] = useState([]); // New state for storing emails
     const [workflows, setWorkflows] = useState([]);
     const [flowData, setFlowData] = useState({
-        email: '',
+        recipient_email: '',
         title: '',
         body: '',
         name: ''
@@ -209,7 +209,7 @@ const GmailWorkflowPage = () => {
             // Clear flows and reset form data before starting email sending process
             fetchFlows();
             setFlowData({
-                email: '',
+                recipient_email: '',
                 title: '',
                 body: '',
                 name: '',
@@ -229,7 +229,7 @@ const GmailWorkflowPage = () => {
                 emailPromises = workflowObjects.map((recipient) => {
                     // Conditionally apply key replacement if needed
                     const personalizedEmail = {
-                        email: replaceKeysInString(flowData.email, recipient),
+                        recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
                         title: replaceKeysInString(flowData.title, recipient),
                         body: replaceKeysInString(flowData.body, recipient),
                         name: flowData.name, // Set name as-is from form data
@@ -244,7 +244,7 @@ const GmailWorkflowPage = () => {
             } else {
                 // Send a single email when no replacement is needed
                 const singleEmail = {
-                    email: flowData.email,
+                    recipient_email: flowData.recipient_email,
                     title: flowData.title,
                     body: flowData.body,
                     name: flowData.name,
@@ -265,7 +265,7 @@ const GmailWorkflowPage = () => {
 
             // Reset form data to initial state after successful email sending
             setFlowData({
-                email: '',
+                recipient_email: '',
                 title: '',
                 body: '',
                 name: '',
@@ -310,7 +310,7 @@ const GmailWorkflowPage = () => {
                             <div className="card-body">
                                 <h5 className="text-center mb-4">Workflow user id: {id}</h5>
                                 <form onSubmit={handleFormSubmit}>
-                                    {['email', 'title', 'body', 'name'].map((field) => (
+                                    {['recipient_email', 'title', 'body', 'name'].map((field) => (
                                         <div className='mb-3' key={field}>
                                             <label htmlFor={field}
                                                    className='form-label'>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
