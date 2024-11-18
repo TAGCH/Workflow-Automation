@@ -153,6 +153,25 @@ async def delete_workflow(workflow_id: int, db: db_dependency):
 
 
 @app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
+async def save_email(flow_id: int, gmailflowbase: GmailflowBase, db: db_dependency,skip: int=0, limit: int=100):
+
+    try:
+        # Create a new Gmailflow entry to save in the database
+        gmailflowmodel = models.Gmailflow(**gmailflowbase.model_dump())
+
+        # Save the new entry to the database
+        db.add(gmailflowmodel)
+        db.commit()
+        db.refresh(gmailflowmodel)
+
+        # Return the newly created GmailflowModel
+        return gmailflowmodel
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.post("/sendmail/{flow_id}/")
 async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,skip: int=0, limit: int=100):
 
     try:
@@ -165,7 +184,6 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
             body=gmailflow.body,
             subtype=MessageType.html
         )
-        
         
         conf = ConnectionConfig(
             MAIL_USERNAME=workflow.sender_email,
@@ -183,28 +201,11 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
         print('Mail sent.')
 
         # Create a new Gmailflow entry to save in the database
-        new_gmailflow = models.Gmailflow(
-            recipient_email=gmailflow.recipient_email,
-            title=gmailflow.title,
-            body=gmailflow.body,
-            name=gmailflow.name,
-            workflow_id=flow_id
-        )
-
-        # Save the new entry to the database
-        db.add(new_gmailflow)
-        db.commit()
-        db.refresh(new_gmailflow)
+        new_gmailflow = models.Gmailflow(**gmailflow.model_dump())
 
         # Return the newly created GmailflowModel
-        return GmailflowModel(
-            id=new_gmailflow.id,
-            recipient_email=new_gmailflow.recipient_email,
-            title=new_gmailflow.title,
-            body=new_gmailflow.body,
-            name=new_gmailflow.name,
-            workflow_id=new_gmailflow.workflow_id
-        )
+        return new_gmailflow
+    
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -266,7 +267,7 @@ async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Sessi
 async def start_scheduler():
     pass
     scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=10)
-    scheduler.start()
+    # scheduler.start()
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
 async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):
