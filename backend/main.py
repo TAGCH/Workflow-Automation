@@ -11,6 +11,8 @@ from typing import Annotated, List
 import io, json
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, timedelta
+from sqlalchemy.sql import func
+from sqlalchemy import text
 
 #email
 from fastapi import BackgroundTasks
@@ -214,21 +216,19 @@ async def check_workflows_for_trigger():
     # Function to check workflows and send emails for matching trigger times
     db: Session = next(get_db())
     current_time = datetime.now()
-    
     # Query workflows where trigger_time is around the current time and status is True (started)
     workflows = db.query(models.Workflow).filter(
         models.Workflow.trigger_time != None,
         models.Workflow.trigger_time <= current_time,
+        current_time < func.date_add(models.Workflow.trigger_time, text("INTERVAL 10 SECOND")),
         models.Workflow.status == True
     ).all()
 
     for workflow in workflows:
+        print(f"triggered workflow with id: {workflow.id}")
         try:
             # Send the email and handle errors if they arise
             await send_email_for_scheduled_workflow(workflow, db)
-
-            workflow.trigger_time = None
-
             # Update the next trigger time based on frequency
             db.commit()
         
@@ -240,7 +240,7 @@ async def check_workflows_for_trigger():
 async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Session):
     # Build email details and send
 
-    gmailflow = db.query(models.Gmailflow).filter(workflow.id == models.Gmailflow.workflow_id).first()
+    gmailflow = db.query(models.Gmailflow).filter(workflow.id == models.Gmailflow.workflow_id)[-1]
     message = MessageSchema(
         subject=gmailflow.title,
         recipients=[gmailflow.recipient_email],

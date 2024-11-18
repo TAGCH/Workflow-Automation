@@ -56,7 +56,7 @@ class WorkflowBase(BaseModel):
     @field_validator('trigger_time')
     def convert_to_timezone(cls, v):
         if isinstance(v, datetime):
-            # Convert to New York time zone (or any other time zone)
+            # Convert to Bangkok time zone (or any other time zone)
             return v.astimezone(ZoneInfo("Asia/Bangkok"))
         return v
 
