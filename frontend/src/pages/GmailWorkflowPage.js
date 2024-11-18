@@ -81,7 +81,7 @@ const GmailWorkflowPage = () => {
         // Fetch key names from the backend on component mound or id change
         if (!workflowObjects.length){
             fetchKeyNames();
-            console.log('fetch key name from database');
+            console.log('fetch key name from database', keyNames);
             fetchWorkflowData();
             console.log('fetch flow object data');
         }
@@ -131,7 +131,7 @@ const GmailWorkflowPage = () => {
         }
     };
 
-    const { getRootProps, getInputProps, open } = useDropzone({
+    const { getRootProps, getInputProps} = useDropzone({
         onDrop,
         noClick: false,
         noKeyboard: true,
@@ -166,15 +166,16 @@ const GmailWorkflowPage = () => {
     };
 
     // Autocomplete functionality
-    const handleAutocompleteClick = (keyName) => {
+    const handleAutocompleteClick = (keyNames) => {
         // Add key placeholder with '/' and set it in the current field.
         const currentValue = flowData[currentField];
+        console.log("Current field accessed: ",currentField)
 
         // If the last character is '/', replace it with the keyName ;otherwise, append '/${keyName}'
         const updatedValue = currentValue.endsWith("/")
-            ? currentValue.slice(0, -1) + `/${keyName}`
-            : currentValue + `/${keyName}`;
-        
+            ? currentValue.slice(0, -1) + `/${keyNames}`
+            : currentValue + `/${keyNames}`;
+        console.log("Autocomplete value: ",updatedValue)
         setFlowData({
             ...flowData,
             [currentField]: updatedValue,
