@@ -321,7 +321,7 @@ const GmailWorkflowPage = () => {
                         // Send API request for each personalized email
                         return api.post(`/sendmail/${id}/`, personalizedEmail);
                     });
-                    
+
                 } else {
                         // Send a single email when no replacement is needed
                         const singleEmail = {
@@ -359,7 +359,7 @@ const GmailWorkflowPage = () => {
             setErrorMessage("Something went wrong.", error);
         }
 
-        clearFile();
+        // clearFile();
     };
 
 

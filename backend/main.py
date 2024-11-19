@@ -202,9 +202,6 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
 
         # Create a new Gmailflow entry to save in the database
         new_gmailflow = models.Gmailflow(**gmailflow.model_dump())
-
-        # Return the newly created GmailflowModel
-        return new_gmailflow
     
     except Exception as e:
         print(f"An error occurred: {e}")
