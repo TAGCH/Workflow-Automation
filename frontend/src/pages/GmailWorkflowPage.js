@@ -52,6 +52,25 @@ const GmailWorkflowPage = () => {
         setWorkflows(response.data);
     };
 
+    const fetchRecentData = async () => {
+        try {
+            const response = await api.get(`/gmailflow/${id}/recent`);
+            const recentData = response.data;
+
+            setFlowData({
+                recipient_email: recentData.recipient_email || '',
+                title: recentData.title || '',
+                body: recentData.body || '',
+                name: recentData.name || ''
+            });
+            setErrorMessage("");
+            console.log("Recent data loaded:", recentData);
+        } catch (error) {
+            console.error("Failed to fetch recent data:", error);
+            setErrorMessage("You have no saved data.");
+        }
+    };
+
     // Function to fetch key names directly from the backend
     const fetchKeyNames = async () => {
         try {
@@ -411,7 +430,13 @@ const GmailWorkflowPage = () => {
                                                     ref={inputRef}
                                                 />
                                                 {showAutocomplete && currentField === field && keyNames.length > 0 && (
-                                                    <div ref={dropdownRef} className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'white', border: '1px solid #ccc', width: '100%' }}>
+                                                    <div ref={dropdownRef} className="autocomplete-dropdown" style={{
+                                                        position: 'absolute',
+                                                        zIndex: 100,
+                                                        backgroundColor: 'white',
+                                                        border: '1px solid #ccc',
+                                                        width: '100%'
+                                                    }}>
                                                         {keyNames.map((name) => (
                                                             <div key={name}
                                                                  onClick={() => handleAutocompleteClick(name)}
@@ -424,8 +449,15 @@ const GmailWorkflowPage = () => {
                                             </div>
                                         </div>
                                     ))}
-                                    <button type='submit' className="btn btn-primary mt-2 w-100" name="action" value="Save"> Save </button>
-                                    <button type='submit' className="btn btn-primary mt-2 w-100" name="action" value="Send"> Send</button>
+                                    <button onClick={fetchRecentData} className="btn btn-secondary mt-3 w-100">
+                                        Load Recent Data
+                                    </button>
+                                    <button type='submit' className="btn btn-primary mt-2 w-100" name="action"
+                                            value="Save"> Save
+                                    </button>
+                                    <button type='submit' className="btn btn-primary mt-2 w-100" name="action"
+                                            value="Send"> Send
+                                    </button>
                                 </form>
                                 <button onClick={openPopup} className="btn btn-secondary mt-3 w-100">
                                     Select Date and Time

@@ -170,6 +170,22 @@ async def save_email(flow_id: int, gmailflowbase: GmailflowBase, db: db_dependen
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/gmailflow/{flow_id}/recent", response_model=GmailflowModel)
+async def get_recent_gmailflow(flow_id: int, db: db_dependency):
+    try:
+        recent_flow = (
+            db.query(models.Gmailflow)
+            .filter(models.Gmailflow.workflow_id == flow_id)
+            .order_by(models.Gmailflow.id.desc())
+            .first()
+        )
+        if not recent_flow:
+            raise HTTPException(status_code=404, detail="No recent data found.")
+        return recent_flow
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     
 @app.post("/sendmail/{flow_id}/")
 async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,skip: int=0, limit: int=100):
