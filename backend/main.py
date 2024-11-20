@@ -123,7 +123,7 @@ async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=
     return workflow
 
 @app.put("/workflows/{flow_id}/", response_model=UpdateflowModel)
-async def update_workflow(flow_id: int, updatedflow: UpdateflowBase, db: db_dependency):
+async def update_workflow(flow_id: int, updatedflow: UpdateflowStatusBase, db: db_dependency):
     # Fetch the existing workflow from the database
     db_workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
 
@@ -258,14 +258,14 @@ async def check_workflows_for_trigger():
         current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 10 SECOND")),
     ).all()
 
-    print(timestamps)
+    print(f"Scheduled Timestamps: {timestamps}")
 
     # this one most likely ain't right need to verify 1.timerange 2.active status 3. workflow_id == timestamps_id
     workflow_ids = []
     for time in timestamps:
         workflow_ids.append(time.workflow_id) 
 
-    print(f"Workflow IDs: {workflow_ids}")
+    print(f"Scheduled Workflow IDs: {workflow_ids}")
         
     workflows = db.query(models.Workflow).filter(models.Workflow.id.in_(workflow_ids),
                                                  models.Workflow.status == True

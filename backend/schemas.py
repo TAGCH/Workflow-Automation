@@ -23,8 +23,7 @@ class User(_UserBase):
         orm_mode = True
         from_attributes = True
         
-class UpdateflowBase(BaseModel):
-    trigger_time: datetime  # Adjust based on your requirements
+class UpdateflowStatusBase(BaseModel):
     status: bool # E.g., "started", "stopped"
     
     @field_validator('trigger_time')
@@ -37,7 +36,7 @@ class UpdateflowBase(BaseModel):
     class Config:
         orm_mode = True
         
-class UpdateflowModel(UpdateflowBase):
+class UpdateflowModel(UpdateflowStatusBase):
     id : int
 
 class WorkflowBase(BaseModel):
