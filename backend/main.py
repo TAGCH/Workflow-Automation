@@ -152,8 +152,28 @@ async def delete_workflow(workflow_id: int, db: db_dependency):
     return workflow
 
 
-@app.post("/gmailflow/{flow_id}/", response_model=GmailflowModel)
-async def save_email(flow_id: int, gmailflowbase: GmailflowBase, db: db_dependency,skip: int=0, limit: int=100):
+@app.post("/timestamps/", response_model=TimestampModel)
+async def create_timestamp(timestampbase: TimestampBase, db: db_dependency):
+
+    try:
+        # Create a new Gmailflow entry to save in the database
+        timestampmodel = models.Timestamp(**timestampbase.model_dump())
+
+        # Save the new entry to the database
+        db.add(timestampmodel)
+        db.commit()
+        db.refresh(timestampmodel)
+
+        # Return the newly created GmailflowModel
+        return timestampmodel
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    
+
+@app.post("/gmailflow/", response_model=GmailflowModel)
+async def save_email(gmailflowbase: GmailflowBase, db: db_dependency):
 
     try:
         # Create a new Gmailflow entry to save in the database
@@ -172,7 +192,7 @@ async def save_email(flow_id: int, gmailflowbase: GmailflowBase, db: db_dependen
         raise HTTPException(status_code=400, detail=str(e))
     
 @app.post("/sendmail/{flow_id}/")
-async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,skip: int=0, limit: int=100):
+async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency):
 
     try:
         workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
@@ -207,20 +227,35 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency,s
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-async def send_scheduled_mails():
-    print("scheduled mails sended")
-
 async def check_workflows_for_trigger():
     # Function to check workflows and send emails for matching trigger times
     db: Session = next(get_db())
     current_time = datetime.now()
     # Query workflows where trigger_time is around the current time and status is True (started)
-    workflows = db.query(models.Workflow).filter(
-        models.Workflow.trigger_time != None,
-        models.Workflow.trigger_time <= current_time,
-        current_time < func.date_add(models.Workflow.trigger_time, text("INTERVAL 10 SECOND")),
-        models.Workflow.status == True
+    
+    # print(f"condition1: {models.Timestamp.trigger_time != None}")
+    # print(f"condition2: {models.Timestamp.trigger_time <= current_time}")
+    # print(f"condition3: {current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 10 SECOND"))}")
+    timestamps = db.query(models.Timestamp).filter(
+        models.Timestamp.trigger_time != None,
+        models.Timestamp.trigger_time <= current_time,
+        current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 10 SECOND")),
     ).all()
+
+    print(timestamps)
+
+    # this one most likely ain't right need to verify 1.timerange 2.active status 3. workflow_id == timestamps_id
+    workflow_ids = []
+    for time in timestamps:
+        workflow_ids.append(time.workflow_id) 
+
+    print(f"Workflow IDs: {workflow_ids}")
+        
+    workflows = db.query(models.Workflow).filter(models.Workflow.id.in_(workflow_ids),
+                                                 models.Workflow.status == True
+                                                 ).all()
+
+    print(workflows)
 
     for workflow in workflows:
         print(f"triggered workflow with id: {workflow.id}")
@@ -259,12 +294,13 @@ async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Sessi
 
     fm = FastMail(conf)
     await fm.send_message(message)
+    print("mail sent")
 
 @app.on_event("startup")
 async def start_scheduler():
     pass
     scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=10)
-    # scheduler.start()
+    scheduler.start()
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
 async def read_flow_sheets( db: db_dependency, skip: int=0, limit: int=100):

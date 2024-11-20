@@ -220,13 +220,13 @@ const GmailWorkflowPage = () => {
                 console.log("Save button clicked");
                 // Clear flows and reset form data before starting email sending process
                 fetchFlows();
-                setFlowData({
-                    recipient_email: '',
-                    title: '',
-                    body: '',
-                    name: '',
-                    workflow_id: ''
-                });
+                // setFlowData({
+                //     recipient_email: '',
+                //     title: '',
+                //     body: '',
+                //     name: '',
+                //     workflow_id: ''
+                // });
 
                 console.log("Sending flow data:", flowData);
                 console.log("Workflow object entries", workflowObjects)
@@ -251,7 +251,7 @@ const GmailWorkflowPage = () => {
                     console.log('Creating personalizedEmail:', personalizedEmail);
 
                     // Send API request for each personalized email
-                    return api.post(`/gmailflow/${id}/`, personalizedEmail);
+                    return api.post(`/gmailflow/`, personalizedEmail);
                 });
                 } else {
                     // Send a single email when no replacement is needed
@@ -264,7 +264,7 @@ const GmailWorkflowPage = () => {
                     };
 
                     console.log('Creating single email:', singleEmail);
-                    emailPromises = [api.post(`/gmailflow/${id}/`, singleEmail)];
+                    emailPromises = [api.post(`/gmailflow/`, singleEmail)];
                 }
 
                 // Wait for all email-sending promises to complete
@@ -276,25 +276,25 @@ const GmailWorkflowPage = () => {
                 fetchFlows();
 
                 // Reset form data to initial state after successful email sending
-                setFlowData({
-                    recipient_email: '',
-                    title: '',
-                    body: '',
-                    name: '',
-                    workflow_id: ''
-                });
+                // setFlowData({
+                //     recipient_email: '',
+                //     title: '',
+                //     body: '',
+                //     name: '',
+                //     workflow_id: ''
+                // });
             }
 
             else if (action === "Send") {
                 console.log("Send button clicked");
                 fetchFlows();
-                setFlowData({
-                    recipient_email: '',
-                    title: '',
-                    body: '',
-                    name: '',
-                    workflow_id: ''
-                });
+                // setFlowData({
+                //     recipient_email: '',
+                //     title: '',
+                //     body: '',
+                //     name: '',
+                //     workflow_id: ''
+                // });
     
                 console.log("Sending flow data:", flowData);
                 console.log("Workflow object entries", workflowObjects)
@@ -345,13 +345,13 @@ const GmailWorkflowPage = () => {
                 fetchFlows();
     
                 // Reset form data to initial state after successful email sending
-                setFlowData({
-                        recipient_email: '',
-                        title: '',
-                        body: '',
-                        name: '',
-                        workflow_id: ''
-                });
+                // setFlowData({
+                //         recipient_email: '',
+                //         title: '',
+                //         body: '',
+                //         name: '',
+                //         workflow_id: ''
+                // });
             }
 
         } catch (error) {
