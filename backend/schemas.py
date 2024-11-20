@@ -28,8 +28,8 @@ class UpdateflowStatusBase(BaseModel):
     class Config:
         orm_mode = True
         
-class UpdateflowModel(UpdateflowStatusBase):
-    id : int
+# class UpdateflowModel(UpdateflowStatusBase):
+#     pass
 
 class WorkflowBase(BaseModel):
     name: str
