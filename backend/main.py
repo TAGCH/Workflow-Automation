@@ -123,7 +123,7 @@ async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=
     return workflow
 
 @app.put("/workflows/{flow_id}/", response_model=UpdateflowModel)
-async def update_workflow(flow_id: int, updatedflow: UpdateflowBase, db: db_dependency):
+async def update_workflow(flow_id: int, updatedflow: UpdateflowStatusBase, db: db_dependency):
     # Fetch the existing workflow from the database
     db_workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
 
@@ -151,6 +151,10 @@ async def delete_workflow(workflow_id: int, db: db_dependency):
     db.commit()
     return workflow
 
+@app.get("/timestamps/{workflow_id}", response_model=List[TimestampModel])
+async def read_timestamps(workflow_id: int, db: db_dependency, skip: int=0, limit: int=100):
+    timestamps = db.query(models.Timestamp).filter(models.Timestamp.workflow_id == workflow_id).offset(skip).limit(limit).all()
+    return timestamps
 
 @app.post("/timestamps/", response_model=TimestampModel)
 async def create_timestamp(timestampbase: TimestampBase, db: db_dependency):
@@ -170,6 +174,15 @@ async def create_timestamp(timestampbase: TimestampBase, db: db_dependency):
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+    
+@app.delete("/timestamp/{timestamp_id}", response_model=TimestampModel)
+async def delete_timestamp(timestamp_id: int, db: db_dependency):
+    timestamp = db.query(models.Workflow).filter(models.Workflow.id == timestamp_id).first()
+    if not timestamp:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    db.delete(timestamp)
+    db.commit()
+    return timestamp
     
 
 @app.post("/gmailflow/", response_model=GmailflowModel)
@@ -220,7 +233,7 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency):
             body=gmailflow.body,
             subtype=MessageType.html
         )
-        
+
         conf = ConnectionConfig(
             MAIL_USERNAME=workflow.sender_email,
             MAIL_PASSWORD=workflow.sender_hashed_password,
@@ -258,20 +271,20 @@ async def check_workflows_for_trigger():
         current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 10 SECOND")),
     ).all()
 
-    print(timestamps)
+    print(f"Scheduled Timestamps: {timestamps}")
 
     # this one most likely ain't right need to verify 1.timerange 2.active status 3. workflow_id == timestamps_id
     workflow_ids = []
     for time in timestamps:
         workflow_ids.append(time.workflow_id) 
 
-    print(f"Workflow IDs: {workflow_ids}")
+    print(f"Scheduled Workflow IDs: {workflow_ids}")
         
     workflows = db.query(models.Workflow).filter(models.Workflow.id.in_(workflow_ids),
                                                  models.Workflow.status == True
                                                  ).all()
 
-    print(workflows)
+    print(f"Scheduled Workflows: {workflows}")
 
     for workflow in workflows:
         print(f"triggered workflow with id: {workflow.id}")

@@ -23,21 +23,12 @@ class User(_UserBase):
         orm_mode = True
         from_attributes = True
         
-class UpdateflowBase(BaseModel):
-    trigger_time: datetime  # Adjust based on your requirements
+class UpdateflowStatusBase(BaseModel):
     status: bool # E.g., "started", "stopped"
-    
-    @field_validator('trigger_time')
-    def convert_to_timezone(cls, v):
-        if isinstance(v, datetime):
-            # Convert to New York time zone (or any other time zone)
-            return v.astimezone(ZoneInfo("Asia/Bangkok"))
-        return v
-
     class Config:
         orm_mode = True
         
-class UpdateflowModel(UpdateflowBase):
+class UpdateflowModel(UpdateflowStatusBase):
     id : int
 
 class WorkflowBase(BaseModel):
