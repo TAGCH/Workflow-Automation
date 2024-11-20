@@ -151,6 +151,10 @@ async def delete_workflow(workflow_id: int, db: db_dependency):
     db.commit()
     return workflow
 
+@app.get("/timestamps/{workflow_id}", response_model=List[TimestampModel])
+async def read_timestamps(workflow_id: int, db: db_dependency, skip: int=0, limit: int=100):
+    timestamps = db.query(models.Timestamp).filter(models.Timestamp.workflow_id == workflow_id).offset(skip).limit(limit).all()
+    return timestamps
 
 @app.post("/timestamps/", response_model=TimestampModel)
 async def create_timestamp(timestampbase: TimestampBase, db: db_dependency):
@@ -170,6 +174,15 @@ async def create_timestamp(timestampbase: TimestampBase, db: db_dependency):
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+    
+@app.delete("/timestamp/{timestamp_id}", response_model=TimestampModel)
+async def delete_timestamp(timestamp_id: int, db: db_dependency):
+    timestamp = db.query(models.Workflow).filter(models.Workflow.id == timestamp_id).first()
+    if not timestamp:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    db.delete(timestamp)
+    db.commit()
+    return timestamp
     
 
 @app.post("/gmailflow/", response_model=GmailflowModel)
