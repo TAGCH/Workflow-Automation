@@ -233,7 +233,7 @@ async def send_email(flow_id: int, gmailflow: GmailflowBase, db: db_dependency):
             body=gmailflow.body,
             subtype=MessageType.html
         )
-        
+
         conf = ConnectionConfig(
             MAIL_USERNAME=workflow.sender_email,
             MAIL_PASSWORD=workflow.sender_hashed_password,
@@ -284,7 +284,7 @@ async def check_workflows_for_trigger():
                                                  models.Workflow.status == True
                                                  ).all()
 
-    print(workflows)
+    print(f"Scheduled Workflows: {workflows}")
 
     for workflow in workflows:
         print(f"triggered workflow with id: {workflow.id}")
