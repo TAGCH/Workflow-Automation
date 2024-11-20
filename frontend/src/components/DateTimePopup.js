@@ -1,15 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { format, addMinutes, isToday, isPast, startOfMonth, endOfMonth, addMonths, isBefore, isAfter, isSameMonth } from "date-fns";
 import "../styles/components/DateTimePopup.css";
 import api from '../services/api';
 
-const DateTimePopup = ({ onClose, onConfirm }) => {
+const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
     const [selectedDates, setSelectedDates] = useState([]);
     const [times, setTimes] = useState({});
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [isButtonClicked, setIsButtonClicked] = useState(false);
+    const [hasDuplicateTimes, setHasDuplicateTimes] = useState(false);
+
+    const checkForDuplicateTimes = (times) => {
+        let hasDuplicates = false;
+
+        Object.keys(times).forEach((date) => {
+            const timeSet = new Set();
+            times[date].forEach((time) => {
+                if (timeSet.has(time)) {
+                    hasDuplicates = true;
+                } else {
+                    timeSet.add(time);
+                }
+            });
+        });
+
+        return hasDuplicates;
+    };
+
+    useEffect(() => {
+        const duplicates = checkForDuplicateTimes(times);
+        setHasDuplicateTimes(duplicates);
+    }, [times]);
 
     const handleClose = () => {
         setIsClosing(true);
@@ -27,21 +50,21 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
         const formattedDate = format(date, "yyyy-MM-dd");
 
         if (selectedDates.includes(formattedDate)) {
-            setSelectedDates(
-                selectedDates.filter((d) => d !== formattedDate)
-            );
+            setSelectedDates(selectedDates.filter((d) => d !== formattedDate));
             const { [formattedDate]: _, ...rest } = times;
             setTimes(rest);
         } else {
             setSelectedDates((prevSelectedDates) => {
-                const newSelectedDates = [...prevSelectedDates, formattedDate];
-                return newSelectedDates.sort((a, b) => new Date(a) - new Date(b));
+                const newSelectedDates = [...prevSelectedDates, formattedDate].sort((a, b) => new Date(a) - new Date(b));
+                if (!times[formattedDate]) {
+                    setTimes((prevTimes) => ({ ...prevTimes, [formattedDate]: [] }));
+                }
+                return newSelectedDates;
             });
-            setTimes({ ...times, [formattedDate]: "" });
         }
     };
 
-    const handleTimeChange = (date, selectedTime) => {
+    const handleTimeChange = (date, index, selectedTime) => {
         const currentTime = new Date();
         const timeParts = selectedTime.split(":");
         const inputTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), timeParts[0], timeParts[1]);
@@ -50,27 +73,59 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
 
         if (isToday(new Date(date))) {
             if (isBefore(inputTime, minTime)) {
-                if (selectedTime !== times[date]) {
-                    setTimes({ ...times, [date]: format(minTime, "HH:mm") });
-                }
+                const newTimes = { ...times };
+                newTimes[date][index] = format(minTime, "HH:mm");
+                setTimes(newTimes);
             } else {
-                setTimes({ ...times, [date]: selectedTime });
+                const newTimes = { ...times };
+                newTimes[date][index] = selectedTime;
+                setTimes(newTimes);
             }
         } else {
-            setTimes({ ...times, [date]: selectedTime });
+            const newTimes = { ...times };
+            newTimes[date][index] = selectedTime;
+            setTimes(newTimes);
         }
     };
 
-    const handleConfirm = () => {
-        setIsButtonClicked(true); // Trigger the button fade-out effect
-        setTimeout(() => {
-            onConfirm(selectedDates.map((date) => ({ date, time: times[date] })));
-            setIsClosing(true);
+    const handleConfirm = async () => {
+        setIsButtonClicked(true);
+
+        const formattedTimestamps = selectedDates.map((date) => {
+            const selectedDateTimes = times[date];
+
+            return selectedDateTimes.map((time) => {
+                const [hour, minute] = time.split(":");
+                const selectedDateTime = new Date(date);
+                selectedDateTime.setHours(hour, minute, 0, 0);
+
+                return {
+                    workflow_id: workflowID,
+                    trigger_time: selectedDateTime.toISOString(),
+                };
+            });
+        }).flat();
+
+        try {
+            await Promise.all(
+                formattedTimestamps.map(async (timestamp) => {
+                    await api.post("/timestamps/", timestamp);
+                })
+            );
+
             setTimeout(() => {
-                onClose();
+                onConfirm(formattedTimestamps);
+                setIsClosing(true);
+                setTimeout(() => {
+                    onClose();
+                }, 300);
             }, 300);
-        }, 300); // Wait for the fade-out animation before confirming
+        } catch (error) {
+            console.error("Failed to create timestamps:", error);
+            alert("An error occurred while activating the workflow. Please try again.");
+        }
     };
+
 
     const renderCalendarDays = () => {
         const startOfCurrentMonth = startOfMonth(currentMonth);
@@ -127,19 +182,24 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
         return "00:00";
     };
 
+    const handleAddTime = (date) => {
+        const newTimes = { ...times };
+        if (!newTimes[date]) newTimes[date] = [];
+        newTimes[date].push("");
+        setTimes(newTimes);
+    };
+
     return (
         <div className={`date-time-popup-overlay ${isClosing ? "fade-out" : ""} ${isButtonClicked ? "fade-out" : ""}`}>
             <div className="date-time-popup-content">
-                <button onClick={handleClose} className="close-popup-button">
+                <button onClick={handleClose} className="close-popup-button" aria-label="Close popup">
                     &times;
                 </button>
                 <h2 className="text-center py-1">Select Dates and Times</h2>
                 <div className="calendar-container">
                     <div className="calendar-box">
                         <div className="calendar-header">
-                            <button className="arrow-button" onClick={handlePrevMonth}
-                                    disabled={isPrevMonthDisabled}><i className="bi bi-arrow-left-square-fill"></i>
-                            </button>
+                            <button className="arrow-button" onClick={handlePrevMonth} disabled={isPrevMonthDisabled}><i className="bi bi-arrow-left-square-fill"></i></button>
                             <div className="month-selector">
                                 <button
                                     className="month-input"
@@ -149,7 +209,7 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
                                 </button>
                                 {monthDropdownOpen && (
                                     <ul className="month-dropdown">
-                                        {Array.from({length: 24}).map((_, i) => {
+                                        {Array.from({ length: 24 }).map((_, i) => {
                                             const month = addMonths(new Date(), i);
                                             return (
                                                 <li
@@ -164,9 +224,7 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
                                     </ul>
                                 )}
                             </div>
-                            <button className="arrow-button" onClick={handleNextMonth}
-                                    disabled={isNextMonthDisabled}><i className="bi bi-arrow-right-square-fill"></i>
-                            </button>
+                            <button className="arrow-button" onClick={handleNextMonth} disabled={isNextMonthDisabled}><i className="bi bi-arrow-right-square-fill"></i></button>
                         </div>
                         <div className="calendar-days-header">
                             <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
@@ -178,21 +236,58 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
                     {selectedDates.map((date) => (
                         <div key={date} className="time-selector">
                             <h3>{format(new Date(date), "EEEE, MMMM d, yyyy")}</h3>
-                            <input
-                                type="time"
-                                value={times[date] || getInitialTime(date)}
-                                onChange={(e) => handleTimeChange(date, e.target.value)}
-                                className="time-input"
-                                min={isToday(new Date(date)) ? getInitialTime(date) : undefined}
-                                required
-                            />
+                            {times[date].length > 0 ? (
+                                times[date].map((time, index) => (
+                                    <div key={index} className="time-input-group">
+                                        <button
+                                            type="button"
+                                            className="add-time-button"
+                                            onClick={() => handleAddTime(date)}
+                                        >
+                                            +
+                                        </button>
+                                        {times[date].length > 0 && (
+                                            <button
+                                                type="button"
+                                                className="remove-time-button"
+                                                onClick={() => {
+                                                    const newTimes = { ...times };
+                                                    newTimes[date].splice(index, 1);
+                                                    setTimes(newTimes);
+                                                }}
+                                            >
+                                                &ndash;
+                                            </button>
+                                        )}
+                                        <input
+                                            type="time"
+                                            value={time || getInitialTime(date)}
+                                            onChange={(e) => handleTimeChange(date, index, e.target.value)}
+                                            className="time-input"
+                                            min={isToday(new Date(date)) ? getInitialTime(date) : undefined}
+                                            required
+                                        />
+                                    </div>
+                                ))
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="add-time-button"
+                                    onClick={() => handleAddTime(date)}
+                                >
+                                    + Add Time
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>
                 <div className="popup-footer">
-                    <button className={`confirm-button align-items-center ${isButtonClicked ? "fade-out" : ""}`} onClick={handleConfirm}
-                            disabled={!selectedDates.length || selectedDates.some((date) => !times[date])}>
-                        Activate Workflow
+                    <button
+                        className="confirm-button"
+                        onClick={handleConfirm}
+                        disabled={selectedDates.length === 0 || Object.values(times).some((timeslot) => timeslot.length === 0) || hasDuplicateTimes}
+                    >
+                        {hasDuplicateTimes ? 'Duplicate Time' : 'Confirm'}
                     </button>
                 </div>
             </div>

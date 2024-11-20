@@ -472,6 +472,7 @@ const GmailWorkflowPage = () => {
                     open={isPopupOpen}
                     onClose={() => setIsPopupOpen(false)}
                     onConfirm={handleConfirm}
+                    workflowID={id}
                 />
             )}
             <Footer/>
