@@ -42,7 +42,10 @@ const GmailWorkflowPage = () => {
     const fetchKeyNames = async () => {
         try {
             const response = await api.get(`/workflow/${id}/keysname/`);
-            setKeyNames(response.data.keyNames || []);
+            console.log("Response", response)
+            console.log(".Data.key", response.data.keyNames)
+            setKeyNames(response.data.keyNames);
+            console.log("Keys: ", keyNames)
         } catch (error) {
             console.error("Failed to fetch key names:", error);
         }
@@ -65,7 +68,7 @@ const GmailWorkflowPage = () => {
             const response = await api.get(`/workflow/${id}/file-metadata`);
             if (response.data.filename) {
                 setUploadedFileName(response.data.filename);
-                console.log("File added:", uploadedFileName);
+                console.log("File meta added:", uploadedFileName);
                 dispatch(addFile({ name: response.data.filename }));
             }
         } catch (error) {
@@ -77,23 +80,20 @@ const GmailWorkflowPage = () => {
     const uploadFile = useSelector((state) => state.files.uploadFile);
 
     useEffect(() => {
-        console.log("useEffect triggered", workflowObjects);
+        console.log("--------- useEffect triggered------------");
         // Fetch key names from the backend on component mound or id change
         if (!workflowObjects.length){
             fetchKeyNames();
-            console.log('fetch key name from database', keyNames);
             fetchWorkflowData();
-            console.log('fetch flow object data');
         }
 
         // Fetch file metadata only if there's no file data in Redux or workflowObjects
         if (!uploadedFileName && !workflowObjects.length) {
             fetchFileMetadata();
-            console.log('fetch file meta data');
         } else if (uploadFile) {
             setUploadedFileName(uploadFile.name); // Set file name from Redux
         }
-        console.log("FileUpdate state:", fileUpdate);
+        console.log("-------- FileUpdate state:", fileUpdate);
         setFileUpdate(false);
         
     }, [id, fileUpdate]);

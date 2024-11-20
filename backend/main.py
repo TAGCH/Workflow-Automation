@@ -231,12 +231,14 @@ async def get_data_keys(flow_id: int, db: db_dependency):
     """Fetch unique keys from imported data."""
 
     workflow_data = db.query(models.WorkflowsImportsData).filter(models.WorkflowsImportsData.workflow_id == flow_id).first()
+    print(f"Workflow data: {workflow_data.data[0].keys()}")
     # No data is found
     if not workflow_data or not workflow_data.data:
         raise HTTPException(status_code=404, detail="Workflow data not found")
 
     # Extract unique keys from all dictionaries in the list
-    unique_keys = {key for record in workflow_data.data for key in record.keys()}
+    unique_keys = workflow_data.data[0].keys()
+    print(f"Unique_key: {unique_keys}")
     return {"keyNames": list(unique_keys)}
 
 @app.get("/workflow/{flow_id}/data")
