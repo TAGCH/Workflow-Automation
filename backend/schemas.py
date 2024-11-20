@@ -25,8 +25,6 @@ class User(_UserBase):
         
 class UpdateflowBase(BaseModel):
     trigger_time: datetime  # Adjust based on your requirements
-    trigger_frequency: Optional[str] = None  # Adjust based on your requirements
-    trigger_day: Optional[str] = None  # Adjust based on your requirements
     status: bool # E.g., "started", "stopped"
     
     @field_validator('trigger_time')
@@ -48,17 +46,7 @@ class WorkflowBase(BaseModel):
     owner_id: int
     sender_email: EmailStr
     sender_hashed_password: str
-    trigger_time: Optional[datetime] = None # Adjust based on your requirements
-    trigger_frequency: Optional[str] = None  # Adjust based on your requirements
-    trigger_day: Optional[str] = None  # Adjust based on your requirements
     status: bool # E.g., "started", "stopped"
-    
-    @field_validator('trigger_time')
-    def convert_to_timezone(cls, v):
-        if isinstance(v, datetime):
-            # Convert to Bangkok time zone (or any other time zone)
-            return v.astimezone(ZoneInfo("Asia/Bangkok"))
-        return v
 
     class Config:
         orm_mode = True
@@ -81,6 +69,20 @@ class GmailflowModel(GmailflowBase):
 
     # class Config:
     #     orm_mode = True
+
+class TimestampBase(BaseModel):
+    workflow_id: int
+    trigger_time: datetime
+
+    @field_validator('trigger_time')
+    def convert_to_timezone(cls, v):
+        if isinstance(v, datetime):
+            # Convert to Bangkok time zone (or any other time zone)
+            return v.astimezone(ZoneInfo("Asia/Bangkok"))
+        return v
+
+class TimestampModel(BaseModel):
+    id: int
 
 class WorkflowImportsDataBase(BaseModel):
     data: List[Dict[str, Any]]
