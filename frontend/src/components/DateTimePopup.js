@@ -12,6 +12,34 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
     const [isButtonClicked, setIsButtonClicked] = useState(false);
     const [hasDuplicateTimes, setHasDuplicateTimes] = useState(false);
 
+    useEffect(() => {
+        const fetchTimes = async () => {
+            try {
+                const response = await api.get(`/timestamps/${workflowID}`);
+                const timestamps = response.data;
+
+                // Organize times based on dates
+                const organizedTimes = {};
+                timestamps.forEach((timestamp) => {
+                    const date = format(new Date(timestamp.trigger_time), "yyyy-MM-dd");
+                    if (!organizedTimes[date]) {
+                        organizedTimes[date] = [];
+                    }
+                    organizedTimes[date].push(format(new Date(timestamp.trigger_time), "HH:mm"));
+                });
+
+                setTimes(organizedTimes);
+                setSelectedDates(Object.keys(organizedTimes));
+            } catch (error) {
+                console.error("Error fetching times:", error);
+            }
+        };
+
+        if (workflowID) {
+            fetchTimes();
+        }
+    }, [workflowID]);
+
     const checkForDuplicateTimes = (times) => {
         let hasDuplicates = false;
 

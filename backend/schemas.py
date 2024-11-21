@@ -74,6 +74,7 @@ class TimestampBase(BaseModel):
 
 class TimestampModel(BaseModel):
     id: int
+    trigger_time: datetime
 
 class WorkflowImportsDataBase(BaseModel):
     data: List[Dict[str, Any]]
