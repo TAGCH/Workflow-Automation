@@ -32,6 +32,38 @@ const GmailWorkflowPage = () => {
 
     const [isPopupOpen, setIsPopupOpen] = useState(false); // New state for popup visibility
     const [selectedDatesAndTimes, setSelectedDatesAndTimes] = useState([]);
+    const [isActivated, setIsActivated] = useState(false);
+
+    const activateWorkflow = async () => {
+        try {
+            // Determine the new status (1 for active, 0 for inactive)
+            const newStatus = 1;
+
+            // Make the PUT request to update the workflow status
+            const response = await api.put(`/workflows/${id}/`, { status: newStatus });
+            setIsActivated(true);  // Set to true if status is 1 (active), false if 0 (inactive)
+
+        } catch (err) {
+            console.error('Failed to toggle workflow status:', err);
+        }
+    };
+
+    const deactivateWorkflow = async () => {
+        try {
+            // Determine the new status (1 for active, 0 for inactive)
+            const newStatus = 0;
+
+            // Make the PUT request to update the workflow status
+            const response = await api.put(`/workflows/${id}/`, { status: newStatus });
+
+            // Update the state based on the response
+            const updatedWorkflow = response.data;
+            setIsActivated(false);  // Set to true if status is 1 (active), false if 0 (inactive)
+
+        } catch (err) {
+            console.error('Failed to toggle workflow status:', err);
+        }
+    };
 
     const openPopup = () => setIsPopupOpen(true);
 
@@ -48,9 +80,14 @@ const GmailWorkflowPage = () => {
 
     const fetchFlows = async () => {
         const response = await api.get(`/workflow/${id}/`);
-        console.log('normal fetchflow')
+        console.log('Fetch data:', response.data); // Debug the response
         setWorkflows(response.data);
+        setIsActivated(response.data.status);
     };
+
+    useEffect(() => {
+        fetchFlows();
+    }, [id]);
 
     const fetchRecentData = async () => {
         try {
@@ -381,8 +418,6 @@ const GmailWorkflowPage = () => {
         // clearFile();
     };
 
-
-
     return (
         <div>
             <Navbar />
@@ -459,6 +494,13 @@ const GmailWorkflowPage = () => {
                                             value="Send"> Send
                                     </button>
                                 </form>
+                                <button
+                                    onClick={isActivated ? deactivateWorkflow : activateWorkflow}
+                                    className={`btn ${isActivated ? 'btn-danger' : 'btn-success'} mt-2 w-100`}
+                                    name="action"
+                                >
+                                    {isActivated ? 'Deactivate Workflow' : 'Activate Workflow'}
+                                </button>
                                 <button onClick={openPopup} className="btn btn-secondary mt-3 w-100">
                                     Select Date and Time
                                 </button>

@@ -185,7 +185,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
     const handleAddTime = (date) => {
         const newTimes = { ...times };
         if (!newTimes[date]) newTimes[date] = [];
-        newTimes[date].push("");
+        newTimes[date].push(getInitialTime(date));
         setTimes(newTimes);
     };
 
