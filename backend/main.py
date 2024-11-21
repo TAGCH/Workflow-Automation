@@ -122,7 +122,7 @@ async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=
     print('workflow created and save to database')
     return workflow
 
-@app.put("/workflows/{flow_id}/", response_model=UpdateflowModel)
+@app.put("/workflows/{flow_id}/", response_model=WorkflowModel)
 async def update_workflow(flow_id: int, updatedflow: UpdateflowStatusBase, db: db_dependency):
     # Fetch the existing workflow from the database
     db_workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
@@ -268,7 +268,7 @@ async def check_workflows_for_trigger():
     timestamps = db.query(models.Timestamp).filter(
         models.Timestamp.trigger_time != None,
         models.Timestamp.trigger_time <= current_time,
-        current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 10 SECOND")),
+        current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 59 SECOND")),
     ).all()
 
     print(f"Scheduled Timestamps: {timestamps}")
@@ -328,7 +328,7 @@ async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Sessi
 @app.on_event("startup")
 async def start_scheduler():
     pass
-    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=10)
+    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=59)
     scheduler.start()
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
