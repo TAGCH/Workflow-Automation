@@ -32,6 +32,31 @@ const GmailWorkflowPage = () => {
 
     const [isPopupOpen, setIsPopupOpen] = useState(false); // New state for popup visibility
     const [selectedDatesAndTimes, setSelectedDatesAndTimes] = useState([]);
+    const [isActivated, setIsActivated] = useState(false);
+
+    const activateWorkflow = async () => {
+        try {
+            // Call the backend API to toggle the workflow status
+            const response = await api.put(`/workflows/${id}/`, { status: !isActivated });
+            const updatedWorkflow = response.data;
+            setIsActivated(updatedWorkflow.status === 1); // Set the state based on the response
+
+        } catch (err) {
+            console.error(`Failed to toggle workflow status: ${isActivated}`, err);
+        }
+    };
+
+    const deactivateWorkflow = async () => {
+        try {
+            // Call the backend API to toggle the workflow status
+            const response = await api.put(`/workflows/${id}/`);
+            const updatedWorkflow = response.data;
+            setIsActivated(updatedWorkflow.status === false); // Set the state based on the response
+
+        } catch (err) {
+            console.error('Failed to toggle workflow status:', err);
+        }
+    };
 
     const openPopup = () => setIsPopupOpen(true);
 
@@ -459,6 +484,9 @@ const GmailWorkflowPage = () => {
                                             value="Send"> Send
                                     </button>
                                 </form>
+                                <button onClick={activateWorkflow} className="btn btn-primary mt-2 w-100" name="action">
+                                    Activate Workflow
+                                </button>
                                 <button onClick={openPopup} className="btn btn-secondary mt-3 w-100">
                                     Select Date and Time
                                 </button>
@@ -472,6 +500,7 @@ const GmailWorkflowPage = () => {
                     open={isPopupOpen}
                     onClose={() => setIsPopupOpen(false)}
                     onConfirm={handleConfirm}
+                    workflowID={id}
                 />
             )}
             <Footer/>

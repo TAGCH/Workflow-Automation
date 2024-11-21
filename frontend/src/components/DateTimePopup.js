@@ -192,7 +192,7 @@ const DateTimePopup = ({ onClose, onConfirm }) => {
                 <div className="popup-footer">
                     <button className={`confirm-button align-items-center ${isButtonClicked ? "fade-out" : ""}`} onClick={handleConfirm}
                             disabled={!selectedDates.length || selectedDates.some((date) => !times[date])}>
-                        Activate Workflow
+                        Save Date
                     </button>
                 </div>
             </div>
