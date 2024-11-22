@@ -95,7 +95,7 @@ class TestModels(unittest.TestCase):
         self.db.add(workflow)
         self.db.commit()
 
-        gmailflow = Gmailflow(email="recipient@example.com", title="Test Email", body="This is a test email", name="Test Name", workflow_id=workflow.id)
+        gmailflow = Gmailflow(recipient_email="recipient@example.com", title="Test Email", body="This is a test email", name="Test Name", workflow_id=workflow.id)
         self.db.add(gmailflow)
         self.db.commit()
 

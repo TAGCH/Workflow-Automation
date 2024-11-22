@@ -291,6 +291,14 @@ async def check_workflows_for_trigger():
         current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 59 SECOND")),
     ).all()
 
+    # old_timestamps = db.query(models.Timestamp).filter(
+    #     models.Timestamp.trigger_time != None,
+    #     current_time >= func.date_add(models.Timestamp.trigger_time, text("INTERVAL 59 SECOND")),
+    # ).all()
+
+    # for old_time in old_timestamps:
+    #     db.delete(old_time)
+
     print(f"Scheduled Timestamps: {timestamps}")
 
     # this one most likely ain't right need to verify 1.timerange 2.active status 3. workflow_id == timestamps_id
@@ -348,7 +356,7 @@ async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Sessi
 @app.on_event("startup")
 async def start_scheduler():
     pass
-    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=59)
+    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=10)
     scheduler.start()
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
