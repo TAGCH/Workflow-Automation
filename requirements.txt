@@ -29,6 +29,7 @@ pytest
 pytest-asyncio
 pytest-cov
 sqlalchemy-utils==0.41.2
+gunicorn
 
 # Database
 pymysql
