@@ -11,12 +11,20 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
     const [isClosing, setIsClosing] = useState(false);
     const [isButtonClicked, setIsButtonClicked] = useState(false);
     const [hasDuplicateTimes, setHasDuplicateTimes] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [deletedTimes, setDeletedTimes] = useState([]);
 
     useEffect(() => {
         const fetchTimes = async () => {
             try {
                 const response = await api.get(`/timestamps/${workflowID}`);
                 const timestamps = response.data;
+
+                if (timestamps.length > 0) {
+                    setIsEditing(true); // There are existing times, mark as editing
+                } else {
+                    setIsEditing(false); // No existing times, mark as new creation
+                }
 
                 // Organize times based on dates
                 const organizedTimes = {};
@@ -25,7 +33,10 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
                     if (!organizedTimes[date]) {
                         organizedTimes[date] = [];
                     }
-                    organizedTimes[date].push(format(new Date(timestamp.trigger_time), "HH:mm"));
+                    organizedTimes[date].push({
+                        time: format(new Date(timestamp.trigger_time), "HH:mm"),
+                        id: timestamp.id,
+                    });
                 });
 
                 setTimes(organizedTimes);
@@ -46,10 +57,10 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         Object.keys(times).forEach((date) => {
             const timeSet = new Set();
             times[date].forEach((time) => {
-                if (timeSet.has(time)) {
+                if (timeSet.has(time.time)) {
                     hasDuplicates = true;
                 } else {
-                    timeSet.add(time);
+                    timeSet.add(time.time);
                 }
             });
         });
@@ -79,6 +90,13 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
 
         if (selectedDates.includes(formattedDate)) {
             setSelectedDates(selectedDates.filter((d) => d !== formattedDate));
+            if (isEditing) {
+                // When editing, mark all times for the date as deleted
+                setDeletedTimes((prevDeletedTimes) => [
+                    ...prevDeletedTimes,
+                    ...times[formattedDate].map((time) => time.id), // Assuming `time.id` exists
+                ]);
+            }
             const { [formattedDate]: _, ...rest } = times;
             setTimes(rest);
         } else {
@@ -98,20 +116,24 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         const inputTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), timeParts[0], timeParts[1]);
 
         const minTime = addMinutes(currentTime, 30);
+        const newTimes = { ...times };
+
+        // Check if the current value is a string or an object
+        if (typeof newTimes[date][index] === 'string') {
+            // If it's a string, convert it to an object with the time field
+            newTimes[date][index] = { time: newTimes[date][index] };
+        }
 
         if (isToday(new Date(date))) {
             if (isBefore(inputTime, minTime)) {
-                const newTimes = { ...times };
-                newTimes[date][index] = format(minTime, "HH:mm");
+                newTimes[date][index].time = format(minTime, "HH:mm");
                 setTimes(newTimes);
             } else {
-                const newTimes = { ...times };
-                newTimes[date][index] = selectedTime;
+                newTimes[date][index].time = selectedTime;
                 setTimes(newTimes);
             }
         } else {
-            const newTimes = { ...times };
-            newTimes[date][index] = selectedTime;
+            newTimes[date][index].time = selectedTime;
             setTimes(newTimes);
         }
     };
@@ -122,19 +144,32 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         const formattedTimestamps = selectedDates.map((date) => {
             const selectedDateTimes = times[date];
 
-            return selectedDateTimes.map((time) => {
-                const [hour, minute] = time.split(":");
-                const selectedDateTime = new Date(date);
-                selectedDateTime.setHours(hour, minute, 0, 0);
-
-                return {
-                    workflow_id: workflowID,
-                    trigger_time: selectedDateTime.toISOString(),
-                };
-            });
+            return selectedDateTimes.map((timeObj) => {
+                // Check if timeObj has a valid time property
+                if (timeObj && typeof timeObj.time === "string") {
+                    const [hour, minute] = timeObj.time.split(":");
+                    const selectedDateTime = new Date(date);
+                    selectedDateTime.setHours(hour, minute, 0, 0);
+                    console.log(timeObj);
+                    return {
+                        workflow_id: workflowID,
+                        trigger_time: selectedDateTime.toISOString(),
+                    };
+                } else {
+                    console.error("Invalid time format:", timeObj);
+                    return null; // Return null if time is invalid
+                }
+            }).filter((timestamp) => timestamp !== null); // Filter out any invalid timestamps
         }).flat();
 
         try {
+            // Now delete the timestamps marked for deletion
+            await Promise.all(
+                deletedTimes.map(async (id) => {
+                    await api.delete(`/timestamp/${id}`);
+                })
+            );
+            // First, create the new timestamps
             await Promise.all(
                 formattedTimestamps.map(async (timestamp) => {
                     await api.post("/timestamps/", timestamp);
@@ -150,10 +185,31 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
             }, 300);
         } catch (error) {
             console.error("Failed to create timestamps:", error);
-            alert("An error occurred while activating the workflow. Please try again.");
         }
     };
 
+
+    const handleDeleteTime = async (date, index) => {
+        const timeEntry = times[date][index];
+
+        if (timeEntry?.id) {
+            // Add to deletedTimes state
+            setDeletedTimes((prevDeletedTimes) => [...prevDeletedTimes, timeEntry.id]);
+        }
+
+        const newTimes = { ...times };
+        newTimes[date].splice(index, 1); // Remove the time entry from state
+        setTimes(newTimes);
+    };
+
+    const addDeletedTimes = async (date, index) => {
+        const timeEntry = times[date][index];
+
+        if (timeEntry?.id) {
+            // Add to deletedTimes state
+            setDeletedTimes((prevDeletedTimes) => [...prevDeletedTimes, timeEntry.id]);
+        }
+    };
 
     const renderCalendarDays = () => {
         const startOfCurrentMonth = startOfMonth(currentMonth);
@@ -203,17 +259,24 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
     const isNextMonthDisabled = isAfter(currentMonth, addMonths(new Date(), 24));
 
     const getInitialTime = (date) => {
+        const currentTime = new Date();
+
         if (isToday(new Date(date))) {
-            const currentTime = addMinutes(new Date(), 30);
-            return format(currentTime, "HH:mm");
+            const adjustedTime = addMinutes(currentTime, 30);
+            return format(adjustedTime, "HH:mm"); // Include seconds
         }
-        return "00:00";
+
+        return "00:00"; // Default to midnight with seconds
     };
 
     const handleAddTime = (date) => {
         const newTimes = { ...times };
+
         if (!newTimes[date]) newTimes[date] = [];
-        newTimes[date].push(getInitialTime(date));
+        newTimes[date].push({
+            time: getInitialTime(date),
+            id: null,
+        });
         setTimes(newTimes);
     };
 
@@ -279,9 +342,13 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
                                                 type="button"
                                                 className="remove-time-button"
                                                 onClick={() => {
-                                                    const newTimes = { ...times };
-                                                    newTimes[date].splice(index, 1);
-                                                    setTimes(newTimes);
+                                                    if (isEditing) {
+                                                        handleDeleteTime(date, index);
+                                                    } else {
+                                                        const newTimes = { ...times };
+                                                        newTimes[date].splice(index, 1);
+                                                        setTimes(newTimes);
+                                                    }
                                                 }}
                                             >
                                                 &ndash;
@@ -289,8 +356,14 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
                                         )}
                                         <input
                                             type="time"
-                                            value={time || getInitialTime(date)}
-                                            onChange={(e) => handleTimeChange(date, index, e.target.value)}
+                                            value={time.time || getInitialTime(date)}
+                                            onChange={(e) => {
+                                                const newTime = e.target.value;
+                                                handleTimeChange(date, index, newTime);
+                                                if (isEditing) {
+                                                    addDeletedTimes(date, index);
+                                                }
+                                            }}
                                             className="time-input"
                                             min={isToday(new Date(date)) ? getInitialTime(date) : undefined}
                                             required
@@ -313,9 +386,11 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
                     <button
                         className="confirm-button"
                         onClick={handleConfirm}
-                        disabled={selectedDates.length === 0 || Object.values(times).some((timeslot) => timeslot.length === 0) || hasDuplicateTimes}
+                        disabled={Object.values(times).some((timeslot) => timeslot.length === 0) || hasDuplicateTimes}
                     >
-                        {hasDuplicateTimes ? 'Duplicate Time' : 'Confirm'}
+                        {hasDuplicateTimes ? 'Duplicate Time' :
+                            isEditing ?
+                                (deletedTimes.length > 0 && selectedDates.length === 0 ? 'Delete All' : 'Save Edit') : 'Confirm'}
                     </button>
                 </div>
             </div>

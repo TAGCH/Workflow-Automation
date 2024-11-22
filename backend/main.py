@@ -13,6 +13,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, timedelta
 from sqlalchemy.sql import func
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 #email
 from fastapi import BackgroundTasks
@@ -154,11 +155,35 @@ async def delete_workflow(workflow_id: int, db: db_dependency):
 @app.get("/timestamps/{workflow_id}", response_model=List[TimestampModel])
 async def read_timestamps(workflow_id: int, db: db_dependency, skip: int=0, limit: int=100):
     timestamps = db.query(models.Timestamp).filter(models.Timestamp.workflow_id == workflow_id).offset(skip).limit(limit).all()
-    return timestamps
+    seen_times = set()
+    duplicates = []
+    unique_timestamps = []
+
+    for timestamp in timestamps:
+        if timestamp.trigger_time in seen_times:
+            duplicates.append(timestamp)
+        else:
+            seen_times.add(timestamp.trigger_time)
+            unique_timestamps.append(timestamp)
+
+    # Remove duplicates from the database
+    for duplicate in duplicates:
+        try:
+            db.delete(duplicate)
+        except IntegrityError:
+            db.rollback()  # Ensure the transaction stays valid
+            raise HTTPException(
+                status_code=500,
+                detail="Error deleting duplicate timestamp."
+            )
+
+    # Commit the deletions to the database
+    db.commit()
+
+    return unique_timestamps
 
 @app.post("/timestamps/", response_model=TimestampModel)
 async def create_timestamp(timestampbase: TimestampBase, db: db_dependency):
-
     try:
         # Create a new Gmailflow entry to save in the database
         timestampmodel = models.Timestamp(**timestampbase.model_dump())
@@ -174,12 +199,12 @@ async def create_timestamp(timestampbase: TimestampBase, db: db_dependency):
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
-    
+
 @app.delete("/timestamp/{timestamp_id}", response_model=TimestampModel)
 async def delete_timestamp(timestamp_id: int, db: db_dependency):
-    timestamp = db.query(models.Workflow).filter(models.Workflow.id == timestamp_id).first()
+    timestamp = db.query(models.Timestamp).filter(models.Timestamp.id == timestamp_id).first()
     if not timestamp:
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        raise HTTPException(status_code=404, detail="Timestamp not found")
     db.delete(timestamp)
     db.commit()
     return timestamp
