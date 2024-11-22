@@ -5,6 +5,7 @@ import VerticalNavbar from "../components/VerticalNavbar";
 import WorkflowCard from "../components/WorkflowCard";
 import "../styles/pages/Myflow.css"
 import {UserContext} from "../context/UserContext";
+import api from "../services/api";
 
 const MyflowPage = () => {
     const [workflows, setWorkflows] = useState([]);
@@ -13,8 +14,8 @@ const MyflowPage = () => {
     useEffect(() => {
         const fetchWorkflows = async () => {
             try {
-                const response = await fetch('http://localhost:8000/workflows');
-                const data = await response.json();
+                const response = await api.get("/workflows");
+                const data = await response.data;
                 const userWorkflows = data.filter(workflow => workflow.owner_id === user.id);
 
                 setWorkflows(userWorkflows);

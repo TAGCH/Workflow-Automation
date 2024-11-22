@@ -5,6 +5,7 @@ import VerticalNavbar from "../components/VerticalNavbar";
 import WorkflowCard from "../components/WorkflowCard";
 import { UserContext } from '../context/UserContext';
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const HomePage = () => {
     const { user } = useContext(UserContext);
@@ -26,8 +27,8 @@ const HomePage = () => {
 
     const fetchWorkflows = async () => {
         try {
-            const response = await fetch('http://localhost:8000/workflows');
-            const data = await response.json();
+            const response = await api.get("/workflows");
+            const data = await response.data;
             const lastTwoWorkflows = data.filter(workflow => workflow.owner_id === user.id).slice(-2);
             setWorkflows(lastTwoWorkflows);
         } catch (error) {
