@@ -177,12 +177,32 @@ async def create_timestamp(timestampbase: TimestampBase, db: db_dependency):
     
 @app.delete("/timestamp/{timestamp_id}", response_model=TimestampModel)
 async def delete_timestamp(timestamp_id: int, db: db_dependency):
-    timestamp = db.query(models.Workflow).filter(models.Workflow.id == timestamp_id).first()
+    timestamp = db.query(models.Timestamp).filter(models.Timestamp.id == timestamp_id).first()
     if not timestamp:
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        raise HTTPException(status_code=404, detail="Timestamp not found")
     db.delete(timestamp)
     db.commit()
     return timestamp
+
+@app.put("/timestamp/{timestamp_id}", response_model=TimestampModel)
+async def update_timestamp(timestamp_id: int, updated_timestampbase: UpdateTimestampBase, db: db_dependency):
+
+    # Fetch the existing timestamp from the database
+    db_timestamp = db.query(models.Timestamp).filter(models.Timestamp.id == timestamp_id).first()
+
+    # If the timestamp is not found, raise a 404 error
+    if not db_timestamp:
+        raise HTTPException(status_code=404, detail="Timestamp not found")
+
+    # Update the fields of the existing timestamp
+    for key, value in updated_timestampbase.dict(exclude_unset=True).items():
+        setattr(db_timestamp, key, value)
+
+    # Commit the changes to the database
+    db.commit()
+    db.refresh(db_timestamp)
+
+    return db_timestamp
     
 
 @app.post("/gmailflow/", response_model=GmailflowModel)
