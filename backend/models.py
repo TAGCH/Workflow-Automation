@@ -1,6 +1,6 @@
 import datetime as _dt
 from database import Base
-from sqlalchemy import Column, Integer, String, ForeignKey, Time, Boolean, JSON, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Time, Boolean, JSON, DateTime, ARRAY
 from sqlalchemy.orm import relationship
 from passlib.hash import bcrypt
 import datetime
@@ -18,6 +18,19 @@ class User(Base):
         return f"<User(id={self.id}, email={self.email})>"
 
 
+class Timestamp(Base):
+    __tablename__ = 'timestamps'
+    # Define the foreign key if needed
+    id = Column(Integer, primary_key=True, index=True)
+    workflow_id = Column(Integer, ForeignKey('workflows.id'))
+    trigger_time = Column(DateTime) # Time to trigger the workflow
+
+    # Establish the back reference
+    workflow = relationship("Workflow", back_populates="timestamps")
+
+    def __repr__(self):
+        return f"<Timestamp(id={self.id}, time={self.trigger_time}>"
+
 class Workflow(Base):
     __tablename__ = "workflows"
 
@@ -27,14 +40,12 @@ class Workflow(Base):
     owner_id = Column(Integer, ForeignKey('users.id'))
     sender_email = Column(String(255))  # Set a max length for the sender email
     sender_hashed_password = Column(String(128))  # Set a max length for the sender hashed password
-    trigger_time = Column(DateTime)  # Time to trigger the workflow
-    trigger_frequency = Column(String(50))  # e.g., 'daily', 'weekly', 'monthly'
-    trigger_day = Column(String(20))  # e.g., 'Monday' or '15' for day of the month
     status = Column(Boolean, default=False)  # False means stopped, True means started
 
     owner = relationship("User", back_populates="workflows")
     gmailflows = relationship("Gmailflow", back_populates="workflow", cascade="all, delete-orphan")
     workflow_imports_data = relationship('WorkflowsImportsData', back_populates="workflow", cascade= "all, delete-orphan")
+    timestamps = relationship("Timestamp", back_populates="workflow", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Workflow(id={self.id}, name={self.name}, type={self.type}, owner_id={self.owner_id})>"
@@ -44,7 +55,7 @@ class Gmailflow(Base):
     __tablename__ = 'gmailflow'
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(255), index=True)
+    recipient_email = Column(String(255), index=True)
     title = Column(String(255))
     body = Column(String(255))
     name = Column(String(255))

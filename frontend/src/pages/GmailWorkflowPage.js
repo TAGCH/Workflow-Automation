@@ -22,7 +22,7 @@ const GmailWorkflowPage = () => {
     const [emails, setEmails] = useState([]); // New state for storing emails
     const [workflows, setWorkflows] = useState([]);
     const [flowData, setFlowData] = useState({
-        email: '',
+        recipient_email: '',
         title: '',
         body: '',
         name: ''
@@ -32,6 +32,38 @@ const GmailWorkflowPage = () => {
 
     const [isPopupOpen, setIsPopupOpen] = useState(false); // New state for popup visibility
     const [selectedDatesAndTimes, setSelectedDatesAndTimes] = useState([]);
+    const [isActivated, setIsActivated] = useState(false);
+
+    const activateWorkflow = async () => {
+        try {
+            // Determine the new status (1 for active, 0 for inactive)
+            const newStatus = 1;
+
+            // Make the PUT request to update the workflow status
+            const response = await api.put(`/workflows/${id}/`, { status: newStatus });
+            setIsActivated(true);  // Set to true if status is 1 (active), false if 0 (inactive)
+
+        } catch (err) {
+            console.error('Failed to toggle workflow status:', err);
+        }
+    };
+
+    const deactivateWorkflow = async () => {
+        try {
+            // Determine the new status (1 for active, 0 for inactive)
+            const newStatus = 0;
+
+            // Make the PUT request to update the workflow status
+            const response = await api.put(`/workflows/${id}/`, { status: newStatus });
+
+            // Update the state based on the response
+            const updatedWorkflow = response.data;
+            setIsActivated(false);  // Set to true if status is 1 (active), false if 0 (inactive)
+
+        } catch (err) {
+            console.error('Failed to toggle workflow status:', err);
+        }
+    };
 
     const openPopup = () => setIsPopupOpen(true);
 
@@ -48,8 +80,32 @@ const GmailWorkflowPage = () => {
 
     const fetchFlows = async () => {
         const response = await api.get(`/workflow/${id}/`);
-        console.log('normal fetchflow')
+        console.log('Fetch data:', response.data); // Debug the response
         setWorkflows(response.data);
+        setIsActivated(response.data.status);
+    };
+
+    useEffect(() => {
+        fetchFlows();
+    }, [id]);
+
+    const fetchRecentData = async () => {
+        try {
+            const response = await api.get(`/gmailflow/${id}/recent`);
+            const recentData = response.data;
+
+            setFlowData({
+                recipient_email: recentData.recipient_email || '',
+                title: recentData.title || '',
+                body: recentData.body || '',
+                name: recentData.name || ''
+            });
+            setErrorMessage("");
+            console.log("Recent data loaded:", recentData);
+        } catch (error) {
+            console.error("Failed to fetch recent data:", error);
+            setErrorMessage("You have no saved data.");
+        }
     };
 
     // Function to fetch key names directly from the backend
@@ -205,31 +261,43 @@ const GmailWorkflowPage = () => {
     const handleFormSubmit = async (event) => {
         event.preventDefault(); // Prevent default form submission behavior
 
+        const action = event.nativeEvent.submitter?.value;
+
+        if (!action) {
+            console.error("No action detected. Check button configuration.");
+            return;
+        }
+
         try {
-            // Clear flows and reset form data before starting email sending process
-            fetchFlows();
-            setFlowData({
-                email: '',
-                title: '',
-                body: '',
-                name: '',
-                workflow_id: ''
-            });
 
-            console.log("Sending flow data:", flowData);
-            console.log("Workflow object entries", workflowObjects)
-            // Determine if any replacements are needed based on presence of '/' in flowData
-            const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
-            console.log("Need replacement.", workflowObjects);
+            console.log("Action:", action);
+    
+            if (action === "Save") {
+                console.log("Save button clicked");
+                // Clear flows and reset form data before starting email sending process
+                fetchFlows();
+                // setFlowData({
+                //     recipient_email: '',
+                //     title: '',
+                //     body: '',
+                //     name: '',
+                //     workflow_id: ''
+                // });
 
-            let emailPromises;
+                console.log("Sending flow data:", flowData);
+                console.log("Workflow object entries", workflowObjects)
+                // Determine if any replacements are needed based on presence of '/' in flowData
+                const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
+                console.log("Need replacement.", workflowObjects);
 
-            if (needsReplacement) {
-                // Generate an array of promises to send individualized emails
-                emailPromises = workflowObjects.map((recipient) => {
+                let emailPromises;
+
+                if (needsReplacement) {
+                    // Generate an array of promises to send individualized emails
+                    emailPromises = workflowObjects.map((recipient) => {
                     // Conditionally apply key replacement if needed
                     const personalizedEmail = {
-                        email: replaceKeysInString(flowData.email, recipient),
+                        recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
                         title: replaceKeysInString(flowData.title, recipient),
                         body: replaceKeysInString(flowData.body, recipient),
                         name: flowData.name, // Set name as-is from form data
@@ -239,46 +307,116 @@ const GmailWorkflowPage = () => {
                     console.log('Creating personalizedEmail:', personalizedEmail);
 
                     // Send API request for each personalized email
-                    return api.post(`/gmailflow/${id}/`, personalizedEmail);
+                    return api.post(`/gmailflow/`, personalizedEmail);
                 });
-            } else {
-                // Send a single email when no replacement is needed
-                const singleEmail = {
-                    email: flowData.email,
-                    title: flowData.title,
-                    body: flowData.body,
-                    name: flowData.name,
-                    workflow_id: id
-                };
+                } else {
+                    // Send a single email when no replacement is needed
+                    const singleEmail = {
+                        recipient_email: flowData.recipient_email,
+                        title: flowData.title,
+                        body: flowData.body,
+                        name: flowData.name,
+                        workflow_id: id
+                    };
 
-                console.log('Creating single email:', singleEmail);
-                emailPromises = [api.post(`/gmailflow/${id}/`, singleEmail)];
+                    console.log('Creating single email:', singleEmail);
+                    emailPromises = [api.post(`/gmailflow/`, singleEmail)];
+                }
+
+                // Wait for all email-sending promises to complete
+                await Promise.all(emailPromises);
+
+                console.log("Emails saved successfully");
+
+                // Refetch flows after email sending is complete
+                fetchFlows();
+
+                // Reset form data to initial state after successful email sending
+                // setFlowData({
+                //     recipient_email: '',
+                //     title: '',
+                //     body: '',
+                //     name: '',
+                //     workflow_id: ''
+                // });
             }
 
-            // Wait for all email-sending promises to complete
-            await Promise.all(emailPromises);
+            else if (action === "Send") {
+                console.log("Send button clicked");
+                fetchFlows();
+                // setFlowData({
+                //     recipient_email: '',
+                //     title: '',
+                //     body: '',
+                //     name: '',
+                //     workflow_id: ''
+                // });
+    
+                console.log("Sending flow data:", flowData);
+                console.log("Workflow object entries", workflowObjects)
+                // Determine if any replacements are needed based on presence of '/' in flowData
+                const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
+                console.log("Need replacement.", workflowObjects);
+    
+                let emailPromises;
+    
+                if (needsReplacement) {
+                    // Generate an array of promises to send individualized emails
+                    emailPromises = workflowObjects.map((recipient) => {
+                    // Conditionally apply key replacement if needed
+                    const personalizedEmail = {
+                            recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
+                            title: replaceKeysInString(flowData.title, recipient),
+                            body: replaceKeysInString(flowData.body, recipient),
+                            name: flowData.name, // Set name as-is from form data
+                            workflow_id: id // Set workflow_id directly
+                    };
+    
+                    console.log('Creating personalizedEmail:', personalizedEmail);
+    
+                        // Send API request for each personalized email
+                        return api.post(`/sendmail/${id}/`, personalizedEmail);
+                    });
 
-            console.log("Emails sent successfully");
+                } else {
+                        // Send a single email when no replacement is needed
+                        const singleEmail = {
+                            recipient_email: flowData.recipient_email,
+                            title: flowData.title,
+                            body: flowData.body,
+                            name: flowData.name,
+                            workflow_id: id
+                        };
+    
+                        console.log('Creating single email:', singleEmail);
+                        emailPromises = [api.post(`/sendmail/${id}/`, singleEmail)];
+                }
+    
+                // Wait for all email-sending promises to complete
+                await Promise.all(emailPromises);
+    
+                console.log("Emails saved successfully");
+    
+                // Refetch flows after email sending is complete
+                fetchFlows();
+    
+                // Reset form data to initial state after successful email sending
+                // setFlowData({
+                //         recipient_email: '',
+                //         title: '',
+                //         body: '',
+                //         name: '',
+                //         workflow_id: ''
+                // });
+            }
 
-            // Refetch flows after email sending is complete
-            fetchFlows();
-
-            // Reset form data to initial state after successful email sending
-            setFlowData({
-                email: '',
-                title: '',
-                body: '',
-                name: '',
-                workflow_id: ''
-            });
         } catch (error) {
             console.error("Error submitting the form:", error);
-            setErrorMessage("Invalid credentials. Please check sender's email and password.");
+            setErrorMessage("Something went wrong.", error);
         }
-        clearFile();
+
+        // clearFile();
     };
-
-
 
     return (
         <div>
@@ -310,7 +448,7 @@ const GmailWorkflowPage = () => {
                             <div className="card-body">
                                 <h5 className="text-center mb-4">Workflow user id: {id}</h5>
                                 <form onSubmit={handleFormSubmit}>
-                                    {['email', 'title', 'body', 'name'].map((field) => (
+                                    {['recipient_email', 'title', 'body', 'name'].map((field) => (
                                         <div className='mb-3' key={field}>
                                             <label htmlFor={field}
                                                    className='form-label'>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
@@ -327,7 +465,13 @@ const GmailWorkflowPage = () => {
                                                     ref={inputRef}
                                                 />
                                                 {showAutocomplete && currentField === field && keyNames.length > 0 && (
-                                                    <div ref={dropdownRef} className="autocomplete-dropdown" style={{ position: 'absolute', zIndex: 100, backgroundColor: 'white', border: '1px solid #ccc', width: '100%' }}>
+                                                    <div ref={dropdownRef} className="autocomplete-dropdown" style={{
+                                                        position: 'absolute',
+                                                        zIndex: 100,
+                                                        backgroundColor: 'white',
+                                                        border: '1px solid #ccc',
+                                                        width: '100%'
+                                                    }}>
                                                         {keyNames.map((name) => (
                                                             <div key={name}
                                                                  onClick={() => handleAutocompleteClick(name)}
@@ -340,8 +484,23 @@ const GmailWorkflowPage = () => {
                                             </div>
                                         </div>
                                     ))}
-                                    <button type='submit' className="btn btn-primary mt-2 w-100">Send</button>
+                                    <button onClick={fetchRecentData} className="btn btn-secondary mt-3 w-100">
+                                        Load Recent Data
+                                    </button>
+                                    <button type='submit' className="btn btn-primary mt-2 w-100" name="action"
+                                            value="Save"> Save
+                                    </button>
+                                    <button type='submit' className="btn btn-primary mt-2 w-100" name="action"
+                                            value="Send"> Send
+                                    </button>
                                 </form>
+                                <button
+                                    onClick={isActivated ? deactivateWorkflow : activateWorkflow}
+                                    className={`btn ${isActivated ? 'btn-danger' : 'btn-success'} mt-2 w-100`}
+                                    name="action"
+                                >
+                                    {isActivated ? 'Deactivate Workflow' : 'Activate Workflow'}
+                                </button>
                                 <button onClick={openPopup} className="btn btn-secondary mt-3 w-100">
                                     Select Date and Time
                                 </button>
@@ -355,6 +514,7 @@ const GmailWorkflowPage = () => {
                     open={isPopupOpen}
                     onClose={() => setIsPopupOpen(false)}
                     onConfirm={handleConfirm}
+                    workflowID={id}
                 />
             )}
             <Footer/>
