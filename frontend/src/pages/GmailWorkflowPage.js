@@ -103,7 +103,7 @@ const GmailWorkflowPage = () => {
             setErrorMessage("");
             console.log("Recent data loaded:", recentData);
         } catch (error) {
-            console.error("Failed to fetch recent data:", error);
+            console.error("Failed to fetch recent data: ", error);
             setErrorMessage("You have no saved data.");
         }
     };
@@ -114,7 +114,7 @@ const GmailWorkflowPage = () => {
             const response = await api.get(`/workflow/${id}/keysname/`);
             setKeyNames(response.data.keyNames || []);
         } catch (error) {
-            console.error("Failed to fetch key names:", error);
+            console.error("Failed to fetch key names: ", error);
         }
     };
 
@@ -123,7 +123,7 @@ const GmailWorkflowPage = () => {
         try {
             const response = await api.get(`/workflow/${id}/data/`);
             setWorkflowObjects(Object(response.data))
-            console.log("fetchFlowdata", response.data)
+            console.log("Flowdata fetched...")
         } catch (error) {
             console.error("Failed to fetch data from database");
         }
@@ -179,7 +179,7 @@ const GmailWorkflowPage = () => {
 
         const formData = new FormData();
         formData.append('file', file);
-
+        console.log("formdata: ", formData)
         try {
             const response = await api.post(`/workflow/${id}/import/`, formData, {
                 headers: {
@@ -201,7 +201,7 @@ const GmailWorkflowPage = () => {
         }
     };
 
-    const { getRootProps, getInputProps, open } = useDropzone({
+    const { getRootProps, getInputProps } = useDropzone({
         onDrop,
         noClick: false,
         noKeyboard: true,
