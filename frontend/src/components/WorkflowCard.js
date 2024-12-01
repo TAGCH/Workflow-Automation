@@ -2,8 +2,8 @@ import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import ggsheet from "../images/googlesheet.png";
 import gmail from "../images/gmail.png";
-import "../styles/components/WorkflowCard.css"
-import axios from "axios";
+import "../styles/components/WorkflowCard.css";
+import api from "../services/api"
 
 const WorkflowCard = ({ id, name, type, status, userId }) => {
     const [isDeleted, setIsDeleted] = useState(false);
@@ -17,7 +17,7 @@ const WorkflowCard = ({ id, name, type, status, userId }) => {
 
     const handleDeleteWorkflow = async () => {
         try {
-            const response = await axios.delete(`http://localhost:8000/workflows/${id}`);
+            const response = await api.delete(`/workflows/${id}`);
             console.log('Workflow deleted successfully:', response.data);
             setIsDeleted(true);
             setShowModal(false);
