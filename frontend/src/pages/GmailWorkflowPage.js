@@ -13,7 +13,7 @@ import ErrorMessage from "../components/ErrorMessage";
 
 const GmailWorkflowPage = () => {
     const { id } = useParams();
-    const { user } = useContext(UserContext);
+    const { user, token } = useContext(UserContext);
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState("");
     const [keyNames, setKeyNames] = useState([]);
@@ -79,7 +79,11 @@ const GmailWorkflowPage = () => {
     const dropdownRef = useRef(null);  // Ref for dropdown container
 
     const fetchFlows = async () => {
-        const response = await api.get(`/workflow/${id}/`);
+        const response = await api.get("/workflows", {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Add Authorization header
+                    },
+                });
         console.log('Fetch data:', response.data); // Debug the response
         setWorkflows(response.data);
         setIsActivated(response.data.status);

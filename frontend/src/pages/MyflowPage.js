@@ -13,6 +13,11 @@ const MyflowPage = () => {
 
     useEffect(() => {
         const fetchWorkflows = async () => {
+            if (!token) {
+                console.warn("No token available for authorization");
+                return;
+            }
+
             try {
                 const response = await api.get("/workflows", {
                     headers: {
@@ -29,7 +34,7 @@ const MyflowPage = () => {
         };
 
         fetchWorkflows();
-    }, [user.id, token]);
+    }, [user.id, token]); // Re-run if user ID or token changes
 
     return (
         <div>

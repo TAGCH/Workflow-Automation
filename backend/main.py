@@ -105,7 +105,7 @@ async def login(username: str, password: str):
 
 
 @app.get("/workflow/{flow_id}/", response_model=WorkflowModel)
-async def read_workflow(flow_id: int, db: db_dependency):
+async def read_workflow(flow_id: int, db: db_dependency, user: User = _fastapi.Depends(_services.get_current_user)):
     workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
     return workflow
 
