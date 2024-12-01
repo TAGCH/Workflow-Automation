@@ -14,7 +14,7 @@ const MyflowPage = () => {
     useEffect(() => {
         const fetchWorkflows = async () => {
             try {
-                const response = await api.get("/workflows");
+                const response = await api.get("/workflows/");
                 const data = await response.data;
                 const userWorkflows = data.filter(workflow => workflow.owner_id === user.id);
 
