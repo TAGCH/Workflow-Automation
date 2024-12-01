@@ -110,8 +110,13 @@ async def read_workflow(flow_id: int, db: db_dependency):
     return workflow
 
 @app.get("/workflows/", response_model=List[WorkflowModel])
-async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
-    workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+async def read_workflows(
+    db: db_dependency,
+    skip: int=0,
+    limit: int=100,
+    user: User = _fastapi.Depends(_services.get_current_user)):
+    
+    workflows = db.query(models.Workflow).filter(models.Workflow.owner_id == user.id).offset(skip).limit(limit).all()
     return workflows
 
 @app.post("/workflows/", response_model=WorkflowModel)
