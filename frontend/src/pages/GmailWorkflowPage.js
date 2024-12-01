@@ -10,6 +10,8 @@ import { useDropzone } from "react-dropzone";
 import { useDispatch, useSelector } from 'react-redux';
 import { addFile, clearFile } from '../redux/fileSlice';
 import ErrorMessage from "../components/ErrorMessage";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const GmailWorkflowPage = () => {
     const { id } = useParams();
@@ -447,39 +449,38 @@ const GmailWorkflowPage = () => {
                         <div className="card h-100">
                             <div className="card-body">
                                 <h5 className="text-center mb-4">Workflow user id: {id}</h5>
-                                <form onSubmit={handleFormSubmit}>
-                                    {['recipient_email', 'title', 'body', 'name'].map((field) => (
-                                        <div className='mb-3' key={field}>
-                                            <label htmlFor={field}
-                                                   className='form-label'>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
-                                            <div style={{position: 'relative'}}>
-                                                <input
-                                                    type={field === 'body' ? 'textarea' : 'text'}
-                                                    className='form-control'
-                                                    id={field}
-                                                    name={field}
-                                                    value={flowData[field]}
-                                                    onChange={handleInputChange}
-                                                    onBlur={handleInputBlur}  // Disable dropdown when user not focus    
-                                                    autoComplete='off'
-                                                    ref={inputRef}
-                                                />
-                                                {showAutocomplete && currentField === field && keyNames.length > 0 && (
-                                                    <div ref={dropdownRef} className="autocomplete-dropdown" style={{
-                                                        position: 'absolute',
-                                                        zIndex: 100,
-                                                        backgroundColor: 'white',
-                                                        border: '1px solid #ccc',
-                                                        width: '100%'
-                                                    }}>
-                                                        {keyNames.map((name) => (
-                                                            <div key={name}
-                                                                 onClick={() => handleAutocompleteClick(name)}
-                                                                 style={{padding: '5px', cursor: 'pointer'}}>
-                                                                {name}
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                <form onSubmit={handleFormSubmit} style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+                                    {['recipient_email', 'title', 'name', 'body'].map((field) => (
+                                        <div className="mb-4" key={field}>
+                                            <label
+                                                htmlFor={field}
+                                                className="form-label"
+                                            >
+                                                {field.charAt(0).toUpperCase() + field.slice(1)}:
+                                            </label>
+                                            <div style={{ position: 'relative', paddingBottom: '20px' }}>
+                                                {field === 'body' ? (
+                                                    <ReactQuill
+                                                        value={flowData[field]}
+                                                        onChange={(value) =>
+                                                            handleInputChange({ target: { name: field, value } })
+                                                        }
+                                                        onBlur={() => handleInputBlur(field)} // Disable dropdown when not focused
+                                                        theme="snow"
+                                                        style={{ height: '150px' }}
+                                                    />
+                                                ) : (
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        id={field}
+                                                        name={field}
+                                                        value={flowData[field]}
+                                                        onChange={handleInputChange}
+                                                        onBlur={handleInputBlur} // Disable dropdown when not focused
+                                                        autoComplete="off"
+                                                        ref={inputRef}
+                                                    />
                                                 )}
                                             </div>
                                         </div>
