@@ -1,6 +1,5 @@
 import React, { useState, useContext } from 'react';
 import gmailIcon from '../images/gmail.png';
-import ggsheetIcon from '../images/googlesheet.png';
 import { useNavigate } from "react-router-dom";
 import { UserContext } from '../context/UserContext';
 import api from '../services/api'; // Make sure this path is correct
@@ -51,8 +50,6 @@ const CreateflowPopup = ({ closePopup }) => {
             closePopup();
             if (workflowType === 'Send Email') {
                 navigate(`/gmailworkflow/${user.id}/${response.data.id}`);
-            } else if (workflowType === 'Update') {
-                navigate(`/spreadsheetflow/${user.id}/${response.data.id}`);
             }
         } catch (error) {
             console.error('Error creating workflow:', error);
@@ -135,23 +132,6 @@ const CreateflowPopup = ({ closePopup }) => {
                     >
                         <img src={gmailIcon} alt="Gmail Icon" style={{ width: '50px', height: '50px' }} />
                         <p className="pt-3">Send Email</p>
-                    </div>
-                    <div
-                        className={`option ${workflowType === 'Update' ? 'selected' : ''}`}
-                        onClick={() => handleOptionClick('Update')}
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                            padding: '10px',
-                            borderRadius: '8px',
-                            border: workflowType === 'Update' ? '2px solid #20c997' : '2px solid transparent',
-                            transition: 'all 0.3s ease'
-                        }}
-                    >
-                        <img src={ggsheetIcon} alt="Google Sheets Icon" style={{ width: '50px', height: '50px' }} />
-                        <p className="pt-3">Update</p>
                     </div>
                 </div>
 
