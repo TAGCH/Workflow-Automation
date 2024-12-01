@@ -27,7 +27,7 @@ const HomePage = () => {
 
     const fetchWorkflows = async () => {
         try {
-            const response = await api.get("/workflows");
+            const response = await api.get("/workflows/");
             const data = await response.data;
             const lastTwoWorkflows = data.filter(workflow => workflow.owner_id === user.id).slice(-2);
             setWorkflows(lastTwoWorkflows);
