@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.sql import func
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
+from fastapi.responses import RedirectResponse
 
 #email
 from fastapi import BackgroundTasks
@@ -46,7 +47,7 @@ scheduler = AsyncIOScheduler()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://workflow-automation-app.netlify.app", "http://localhost:3000"],
+    allow_origins=["https://workflow-automation-app.netlify.app"],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE)
     allow_headers=["*"],  # Allow all headers (Content-Type, Authorization, etc.)
@@ -63,6 +64,12 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 models.Base.metadata.create_all(bind=engine)
 
+@app.middleware("http")
+async def redirect_to_https(request, call_next):
+    if request.url.scheme == "http":
+        url = request.url.replace(scheme="https")
+        return RedirectResponse(url=str(url))
+    return await call_next(request)
 
 @app.post("/api/users")
 async def create_user(user: _schemas.UserCreate, db: _orm.Session = _fastapi.Depends(_services.get_db)):
@@ -208,7 +215,7 @@ async def delete_timestamp(timestamp_id: int, db: db_dependency):
     db.delete(timestamp)
     db.commit()
     return timestamp
-    
+
 
 @app.post("/gmailflow/", response_model=GmailflowModel)
 async def save_email(gmailflowbase: GmailflowBase, db: db_dependency):
