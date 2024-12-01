@@ -11,13 +11,13 @@ const WorkflowCard = ({ id, name, type, status, userId }) => {
     const navigate = useNavigate();
 
     const handleViewWorkflow = () => {
-        const route = type === "Send Email" ? `/gmailworkflow/${userId}/${id}` : `/spreadsheetflow/${userId}/${id}`;
+        const route = type === "Send Email" ? `/gmailworkflow/${userId}/${id}/` : `/spreadsheetflow/${userId}/${id}/`;
         navigate(route);
     };
 
     const handleDeleteWorkflow = async () => {
         try {
-            const response = await api.delete(`/workflows/${id}`);
+            const response = await api.delete(`/workflows/${id}/`);
             console.log('Workflow deleted successfully:', response.data);
             setIsDeleted(true);
             setShowModal(false);
