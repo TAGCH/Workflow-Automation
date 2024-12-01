@@ -1,0 +1,84 @@
+/* Container for the entire popup */
+.guideline-popup {
+    position: fixed;
+    top: 20%; /* Centers the popup vertically */
+    left: 30%; /* Centers the popup horizontally */
+    width: 40%; /* Width of the popup */
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
+    border-radius: 8px;
+    z-index: 1000; /* Ensures the popup is above other elements */
+    padding: 20px; /* Adds padding inside the popup */
+    font-family: Arial, sans-serif; /* Sets a clean font */
+}
+
+/* Styles for the content inside the popup */
+.guideline-popup-content {
+    position: relative; /* Ensures positioning for children */
+}
+
+/* Header container for navigation buttons */
+.guideline-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px; /* Space below the header */
+}
+
+/* Navigation buttons */
+.guideline-header .btn-link {
+    font-size: 1rem; /* Standard font size for buttons */
+    text-decoration: none; /* Removes underline from buttons */
+    color: #007bff; /* Default color (blue) */
+    cursor: pointer;
+    padding: 5px 10px; /* Adds some padding for better click area */
+    border: none;
+    background: none; /* Removes default button styling */
+    outline: none;
+    transition: color 0.2s ease, font-weight 0.2s ease; /* Smooth transitions */
+}
+
+/* Active button styling */
+.guideline-header .btn-link.active {
+    font-weight: bold; /* Highlights active button */
+    color: #20c997; /* Green color for active */
+    border-bottom: 2px solid #20c997; /* Adds underline for active tab */
+}
+
+/* Close button (top-right corner) */
+.close-icon {
+    position: absolute; /* Places it in the corner */
+    top: 5px;
+    right: 5px;
+    font-size: 1.5rem; /* Slightly larger icon */
+    cursor: pointer;
+    color: #6c757d; /* Subtle gray color */
+    transition: color 0.2s ease; /* Smooth hover transition */
+}
+
+/* Close button hover effect */
+.close-icon:hover {
+    color: #dc3545; /* Red color on hover */
+}
+
+/* Guideline content section */
+.guideline-content {
+    margin-top: 15px; /* Space between header and content */
+    font-size: 1rem; /* Standard font size for text */
+    line-height: 1.5; /* Improves readability */
+    color: #333; /* Dark gray text */
+}
+
+/* Ordered and unordered lists */
+.guideline-content ol, .guideline-content ul {
+    margin: 10px 0 10px 20px; /* Adds space and indents */
+}
+
+/* List items */
+.guideline-content li {
+    margin-bottom: 8px; /* Space between items */
+}
+
+/* Bold text for magic tag examples */
+.guideline-content strong {
+    color: #20c997; /* Green color for emphasis */
+}

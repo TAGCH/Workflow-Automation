@@ -424,7 +424,7 @@ const GmailWorkflowPage = () => {
             <div className="d-flex">
                 <VerticalNavbar />
                 <div className="container d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
-                    <h2 className="text-center py-5">Workflow Name</h2>
+                    <h2 className="text-center py-5">Gmail Workflow</h2>
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body d-flex flex-column">
