@@ -47,7 +47,7 @@ scheduler = AsyncIOScheduler()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*", "https://workflow-automation-app.netlify.app"],
+    allow_origins=["https://workflow-automation-app.netlify.app"],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE)
     allow_headers=["*"],  # Allow all headers (Content-Type, Authorization, etc.)
