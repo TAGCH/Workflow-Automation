@@ -22,7 +22,7 @@ class Timestamp(Base):
     __tablename__ = 'timestamps'
     # Define the foreign key if needed
     id = Column(Integer, primary_key=True, index=True)
-    workflow_id = Column(Integer, ForeignKey('workflows.id'))
+    workflow_id = Column(Integer, ForeignKey('workflows.id', ondelete='CASCADE'))
     trigger_time = Column(DateTime) # Time to trigger the workflow
 
     # Establish the back reference

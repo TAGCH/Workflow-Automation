@@ -81,7 +81,7 @@ const GmailWorkflowPage = () => {
     const dropdownRef = useRef(null);  // Ref for dropdown container
 
     const fetchFlows = async () => {
-        const response = await api.get("/workflows/", {
+        const response = await api.get(`/workflow/${id}/`, {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
