@@ -73,7 +73,7 @@ const GmailWorkflowPage = () => {
     const handleConfirm = (selectedDatesAndTimes) => {
         setSelectedDatesAndTimes(selectedDatesAndTimes);
         setIsPopupOpen(false);
-        console.log("Confirmed dates and times:", selectedDatesAndTimes);
+        // console.log("Confirmed dates and times:", selectedDatesAndTimes);
     };
     const [fileUpdate, setFileUpdate] = useState(false);
 
@@ -86,7 +86,7 @@ const GmailWorkflowPage = () => {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
                 });
-        console.log('Fetch data:', response.data); // Debug the response
+        // console.log('Fetch data:', response.data); // Debug the response
         setWorkflows(response.data);
         setIsActivated(response.data.status);
     };
@@ -107,7 +107,7 @@ const GmailWorkflowPage = () => {
                 name: recentData.name || ''
             });
             setErrorMessage("");
-            console.log("Recent data loaded:", recentData);
+            // console.log("Recent data loaded:", recentData);
         } catch (error) {
             console.error("Failed to fetch recent data:", error);
             setErrorMessage("You have no saved data.");
@@ -129,7 +129,7 @@ const GmailWorkflowPage = () => {
         try {
             const response = await api.get(`/workflow/${id}/data`);
             setWorkflowObjects(Object(response.data))
-            console.log("fetchFlowdata", response.data)
+            // console.log("fetchFlowdata", response.data)
         } catch (error) {
             console.error("Failed to fetch data from database");
         }
@@ -141,7 +141,7 @@ const GmailWorkflowPage = () => {
             const response = await api.get(`/workflow/${id}/file-metadata/`);
             if (response.data.filename) {
                 setUploadedFileName(response.data.filename);
-                console.log("File added:", uploadedFileName);
+                // console.log("File added:", uploadedFileName);
                 dispatch(addFile({ name: response.data.filename }));
             }
         } catch (error) {
@@ -153,23 +153,23 @@ const GmailWorkflowPage = () => {
     const uploadFile = useSelector((state) => state.files.uploadFile);
 
     useEffect(() => {
-        console.log("useEffect triggered", workflowObjects);
+        // console.log("useEffect triggered", workflowObjects);
         // Fetch key names from the backend on component mound or id change
         if (!workflowObjects.length){
             fetchKeyNames();
-            console.log('fetch key name from database');
+            // console.log('fetch key name from database');
             fetchWorkflowData();
-            console.log('fetch flow object data');
+            // console.log('fetch flow object data');
         }
 
         // Fetch file metadata only if there's no file data in Redux or workflowObjects
         if (!uploadedFileName && !workflowObjects.length) {
             fetchFileMetadata();
-            console.log('fetch file meta data');
+            // console.log('fetch file meta data');
         } else if (uploadFile) {
             setUploadedFileName(uploadFile.name); // Set file name from Redux
         }
-        console.log("FileUpdate state:", fileUpdate);
+        // console.log("FileUpdate state:", fileUpdate);
         setFileUpdate(false);
         
     }, [id, fileUpdate]);
@@ -178,7 +178,7 @@ const GmailWorkflowPage = () => {
         const file = acceptedFiles[0];
 
         dispatch(clearFile());
-        console.log("Redux file state:", uploadFile);
+        // console.log("Redux file state:", uploadFile);
         dispatch(addFile({ name: file.name }));
         setUploadedFileName(file.name);
         setFileUpdate(true);
@@ -194,7 +194,7 @@ const GmailWorkflowPage = () => {
             });
 
             const workflowData = response.data.data;
-            console.log(workflowData);
+            // console.log(workflowData);
 
             if (workflowData.length > 0) {
                 const workflowKeys = Object.keys(workflowData[0]);
@@ -269,17 +269,12 @@ const GmailWorkflowPage = () => {
 
         const action = event.nativeEvent.submitter?.value;
 
-        if (!action) {
-            console.error("No action detected. Check button configuration.");
-            return;
-        }
-
         try {
 
-            console.log("Action:", action);
+            // console.log("Action:", action);
     
             if (action === "Save") {
-                console.log("Save button clicked");
+                // console.log("Save button clicked");
                 // Clear flows and reset form data before starting email sending process
                 fetchFlows();
                 // setFlowData({
@@ -290,11 +285,11 @@ const GmailWorkflowPage = () => {
                 //     workflow_id: ''
                 // });
 
-                console.log("Sending flow data:", flowData);
-                console.log("Workflow object entries", workflowObjects)
+                // console.log("Sending flow data:", flowData);
+                // console.log("Workflow object entries", workflowObjects)
                 // Determine if any replacements are needed based on presence of '/' in flowData
                 const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
-                console.log("Need replacement.", workflowObjects);
+                // console.log("Need replacement.", workflowObjects);
 
                 let emailPromises;
 
@@ -310,7 +305,7 @@ const GmailWorkflowPage = () => {
                         workflow_id: id // Set workflow_id directly
                     };
 
-                    console.log('Creating personalizedEmail:', personalizedEmail);
+                    // console.log('Creating personalizedEmail:', personalizedEmail);
 
                     // Send API request for each personalized email
                     return api.post(`/gmailflow/`, personalizedEmail);
@@ -325,14 +320,14 @@ const GmailWorkflowPage = () => {
                         workflow_id: id
                     };
 
-                    console.log('Creating single email:', singleEmail);
+                    // console.log('Creating single email:', singleEmail);
                     emailPromises = [api.post(`/gmailflow/`, singleEmail)];
                 }
 
                 // Wait for all email-sending promises to complete
                 await Promise.all(emailPromises);
 
-                console.log("Emails saved successfully");
+                // console.log("Emails saved successfully");
 
                 // Refetch flows after email sending is complete
                 fetchFlows();
@@ -348,7 +343,7 @@ const GmailWorkflowPage = () => {
             }
 
             else if (action === "Send") {
-                console.log("Send button clicked");
+                // console.log("Send button clicked");
                 fetchFlows();
                 // setFlowData({
                 //     recipient_email: '',
@@ -358,11 +353,11 @@ const GmailWorkflowPage = () => {
                 //     workflow_id: ''
                 // });
     
-                console.log("Sending flow data:", flowData);
-                console.log("Workflow object entries", workflowObjects)
+                // console.log("Sending flow data:", flowData);
+                // console.log("Workflow object entries", workflowObjects)
                 // Determine if any replacements are needed based on presence of '/' in flowData
                 const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
-                console.log("Need replacement.", workflowObjects);
+                // console.log("Need replacement.", workflowObjects);
     
                 let emailPromises;
     
@@ -378,7 +373,7 @@ const GmailWorkflowPage = () => {
                             workflow_id: id // Set workflow_id directly
                     };
     
-                    console.log('Creating personalizedEmail:', personalizedEmail);
+                    // console.log('Creating personalizedEmail:', personalizedEmail);
     
                         // Send API request for each personalized email
                         return api.post(`/sendmail/${id}/`, personalizedEmail);
@@ -394,14 +389,14 @@ const GmailWorkflowPage = () => {
                             workflow_id: id
                         };
     
-                        console.log('Creating single email:', singleEmail);
+                        // console.log('Creating single email:', singleEmail);
                         emailPromises = [api.post(`/sendmail/${id}/`, singleEmail)];
                 }
     
                 // Wait for all email-sending promises to complete
                 await Promise.all(emailPromises);
     
-                console.log("Emails saved successfully");
+                // console.log("Emails saved successfully");
     
                 // Refetch flows after email sending is complete
                 fetchFlows();

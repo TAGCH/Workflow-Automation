@@ -234,7 +234,7 @@ async def save_email(gmailflowbase: GmailflowBase, db: db_dependency):
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/gmailflow/{flow_id}/recent", response_model=GmailflowModel)
+@app.get("/gmailflow/{flow_id}/recent")
 async def get_recent_gmailflow(flow_id: int, db: db_dependency):
     try:
         recent_flow = (
