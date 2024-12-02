@@ -304,7 +304,7 @@ async def check_workflows_for_trigger():
     ).all()
 
     print(f"Scheduled Timestamps: {timestamps}")
-    print(f"Archived Timestamps: {old_timestamps[:5]}")
+    print(f"Past Timestamps: {old_timestamps[:5]}")
 
     for time in old_timestamps:
         db.delete(time)
@@ -365,7 +365,7 @@ async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Sessi
 @app.on_event("startup")
 async def start_scheduler():
     pass
-    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=30)
+    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=50)
     scheduler.start()
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])
