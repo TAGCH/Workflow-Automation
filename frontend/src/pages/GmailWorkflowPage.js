@@ -225,12 +225,15 @@ const GmailWorkflowPage = () => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         const fieldName = event.target.name;
 
-        // Check value include ' /' to trigger autocomplete
-        if (value.includes(" /")) {
-            setShowAutocomplete(true); // drop down state
+        // Check if the value includes " /" and it is valid to trigger autocomplete
+        const hasTriggerPattern = value.includes(" /");
+        const hasKeyAfterPattern = value.match(/ \/[\w]+/); // Check if " /" is followed by valid text
+
+        if (hasTriggerPattern && !hasKeyAfterPattern) {
+            setShowAutocomplete(true); // Show dropdown only if " /" is valid for autocomplete
             setCurrentField(fieldName);
         } else {
-            setShowAutocomplete(false);
+            setShowAutocomplete(false); // Hide dropdown otherwise
         }
 
         setFlowData({
