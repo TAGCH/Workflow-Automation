@@ -27,11 +27,13 @@ const HomePage = () => {
 
     const fetchWorkflows = async () => {
         try {
+
             const response = await api.get("/workflows/", {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
                 });
+
             const data = await response.data;
             const lastTwoWorkflows = data.filter(workflow => workflow.owner_id === user.id).slice(-2);
             setWorkflows(lastTwoWorkflows);

@@ -19,12 +19,14 @@ const MyflowPage = () => {
             }
 
             try {
-                const response = await api.get("/workflows", {
+
+                const response = await api.get("/workflows/", {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
                 });
                 const data = response.data;
+
                 const userWorkflows = data.filter(workflow => workflow.owner_id === user.id);
 
                 setWorkflows(userWorkflows);
