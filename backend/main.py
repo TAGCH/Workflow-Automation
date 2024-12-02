@@ -4,7 +4,7 @@ import fastapi as _fastapi
 import fastapi.security as _security
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
-import io
+import re
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
@@ -438,13 +438,23 @@ async def get_data_records(flow_id: int, db: db_dependency):
     return workflow_data.data
 
 @app.post("/workflow/{flow_id}/update-sheet")
-async def update_google_sheet(spreadsheet_id: str = Form(...), file: UploadFile = File(...)):
+async def update_google_sheet(spreadsheet_url: str = Form(...), file: UploadFile = File(...)):
     """
     Overwrite the content of a Google Sheet by reading an Excel file with pandas.
     Preserve original data formats (e.g., phone numbers) and parse datetime columns dynamically.
     """
     print('<<<<<<<INVOKE UPDATE>>>>>>')
     try:
+        # Extract the spreadsheet ID from the provided URL
+        match = re.search(r"/d/([a-zA-Z0-9-_]+)", spreadsheet_url)
+        if not match:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid Google Sheets URL. Please provide a valid link."
+            )
+        spreadsheet_id = match.group(1)
+        print(spreadsheet_id)
+
         # Step 1: Save the uploaded file temporarily
         contents = await file.read()
         
@@ -476,3 +486,42 @@ async def update_google_sheet(spreadsheet_id: str = Form(...), file: UploadFile 
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/workflow/{flow_id}/create-google-sheet/")
+async def create_google_sheet(sheet_title: str):
+    """
+    Endpoint to create a new Google Sheet using a service account.
+
+    Args:
+        sheet_title (str): The title of the new Google Sheet.
+
+    Returns:
+        dict: The ID and URL of the created Google Sheet.
+    """
+    try:
+        service = build("sheets", "v4", credentials=sheet_credentials)
+
+        # Define the properties of the new spreadsheet
+        spreadsheet = {
+            "properties": {
+                "title": sheet_title
+            }
+        }
+
+        # Create the spreadsheet
+        spreadsheet_response = service.spreadsheets().create(body=spreadsheet, fields="spreadsheetId").execute()
+
+        # Get the spreadsheet ID
+        spreadsheet_id = spreadsheet_response.get("spreadsheetId")
+
+        # Build the URL for the Google Sheet
+        sheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
+
+        return {
+            "message": "Spreadsheet created successfully!",
+            "spreadsheet_id": spreadsheet_id,
+            "spreadsheet_url": sheet_url,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")

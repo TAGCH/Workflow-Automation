@@ -14,24 +14,23 @@ const SpreadSheetWorkflowPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [spreadsheetId, setSpreadsheetId] = useState("");
+    const [spreadsheetURL, setspreadsheetURL] = useState("");
 
 const onDrop = async (acceptedFiles) => {
     const file = acceptedFiles[0];
 
-    if (!spreadsheetId) {
+    if (!spreadsheetURL) {
         alert("Please enter a valid Google Sheet ID.");
         return;
     }
 
     const formData = new FormData();
     formData.append("file", file); // Only send the file in FormData
-    formData.append("spreadsheet_id", spreadsheetId);
+    formData.append("spreadsheet_url", spreadsheetURL);
 
     try {
         // Send spreadsheet_id as a query parameter
-        const response = await api.post(
-            `/workflow/${id}/update-sheet`,
+        await api.post(`/workflow/${id}/update-sheet`,
             formData,
             {
                 headers: {
@@ -72,8 +71,8 @@ const onDrop = async (acceptedFiles) => {
                                     type="text"
                                     id="googleSheetId"
                                     className="form-control"
-                                    value={spreadsheetId}
-                                    onChange={(e) => setSpreadsheetId(e.target.value)}
+                                    value={spreadsheetURL}
+                                    onChange={(e) => setspreadsheetURL(e.target.value)}
                                     placeholder="Enter Google Sheet ID"
                                 />
                             </div>
