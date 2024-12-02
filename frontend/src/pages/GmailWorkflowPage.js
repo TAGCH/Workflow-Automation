@@ -127,7 +127,7 @@ const GmailWorkflowPage = () => {
     // Function to fetch data from database
     const fetchWorkflowData = async () => {
         try {
-            const response = await api.get(`/workflow/${id}/data/`);
+            const response = await api.get(`/workflow/${id}/data`);
             setWorkflowObjects(Object(response.data))
             console.log("fetchFlowdata", response.data)
         } catch (error) {
