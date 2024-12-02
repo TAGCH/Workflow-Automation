@@ -116,7 +116,7 @@ const GmailWorkflowPage = () => {
             // console.log("Response: ", response.data.keyNames);
             setKeyNames(response.data.keyNames);
         } catch (error) {
-            console.error("Failed to fetch key names: ", error);
+            console.log("Failed to fetch key names: ", error);
         }
     };
 
@@ -127,7 +127,7 @@ const GmailWorkflowPage = () => {
             setWorkflowObjects(Object(response.data))
             console.log("Flowdata fetched...")
         } catch (error) {
-            console.error("Failed to fetch data from database");
+            console.log("Failed to fetch data from database");
         }
     };
     
@@ -153,13 +153,21 @@ const GmailWorkflowPage = () => {
         console.log("--------- useEffect triggered------------");
         // Fetch key names from the backend on component mound or id change
         if (!workflowObjects.length){
-            fetchKeyNames();
-            fetchWorkflowData();
+            try{
+                fetchKeyNames();
+                fetchWorkflowData();
+            } catch(error){
+                console.error("Failed to fetch data:", error);
+            }
         }
 
         // Fetch file metadata only if there's no file data in Redux or workflowObjects
         if (!uploadedFileName && !workflowObjects.length) {
-            fetchFileMetadata();
+            try{
+                fetchFileMetadata();
+            } catch(error){
+                console.error("Failed to fetch data:", error);
+            }
         } else if (uploadFile) {
             setUploadedFileName(uploadFile.name); // Set file name from Redux
         }

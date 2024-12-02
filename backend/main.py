@@ -139,7 +139,7 @@ async def create_workflows(workflow: WorkflowBase, db: db_dependency, skip: int=
     print('workflow created and save to database')
     return workflow
 
-@app.put("/workflows/{flow_id}/")
+@app.put("/workflows/{flow_id}/", response_model=WorkflowModel)
 async def update_workflow(flow_id: int, updatedflow: UpdateflowStatusBase, db: db_dependency):
     # Fetch the existing workflow from the database
     db_workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
