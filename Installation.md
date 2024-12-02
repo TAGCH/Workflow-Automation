@@ -45,7 +45,6 @@ Database Setup : follow the step in [Database Setup](https://github.com/TAGCH/Wo
 
 - Set `JWT_SECRET=Secret_Key`
 - Set `DATABASE_URL=your_database_url`
-- Create Google Service account and put JSON key into backend
 
 ## 5. Run tests for backend.
 
