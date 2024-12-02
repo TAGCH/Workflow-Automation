@@ -350,7 +350,7 @@ const GmailWorkflowPage = () => {
             <div className="d-flex">
                 <VerticalNavbar />
                 <div className="container d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
-                    <h2 className="text-center py-5">Workflow Name</h2>
+                    <h2 className="text-center py-5">{workflows.name}</h2>
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body d-flex flex-column">
@@ -372,7 +372,7 @@ const GmailWorkflowPage = () => {
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body">
-                                <h5 className="text-center mb-4">Workflow user id: {id}</h5>
+                                <h5 className="text-center mb-4">Data field</h5>
                                 <form onSubmit={handleFormSubmit} style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
                                     {['recipient_email', 'title', 'name', 'body'].map((field) => (
                                         <div className="mb-4" key={field}>
