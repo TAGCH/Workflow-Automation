@@ -81,7 +81,7 @@ const GmailWorkflowPage = () => {
     const dropdownRef = useRef(null);  // Ref for dropdown container
 
     const fetchFlows = async () => {
-        const response = await api.get("/workflows", {
+        const response = await api.get("/workflows/", {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
@@ -97,7 +97,7 @@ const GmailWorkflowPage = () => {
 
     const fetchRecentData = async () => {
         try {
-            const response = await api.get(`/gmailflow/${id}/recent`);
+            const response = await api.get(`/gmailflow/${id}/recent/`);
             const recentData = response.data;
 
             setFlowData({
@@ -138,7 +138,7 @@ const GmailWorkflowPage = () => {
     // Fetch from the API if no file name is in the Redux store
     const fetchFileMetadata = async () => {
         try {
-            const response = await api.get(`/workflow/${id}/file-metadata`);
+            const response = await api.get(`/workflow/${id}/file-metadata/`);
             if (response.data.filename) {
                 setUploadedFileName(response.data.filename);
                 console.log("File added:", uploadedFileName);
