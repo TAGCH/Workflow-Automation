@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+import os
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 import fastapi as _fastapi
 import fastapi.security as _security
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
-import io
+import re
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
@@ -16,10 +17,21 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 #email
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, logger
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
+
+
+#spreadsheet
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+
+SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT")
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+
+# Authenticate service account
+sheet_credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
 # import openpyxl
 import sqlalchemy.orm as _orm
@@ -27,7 +39,6 @@ import sqlalchemy.orm as _orm
 import services as _services
 import schemas as _schemas
 from schemas import *
-import os
 
 MAIL_USERNAME = os.getenv("EMAIL")
 MAIL_PASSWORD = os.getenv("PASS")
@@ -82,7 +93,7 @@ async def generate_token(form_data: _security.OAuth2PasswordRequestForm = _fasta
         user = await _services.authenticate_user(form_data.username, form_data.password, db)
         if not user:
             raise _fastapi.HTTPException(status_code=401, detail="Invalid Credentials")
-
+        print('token create')
         return await _services.create_token(user)
     except Exception as e:
         raise _fastapi.HTTPException(status_code=500, detail=str(e))
@@ -419,7 +430,7 @@ async def get_data_keys(flow_id: int, db: db_dependency):
         raise HTTPException(status_code=404, detail="Workflow data not found")
 
     # Extract unique keys from all dictionaries in the list
-    unique_keys = {key for record in workflow_data.data for key in record.keys()}
+    unique_keys = workflow_data.data[0].keys()
     return {"keyNames": list(unique_keys)}
 
 @app.get("/workflow/{flow_id}/data")
@@ -430,3 +441,92 @@ async def get_data_records(flow_id: int, db: db_dependency):
     if not workflow_data or not workflow_data.data:
         raise HTTPException(status_code=404, detail="Workflow data not found")
     return workflow_data.data
+
+@app.post("/workflow/{flow_id}/update-sheet")
+async def update_google_sheet(spreadsheet_url: str = Form(...), file: UploadFile = File(...)):
+    """
+    Overwrite the content of a Google Sheet by reading an Excel file with pandas.
+    Preserve original data formats (e.g., phone numbers) and parse datetime columns dynamically.
+    """
+    print('<<<<<<<INVOKE UPDATE>>>>>>')
+    try:
+        # Extract the spreadsheet ID from the provided URL
+        match = re.search(r"/d/([a-zA-Z0-9-_]+)", spreadsheet_url)
+        if not match:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid Google Sheets URL. Please provide a valid link."
+            )
+        spreadsheet_id = match.group(1)
+        print(spreadsheet_id)
+
+        # Step 1: Save the uploaded file temporarily
+        contents = await file.read()
+        
+        # Step 2: Read Excel file with pandas (treat all columns as strings)
+        df = pd.read_excel(io.BytesIO(contents), dtype=str)
+
+        # Fill NaN with empty strings for Google Sheets compatibility
+        df = df.fillna("")
+
+        sheets_service = build("sheets", "v4", credentials=sheet_credentials)
+        sheets_service.spreadsheets().values().clear(
+            spreadsheetId=spreadsheet_id,
+            range="Sheet1"
+        ).execute()
+
+        # Prepare Data for update Google Sheets
+        data = df.values.tolist()  # Convert DataFrame to a 2D list
+        headers = df.columns.tolist()  # Extract column headers
+        values = [headers] + data  # Combine headers and rows
+
+        sheets_service.spreadsheets().values().update(
+            spreadsheetId=spreadsheet_id,
+            range="Sheet1!A1",
+            valueInputOption="RAW",
+            body={"values": values}
+        ).execute()
+
+        return {"message": "Spreadsheet overwritten successfully!"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/workflow/{flow_id}/create-google-sheet/")
+async def create_google_sheet(sheet_title: str):
+    """
+    Endpoint to create a new Google Sheet using a service account.
+
+    Args:
+        sheet_title (str): The title of the new Google Sheet.
+
+    Returns:
+        dict: The ID and URL of the created Google Sheet.
+    """
+    try:
+        service = build("sheets", "v4", credentials=sheet_credentials)
+
+        # Define the properties of the new spreadsheet
+        spreadsheet = {
+            "properties": {
+                "title": sheet_title
+            }
+        }
+
+        # Create the spreadsheet
+        spreadsheet_response = service.spreadsheets().create(body=spreadsheet, fields="spreadsheetId").execute()
+
+        # Get the spreadsheet ID
+        spreadsheet_id = spreadsheet_response.get("spreadsheetId")
+
+        # Build the URL for the Google Sheet
+        sheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
+
+        return {
+            "message": "Spreadsheet created successfully!",
+            "spreadsheet_id": spreadsheet_id,
+            "spreadsheet_url": sheet_url,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")

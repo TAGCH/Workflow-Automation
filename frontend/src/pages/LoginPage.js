@@ -23,14 +23,16 @@ const LoginPage = () => {
       client_secret: ''
     }).toString();
   
+    console.log("request data: ", requestData);
     try {
       const response = await api.post("/api/token", requestData, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
-
+      console.log("Response data", response.data);
       setToken(response.data.access_token);
       navigate(`/home/${setToken.id}`);
     } catch (error) {
+      console.log("Application got error", error)
       if (error.response && error.response.data && error.response.data.detail) {
         const errorDetail = error.response.data.detail;
         if (typeof errorDetail === 'string') {
@@ -46,6 +48,8 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('Connection to api: ', process.env.REACT_APP_API_URL);
+    console.log('attempted login.....');
     submitLogin();
   };
 
