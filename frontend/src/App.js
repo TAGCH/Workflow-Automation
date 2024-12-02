@@ -5,7 +5,6 @@ import Footer from "../src/components/Footer";
 import PrehomePage from "./pages/PrehomePage";
 import HomePage from "./pages/HomePage";
 import GmailWorkflowPage from "./pages/GmailWorkflowPage";
-import SpreadSheetWorkflowPage from "./pages/SpreadSheetWorkflowPage";
 import MyflowPage from "./pages/MyflowPage";
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -46,14 +45,6 @@ function App() {
                 element={
                     <ProtectedRoute>
                         <GmailWorkflowPage />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/spreadsheetflow/:user_id/:id"
-                element={
-                    <ProtectedRoute>
-                        <SpreadSheetWorkflowPage />
                     </ProtectedRoute>
                 }
             />
