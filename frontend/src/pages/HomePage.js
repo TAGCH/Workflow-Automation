@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 const HomePage = () => {
-    const { user } = useContext(UserContext);
+    const { user, token} = useContext(UserContext);
     const navigate = useNavigate();
     const [workflows, setWorkflows] = useState([]);
 
@@ -27,7 +27,13 @@ const HomePage = () => {
 
     const fetchWorkflows = async () => {
         try {
-            const response = await api.get("/workflows");
+          
+            const response = await api.get("/workflows/", {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Add Authorization header
+                    },
+                });
+
             const data = await response.data;
             const lastTwoWorkflows = data.filter(workflow => workflow.owner_id === user.id).slice(-2);
             setWorkflows(lastTwoWorkflows);

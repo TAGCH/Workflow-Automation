@@ -57,7 +57,7 @@ scheduler = AsyncIOScheduler()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://workflow-automation-app.netlify.app", "http://localhost:3000"],
+    allow_origins=["https://workflow-automation-app.netlify.app", "http://localhost:3000", ],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE)
     allow_headers=["*"],  # Allow all headers (Content-Type, Authorization, etc.)
@@ -116,13 +116,18 @@ async def login(username: str, password: str):
 
 
 @app.get("/workflow/{flow_id}/", response_model=WorkflowModel)
-async def read_workflow(flow_id: int, db: db_dependency):
+async def read_workflow(flow_id: int, db: db_dependency, user: User = _fastapi.Depends(_services.get_current_user)):
     workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
     return workflow
 
 @app.get("/workflows/", response_model=List[WorkflowModel])
-async def read_workflows(db: db_dependency, skip: int=0, limit: int=100):
-    workflows = db.query(models.Workflow).offset(skip).limit(limit).all()
+async def read_workflows(
+    db: db_dependency,
+    skip: int=0,
+    limit: int=100,
+    user: User = _fastapi.Depends(_services.get_current_user)):
+    
+    workflows = db.query(models.Workflow).filter(models.Workflow.owner_id == user.id).offset(skip).limit(limit).all()
     return workflows
 
 @app.post("/workflows/", response_model=WorkflowModel)
