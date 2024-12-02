@@ -72,7 +72,7 @@ const GmailWorkflowPage = () => {
     const handleConfirm = (selectedDatesAndTimes) => {
         setSelectedDatesAndTimes(selectedDatesAndTimes);
         setIsPopupOpen(false);
-        console.log("Confirmed dates and times:", selectedDatesAndTimes);
+        // console.log("Confirmed dates and times:", selectedDatesAndTimes);
     };
     const [fileUpdate, setFileUpdate] = useState(false);
 
@@ -85,7 +85,6 @@ const GmailWorkflowPage = () => {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
                 });
-        // console.log('Fetch data:', response.data); // Debug the response
         setWorkflows(response.data);
         setIsActivated(response.data.status);
     };
@@ -150,7 +149,6 @@ const GmailWorkflowPage = () => {
     const uploadFile = useSelector((state) => state.files.uploadFile);
 
     useEffect(() => {
-        fetchFlows();
         console.log("--------- useEffect triggered------------");
         // Fetch key names from the backend on component mound or id change
         if (!workflowObjects.length){
@@ -180,7 +178,7 @@ const GmailWorkflowPage = () => {
         const file = acceptedFiles[0];
 
         dispatch(clearFile());
-        console.log("Redux file state:", uploadFile);
+        // console.log("Redux file state:", uploadFile);
         dispatch(addFile({ name: file.name }));
         setUploadedFileName(file.name);
         setFileUpdate(true);
@@ -271,11 +269,6 @@ const GmailWorkflowPage = () => {
 
         const action = event.nativeEvent.submitter?.value;
 
-        if (!action) {
-            console.error("No action detected. Check button configuration.");
-            return;
-        }
-
         try {
             console.log("Action:", action);
             if (action === "Save") {
@@ -329,7 +322,7 @@ const GmailWorkflowPage = () => {
                 }
                 await Promise.all(emailPromises);
     
-                console.log("Emails saved successfully");
+                // console.log("Emails saved successfully");
     
                 fetchFlows();
             }
