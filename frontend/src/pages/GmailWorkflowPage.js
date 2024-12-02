@@ -80,7 +80,7 @@ const GmailWorkflowPage = () => {
     const dropdownRef = useRef(null);  // Ref for dropdown container
 
     const fetchFlows = async () => {
-        const response = await api.get("/workflows/", {
+        const response = await api.get(`/workflow/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
@@ -149,6 +149,7 @@ const GmailWorkflowPage = () => {
     const uploadFile = useSelector((state) => state.files.uploadFile);
 
     useEffect(() => {
+        fetchFlows();
         console.log("--------- useEffect triggered------------");
         // Fetch key names from the backend on component mound or id change
         if (!workflowObjects.length){
