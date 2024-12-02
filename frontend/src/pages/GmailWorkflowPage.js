@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import VerticalNavbar from '../components/VerticalNavbar';
 import DateTimePopup from "../components/DateTimePopup";
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { UserContext } from "../context/UserContext";
 import { useDropzone } from "react-dropzone";
@@ -85,7 +85,7 @@ const GmailWorkflowPage = () => {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
                 });
-        console.log('Fetch data:', response.data); // Debug the response
+        // console.log('Fetch data:', response.data); // Debug the response
         setWorkflows(response.data);
         setIsActivated(response.data.status);
     };
@@ -277,50 +277,21 @@ const GmailWorkflowPage = () => {
         }
 
         try {
-
             console.log("Action:", action);
-    
             if (action === "Save") {
                 // Clear flows and reset form data before starting email sending process
                 fetchFlows();
-                const needsReplacement = Object.values(flowData).some(value => value.includes(" /"));
-
-                let emailPromises;
-                console.log("replacement checked? ", needsReplacement)
-                console.log('Creating personalizedEmail:');
-                if (needsReplacement) {
-                    // Generate an array of promises to send individualized emails
-                    emailPromises = workflowObjects.map((recipient) => {
-                    const personalizedEmail = {
-                        recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
-                        title: replaceKeysInString(flowData.title, recipient),
-                        body: replaceKeysInString(flowData.body, recipient),
-                        name: flowData.name,
-                        workflow_id: id
-                    };
-
-
-                    return api.post(`/gmailflow/`, personalizedEmail);
-                });
-                } else {
-                    const singleEmail = {
+                const formatEmail = {
                         recipient_email: flowData.recipient_email,
                         title: flowData.title,
                         body: flowData.body,
                         name: flowData.name,
                         workflow_id: id
                     };
-
-                    emailPromises = [api.post(`/gmailflow/`, singleEmail)];
-                }
-
-                await Promise.all(emailPromises);
-
-                console.log("Emails saved successfully");
-
+                console.log(formatEmail);
+                await api.post(`/gmailflow/`, formatEmail);
                 fetchFlows();
-            }
-
+                }
             else if (action === "Send") {
                 fetchFlows();
 
