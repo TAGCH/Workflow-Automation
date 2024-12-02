@@ -326,7 +326,7 @@ const GmailWorkflowPage = () => {
                     };
 
                     console.log('Creating single email:', singleEmail);
-                    emailPromises = [api.post(`/gmailflow/`, singleEmail)];
+                    emailPromises = [api.post(`/gmailflow`, singleEmail)];
                 }
 
                 // Wait for all email-sending promises to complete
