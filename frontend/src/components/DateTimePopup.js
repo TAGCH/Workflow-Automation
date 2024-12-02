@@ -115,7 +115,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         const timeParts = selectedTime.split(":");
         const inputTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), timeParts[0], timeParts[1]);
 
-        const minTime = addMinutes(currentTime, 30);
+        const minTime = addMinutes(currentTime, 3);
         const newTimes = { ...times };
 
         // Check if the current value is a string or an object

@@ -292,16 +292,23 @@ async def check_workflows_for_trigger():
     current_time = datetime.now()
     # Query workflows where trigger_time is around the current time and status is True (started)
     
-    # print(f"condition1: {models.Timestamp.trigger_time != None}")
-    # print(f"condition2: {models.Timestamp.trigger_time <= current_time}")
-    # print(f"condition3: {current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 10 SECOND"))}")
     timestamps = db.query(models.Timestamp).filter(
         models.Timestamp.trigger_time != None,
         models.Timestamp.trigger_time <= current_time,
         current_time < func.date_add(models.Timestamp.trigger_time, text("INTERVAL 59 SECOND")),
     ).all()
 
+    old_timestamps = db.query(models.Timestamp).filter(
+        models.Timestamp.trigger_time != None,
+        func.date_add(models.Timestamp.trigger_time, text("INTERVAL 59 SECOND")) < current_time,
+    ).all()
+
     print(f"Scheduled Timestamps: {timestamps}")
+    print(f"Archived Timestamps: {old_timestamps[:5]}")
+
+    for time in old_timestamps:
+        db.delete(time)
+        db.commit()
 
     # this one most likely ain't right need to verify 1.timerange 2.active status 3. workflow_id == timestamps_id
     workflow_ids = []
@@ -358,7 +365,7 @@ async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Sessi
 @app.on_event("startup")
 async def start_scheduler():
     pass
-    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=59)
+    scheduler.add_job(check_workflows_for_trigger, 'interval', seconds=30)
     scheduler.start()
 
 @app.get("/workflow/{flow_id}/import/", response_model=List[WorkflowImportsDataModel])

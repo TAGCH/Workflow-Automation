@@ -27,7 +27,7 @@ const HomePage = () => {
 
     const fetchWorkflows = async () => {
         try {
-            const response = await api.get("/workflows", {
+            const response = await api.get("/workflows/", {
                     headers: {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
