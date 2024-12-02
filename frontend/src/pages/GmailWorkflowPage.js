@@ -313,7 +313,7 @@ const GmailWorkflowPage = () => {
                     console.log('Creating personalizedEmail:', personalizedEmail);
 
                     // Send API request for each personalized email
-                    return api.post(`/gmailflow/`, personalizedEmail);
+                    return api.post(`/gmailflow`, personalizedEmail);
                 });
                 } else {
                     // Send a single email when no replacement is needed
@@ -326,7 +326,7 @@ const GmailWorkflowPage = () => {
                     };
 
                     console.log('Creating single email:', singleEmail);
-                    emailPromises = [api.post(`/gmailflow`, singleEmail)];
+                    emailPromises = [api.post(`/gmailflow/`, singleEmail)];
                 }
 
                 // Wait for all email-sending promises to complete
