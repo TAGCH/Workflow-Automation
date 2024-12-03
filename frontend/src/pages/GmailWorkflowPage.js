@@ -294,6 +294,8 @@ const GmailWorkflowPage = () => {
                 };
                 console.log(formatEmail);
                 await api.post(`/gmailflow/`, formatEmail);
+                setIsSuccessPopupOpen(true);
+                setPopupMessage("Data Saved");
                 fetchFlows();
             }
             else if (action === "Send") {
@@ -317,6 +319,8 @@ const GmailWorkflowPage = () => {
 
                         // Send API request for each personalized email
                         return api.post(`/sendmail/${id}/`, personalizedEmail);
+                        setIsSuccessPopupOpen(true);
+                        setPopupMessage("Email Sent");
                     });
 
                 } else {
@@ -332,7 +336,8 @@ const GmailWorkflowPage = () => {
                     emailPromises = [api.post(`/sendmail/${id}/`, singleEmail)];
                 }
                 await Promise.all(emailPromises);
-
+                setIsSuccessPopupOpen(true);
+                setPopupMessage("Email Sent");
                 // console.log("Emails saved successfully");
 
                 fetchFlows();
@@ -340,11 +345,50 @@ const GmailWorkflowPage = () => {
 
         } catch (error) {
             console.error("Error submitting the form:", error);
-            setErrorMessage("Something went wrong.", error);
+            setIsSuccessPopupOpen(true);
+            setPopupMessage("Invalid Sender Email");
         }
 
         // clearFile();
     };
+
+    const SuccessPopup = ({ message, onClose }) => {
+        return (
+            <div
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 1000,
+                }}
+            >
+                <div
+                    style={{
+                        background: "white",
+                        padding: "20px",
+                        borderRadius: "10px",
+                        textAlign: "center",
+                        maxWidth: "400px",
+                        width: "90%",
+                    }}
+                >
+                    <h4>{message}</h4>
+                    <button className="btn btn-primary mt-3" onClick={onClose}>
+                        OK
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    const [isSuccessPopupOpen, setIsSuccessPopupOpen] = useState(false);
+    const [popupMessage, setPopupMessage] = useState("");
 
     return (
         <div>
@@ -480,6 +524,12 @@ const GmailWorkflowPage = () => {
                     open={isSenderPopupOpen}
                     onClose={() => setIsSenderPopupOpen(false)}
                     flowId={id} // Pass the workflow ID
+                />
+            )}
+            {isSuccessPopupOpen && (
+                <SuccessPopup
+                    message={popupMessage}
+                    onClose={() => setIsSuccessPopupOpen(false)} // Close the popup
                 />
             )}
             <Footer/>
