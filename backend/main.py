@@ -437,3 +437,31 @@ async def get_data_records(flow_id: int, db: db_dependency):
     if not workflow_data or not workflow_data.data:
         raise HTTPException(status_code=404, detail="Workflow data not found")
     return workflow_data.data
+
+
+# Endpoint to update sender email and password
+@app.put("/workflows/{flow_id}/update-sender", response_model=_schemas.WorkflowModel)
+async def update_sender_credentials(
+    flow_id: int,
+    sender_data: _schemas.UpdateSenderSchema,  # Use this schema for validation
+    db: db_dependency
+):
+    # Find the workflow by ID
+    workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    # Update the sender's email and hashed password
+    workflow.sender_email = sender_data.sender_email
+    workflow.sender_hashed_password = sender_data.sender_hashed_password
+    # Commit the updates
+    db.commit()
+    db.refresh(workflow)
+    return workflow
+
+
+@app.get("/workflows/{flow_id}/sender-email")
+async def get_sender_email(flow_id: int, db: db_dependency):
+    workflow = db.query(models.Workflow).filter(models.Workflow.id == flow_id).first()
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return {"sender_email": workflow.sender_email}
