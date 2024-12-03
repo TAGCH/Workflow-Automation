@@ -17,7 +17,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
     useEffect(() => {
         const fetchTimes = async () => {
             try {
-                const response = await api.get(`/timestamps/${workflowID}/`);
+                const response = await api.get(`/timestamps/${workflowID}`);
                 const timestamps = response.data;
 
                 if (timestamps.length > 0) {
@@ -166,7 +166,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
             // Now delete the timestamps marked for deletion
             await Promise.all(
                 deletedTimes.map(async (id) => {
-                    await api.delete(`/timestamp/${id}/`);
+                    await api.delete(`/timestamp/${id}`);
                 })
             );
             // First, create the new timestamps
