@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+import os
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 import fastapi as _fastapi
 import fastapi.security as _security
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
-import io
+import re
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
@@ -16,7 +17,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 #email
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, logger
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
@@ -27,7 +28,6 @@ import sqlalchemy.orm as _orm
 import services as _services
 import schemas as _schemas
 from schemas import *
-import os
 
 MAIL_USERNAME = os.getenv("EMAIL")
 MAIL_PASSWORD = os.getenv("PASS")
@@ -82,7 +82,7 @@ async def generate_token(form_data: _security.OAuth2PasswordRequestForm = _fasta
         user = await _services.authenticate_user(form_data.username, form_data.password, db)
         if not user:
             raise _fastapi.HTTPException(status_code=401, detail="Invalid Credentials")
-
+        print('token create')
         return await _services.create_token(user)
     except Exception as e:
         raise _fastapi.HTTPException(status_code=500, detail=str(e))
