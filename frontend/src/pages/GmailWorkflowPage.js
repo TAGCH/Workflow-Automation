@@ -86,7 +86,6 @@ const GmailWorkflowPage = () => {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
                 });
-        console.log('Fetch data:', response.data); // Debug the response
         setWorkflows(response.data);
         setIsActivated(response.data.status);
     };
