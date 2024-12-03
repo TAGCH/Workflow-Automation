@@ -58,7 +58,7 @@ describe('Createflow after Login', () => {
     cy.get('.py-5').should('be.visible');
 
     // Optionally, assert its text or content
-    cy.get('.py-5').should('contain.text', 'Workflow Name');
+    cy.get('.py-5').should('contain.text', 'Workflow:');
 
   })
 })
