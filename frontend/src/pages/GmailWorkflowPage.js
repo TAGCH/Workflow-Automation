@@ -114,8 +114,15 @@ const GmailWorkflowPage = () => {
                 body: recentData.body || '',
                 name: recentData.name || ''
             });
-            setErrorMessage("");
-            console.log("Recent data loaded:", recentData);
+            // Check if all fields are empty
+            if (!recentData.recipient_email && !recentData.title && !recentData.body && !recentData.name) {
+                // If all fields are empty, show the popup
+                setIsSuccessPopupOpen(true);
+                setPopupMessage("No Data Loaded");
+            } else {
+                setErrorMessage("");
+                console.log("Recent data loaded:", recentData);
+            }
         } catch (error) {
             console.error("Failed to fetch recent data:", error);
             setErrorMessage("You have no saved data.");
@@ -293,9 +300,16 @@ const GmailWorkflowPage = () => {
                     workflow_id: id
                 };
                 console.log(formatEmail);
-                await api.post(`/gmailflow/`, formatEmail);
-                setIsSuccessPopupOpen(true);
-                setPopupMessage("Data Saved");
+                // Check if all fields are empty
+                if (!formatEmail.recipient_email && !formatEmail.title && !formatEmail.body && !formatEmail.name) {
+                    // If all fields are empty, show the popup
+                    setIsSuccessPopupOpen(true);
+                    setPopupMessage("Data is Empty");
+                } else {
+                    await api.post(`/gmailflow/`, formatEmail);
+                    setIsSuccessPopupOpen(true);
+                    setPopupMessage("Data Saved");
+                }
                 fetchFlows();
             }
             else if (action === "Send") {
