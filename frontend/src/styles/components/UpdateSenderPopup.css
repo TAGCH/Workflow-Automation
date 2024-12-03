@@ -45,10 +45,10 @@
     font-size: 14px;
 }
 .popup-button.update {
-    background-color: #4caf50;
+    background-color: #20c997;
     color: white;
 }
 .popup-button.cancel {
-    background-color: #f44336;
+    background-color: #f24f43;
     color: white;
 }
