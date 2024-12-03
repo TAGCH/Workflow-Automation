@@ -1,0 +1,137 @@
+/* Container for the entire popup */
+.guideline-popup {
+    position: fixed; /* Keeps the popup fixed on the screen */
+    top: 10%; /* Centers the popup vertically */
+    left: 50%; /* Centers the popup horizontally */
+    transform: translate(-50%, 0); /* Centers horizontally using transform */
+    width: 60%; /* Width of the popup */
+    height: 80%; /* Limit popup height to 80% of the viewport */
+    background-color: white; /* White background for the popup */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
+    border-radius: 8px; /* Rounded corners */
+    z-index: 1000; /* Ensures the popup is above other elements */
+    padding: 20px; /* Adds padding inside the popup */
+    font-family: Arial, sans-serif; /* Sets a clean font */
+    display: flex; /* Makes the container a flexbox */
+    flex-direction: column; /* Makes the content stack vertically */
+}
+
+/* Make sure the content section can scroll */
+.guideline-popup-content {
+    flex: 1; /* Allow this section to take up remaining space */
+    overflow-y: auto; /* Enables vertical scrolling */
+    padding-right: 10px; /* Adds space for the scrollbar */
+}
+
+/* Header container for navigation buttons */
+.guideline-header {
+    display: flex; /* Aligns buttons horizontally */
+    margin-bottom: 15px; /* Space below the header */
+    padding-bottom: 15px; /* Adds spacing inside the header */
+    border-bottom: 2px solid #0000001d; /* Adds a light gray divider */
+}
+
+/* Navigation buttons */
+.guideline-header .btn-link {
+    font-size: 1rem; /* Standard font size for buttons */
+    text-decoration: none; /* Removes underline from buttons */
+    color: #000000; /* Default color (black) */
+    cursor: pointer; /* Pointer cursor for interactive elements */
+    padding: 5px 10px; /* Adds some padding for better click area */
+    border: none; /* Removes border */
+    background: none; /* Removes default button styling */
+    outline: none; /* Removes focus outline */
+    transition: color 0.2s ease, font-weight 0.2s ease; /* Smooth transitions */
+    font-weight: bold; /* Bold font for buttons */
+}
+
+/* Active button styling */
+.guideline-header .btn-link.active {
+    font-weight: bold; /* Highlights active button */
+    color: #20c997; /* Green color for active */
+    border-bottom: 2px solid #20c997; /* Adds underline for active tab */
+}
+
+/* Close button (top-right corner) */
+.close-icon {
+    position: absolute; /* Places it in the corner */
+    top: 5px;
+    right: 10px;
+    font-size: 1.5rem; /* Slightly larger icon */
+    cursor: pointer; /* Pointer cursor for interactive elements */
+    color: #6c757d; /* Subtle gray color */
+    transition: color 0.2s ease; /* Smooth hover transition */
+}
+
+/* Close button hover effect */
+.close-icon:hover {
+    color: #dc3545; /* Red color on hover */
+}
+
+/* Guideline content section */
+.guideline-content {
+    margin-top: 15px; /* Space between header and content */
+    font-size: 1rem; /* Standard font size for text */
+    line-height: 1.5; /* Improves readability */
+    color: #333; /* Dark gray text */
+}
+
+/* Ordered and unordered lists */
+.guideline-content ol,
+.guideline-content ul {
+    margin: 10px 0 10px 20px; /* Adds space and indents */
+}
+
+/* List items */
+.guideline-content li {
+    margin-bottom: 8px; /* Space between items */
+}
+
+/* Bold text for magic tag examples */
+.guideline-content strong {
+    color: #20c997; /* Green color for emphasis */
+}
+
+/* Customize scrollbar for modern browsers */
+.guideline-popup-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.guideline-popup-content::-webkit-scrollbar-thumb {
+    background-color: #0000002d; /* Green for the scrollbar thumb */
+    border-radius: 8px; /* Rounded edges */
+}
+
+.guideline-popup-content::-webkit-scrollbar-track {
+    background-color: #f1f1f1; /* Light gray track */
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table th, table td {
+    padding: 8px;
+    text-align: left;
+}
+
+table th {
+    font-weight: bold;
+}
+
+table td {
+    border-bottom: 1px solid #ddd;  /* Optional, for a subtle line between rows */
+}
+
+h3 {
+    font-weight: bold;
+}
+
+h5 {
+    font-weight: bold;
+}
+
+h6 {
+    font-weight: bold;
+}
