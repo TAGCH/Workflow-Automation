@@ -49,7 +49,7 @@ class WorkflowModel(WorkflowBase):
         from_attributes = True
 
 class GmailflowBase(BaseModel):
-    recipient_email: EmailStr
+    recipient_email: str
     title: str
     body: str
     name: str
