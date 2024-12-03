@@ -118,14 +118,15 @@ const GmailWorkflowPage = () => {
             if (!recentData.recipient_email && !recentData.title && !recentData.body && !recentData.name) {
                 // If all fields are empty, show the popup
                 setIsSuccessPopupOpen(true);
-                setPopupMessage("No Data Loaded");
+                setPopupMessage("No Saved Data");
             } else {
                 setErrorMessage("");
                 console.log("Recent data loaded:", recentData);
             }
         } catch (error) {
             console.error("Failed to fetch recent data:", error);
-            setErrorMessage("You have no saved data.");
+            setIsSuccessPopupOpen(true);
+            setPopupMessage("No Saved Data");
         }
     };
 
