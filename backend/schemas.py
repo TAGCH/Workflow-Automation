@@ -22,12 +22,12 @@ class User(_UserBase):
     class Config:
         orm_mode = True
         from_attributes = True
-        
+
 class UpdateflowStatusBase(BaseModel):
     status: bool # E.g., "started", "stopped"
     class Config:
         orm_mode = True
-        
+
 # class UpdateflowModel(UpdateflowStatusBase):
 #     pass
 
@@ -88,3 +88,9 @@ class WorkflowImportsDataBase(BaseModel):
 
 class WorkflowImportsDataModel(WorkflowImportsDataBase):
     id: int
+
+class UpdateSenderSchema(BaseModel):
+    sender_email: EmailStr
+    sender_hashed_password: str  # Ensure this password is hashed on the frontend
+    class Config:
+        orm_mode = True
