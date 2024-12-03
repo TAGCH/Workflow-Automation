@@ -86,7 +86,6 @@ const GmailWorkflowPage = () => {
                         Authorization: `Bearer ${token}`, // Add Authorization header
                     },
                 });
-        console.log('Fetch data:', response.data); // Debug the response
         setWorkflows(response.data);
         setIsActivated(response.data.status);
     };
@@ -107,7 +106,6 @@ const GmailWorkflowPage = () => {
                 name: recentData.name || ''
             });
             setErrorMessage("");
-            console.log("Recent data loaded:", recentData);
         } catch (error) {
             console.error("Failed to fetch recent data:", error);
             setErrorMessage("You have no saved data.");
