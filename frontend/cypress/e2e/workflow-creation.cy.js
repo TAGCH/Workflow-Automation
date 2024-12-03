@@ -30,6 +30,8 @@ describe('Createflow after Login', () => {
     // Wait for the login request to complete
     cy.wait('@postLogin');
 
+    cy.wait(1000);
+
     // Store the awesomeUsersToken in localStorage
     cy.window().then((win) => {
       win.localStorage.setItem('awesomeUsersToken', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6OX0.e99J-IKJ_U8dcS0dYSo9oe5EXsGLrwW4iyUZkEGxduI');
