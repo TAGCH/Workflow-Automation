@@ -234,7 +234,7 @@ async def save_email(gmailflowbase: GmailflowBase, db: db_dependency):
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/gmailflow/{flow_id}/recent", response_model=GmailflowModel)
+@app.get("/gmailflow/{flow_id}/recent")
 async def get_recent_gmailflow(flow_id: int, db: db_dependency):
     try:
         recent_flow = (
@@ -426,7 +426,7 @@ async def get_data_keys(flow_id: int, db: db_dependency):
         raise HTTPException(status_code=404, detail="Workflow data not found")
 
     # Extract unique keys from all dictionaries in the list
-    unique_keys = {key for record in workflow_data.data for key in record.keys()}
+    unique_keys = workflow_data.data[0].keys()
     return {"keyNames": list(unique_keys)}
 
 @app.get("/workflow/{flow_id}/data")
