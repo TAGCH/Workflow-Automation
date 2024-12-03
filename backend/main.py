@@ -339,28 +339,37 @@ async def check_workflows_for_trigger():
 async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Session):
     # Build email details and send
 
-    gmailflow = db.query(models.Gmailflow).filter(workflow.id == models.Gmailflow.workflow_id)[-1]
-    message = MessageSchema(
-        subject=gmailflow.title,
-        recipients=[gmailflow.recipient_email],
-        body=gmailflow.body,
-        subtype=MessageType.html
-    )
+        gmailflow = db.query(models.Gmailflow).filter(workflow.id == models.Gmailflow.workflow_id)[-1]
+    
+    # if ("/" in str(gmailflow.recipient_email)):
+    #     print(f"recipient mail: {[gmailflow.recipient_email]}")
 
-    conf = ConnectionConfig(
-        MAIL_USERNAME=workflow.sender_email,
-        MAIL_PASSWORD=workflow.sender_hashed_password,
-        MAIL_FROM=workflow.sender_email,
-        MAIL_PORT=465,
-        MAIL_SERVER="smtp.gmail.com",
-        MAIL_STARTTLS=False,
-        MAIL_SSL_TLS=True,
-        USE_CREDENTIALS=True,
-    )
+    # else:
+    
+    
+        print(f"recipient mail: {[gmailflow.recipient_email]}")
+        message = MessageSchema(
+            subject=gmailflow.title,
+            recipients=[gmailflow.recipient_email],
+            body=gmailflow.body,
+            subtype=MessageType.html
+        )
 
-    fm = FastMail(conf)
-    await fm.send_message(message)
-    print("mail sent")
+        conf = ConnectionConfig(
+            MAIL_USERNAME=workflow.sender_email,
+            MAIL_PASSWORD=workflow.sender_hashed_password,
+            MAIL_FROM=workflow.sender_email,
+            MAIL_PORT=465,
+            MAIL_SERVER="smtp.gmail.com",
+            MAIL_STARTTLS=False,
+            MAIL_SSL_TLS=True,
+            USE_CREDENTIALS=True,
+        )
+
+        fm = FastMail(conf)
+        await fm.send_message(message)
+        
+        print("mail sent")
 
 @app.on_event("startup")
 async def start_scheduler():
