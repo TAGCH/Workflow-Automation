@@ -126,7 +126,7 @@ const GmailWorkflowPage = () => {
     // Function to fetch data from database
     const fetchWorkflowData = async () => {
         try {
-            const response = await api.get(`/workflow/${id}/data/`);
+            const response = await api.get(`/workflow/${id}/data`);
             setWorkflowObjects(Object(response.data))
             console.log("fetchFlowdata", response.data)
         } catch (error) {
@@ -206,7 +206,7 @@ const GmailWorkflowPage = () => {
         }
     };
 
-    const { getRootProps, getInputProps, open } = useDropzone({
+    const { getRootProps, getInputProps } = useDropzone({
         onDrop,
         noClick: false,
         noKeyboard: true,
@@ -216,9 +216,12 @@ const GmailWorkflowPage = () => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         const fieldName = event.target.name;
 
-        // Check value include '/' to trigger autocomplete
-        if (value.includes("/")) {
-            setShowAutocomplete(true); // drop down state
+        // Check if the value includes " /" and it is valid to trigger autocomplete
+        const hasTriggerPattern = value.includes(" /");
+        const hasKeyAfterPattern = value.match(/ \/[\w]+/); // Check if " /" is followed by valid text
+
+        if (hasTriggerPattern && !hasKeyAfterPattern) {
+            setShowAutocomplete(true); // Show dropdown only if " /" is valid for autocomplete
             setCurrentField(fieldName);
         } else {
             setShowAutocomplete(false);
@@ -245,10 +248,10 @@ const GmailWorkflowPage = () => {
         // Add key placeholder with '/' and set it in the current field.
         const currentValue = flowData[currentField];
 
-        // If the last character is '/', replace it with the keyName ;otherwise, append '/${keyName}'
-        const updatedValue = currentValue.endsWith("/")
-            ? currentValue.slice(0, -1) + `/${keyName}`
-            : currentValue + `/${keyName}`;
+        // If the last character is ' /', replace it with the keyName ;otherwise, append '/${keyName}'
+        const updatedValue = currentValue.endsWith(" /")
+            ? currentValue.slice(0, -2) + ` /${keyName}`
+            : `${currentValue} /${keyName}`;
 
         setFlowData({
             ...flowData,
@@ -268,52 +271,45 @@ const GmailWorkflowPage = () => {
 
         const action = event.nativeEvent.submitter?.value;
 
-        if (!action) {
-            console.error("No action detected. Check button configuration.");
-            return;
-        }
-
         try {
-
             console.log("Action:", action);
-    
             if (action === "Save") {
-                console.log("Save button clicked");
                 // Clear flows and reset form data before starting email sending process
                 fetchFlows();
-                // setFlowData({
-                //     recipient_email: '',
-                //     title: '',
-                //     body: '',
-                //     name: '',
-                //     workflow_id: ''
-                // });
+                const formatEmail = {
+                    recipient_email: flowData.recipient_email,
+                    title: flowData.title,
+                    body: flowData.body,
+                    name: flowData.name,
+                    workflow_id: id
+                };
+                console.log(formatEmail);
+                await api.post(`/gmailflow/`, formatEmail);
+                fetchFlows();
+            }
+            else if (action === "Send") {
+                fetchFlows();
 
-                console.log("Sending flow data:", flowData);
-                console.log("Workflow object entries", workflowObjects)
-                // Determine if any replacements are needed based on presence of '/' in flowData
-                const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
-                console.log("Need replacement.", workflowObjects);
+                const needsReplacement = Object.values(flowData).some(value => value.includes(" /"));
 
                 let emailPromises;
-
+                console.log("replacement checked? ", needsReplacement)
+                console.log("Creating personalizedEmail");
                 if (needsReplacement) {
-                    // Generate an array of promises to send individualized emails
                     emailPromises = workflowObjects.map((recipient) => {
-                    // Conditionally apply key replacement if needed
-                    const personalizedEmail = {
-                        recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
-                        title: replaceKeysInString(flowData.title, recipient),
-                        body: replaceKeysInString(flowData.body, recipient),
-                        name: flowData.name, // Set name as-is from form data
-                        workflow_id: id // Set workflow_id directly
-                    };
+                        const personalizedEmail = {
+                            recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
+                            title: replaceKeysInString(flowData.title, recipient),
+                            body: replaceKeysInString(flowData.body, recipient),
+                            name: flowData.name,
+                            workflow_id: id,
+                        };
 
-                    console.log('Creating personalizedEmail:', personalizedEmail);
 
-                    // Send API request for each personalized email
-                    return api.post(`/gmailflow/`, personalizedEmail);
-                });
+                        // Send API request for each personalized email
+                        return api.post(`/sendmail/${id}/`, personalizedEmail);
+                    });
+
                 } else {
                     // Send a single email when no replacement is needed
                     const singleEmail = {
@@ -321,98 +317,16 @@ const GmailWorkflowPage = () => {
                         title: flowData.title,
                         body: flowData.body,
                         name: flowData.name,
-                        workflow_id: id
+                        workflow_id: id,
                     };
 
-                    console.log('Creating single email:', singleEmail);
-                    emailPromises = [api.post(`/gmailflow/`, singleEmail)];
+                    emailPromises = [api.post(`/sendmail/${id}/`, singleEmail)];
                 }
-
-                // Wait for all email-sending promises to complete
                 await Promise.all(emailPromises);
 
-                console.log("Emails saved successfully");
+                // console.log("Emails saved successfully");
 
-                // Refetch flows after email sending is complete
                 fetchFlows();
-
-                // Reset form data to initial state after successful email sending
-                // setFlowData({
-                //     recipient_email: '',
-                //     title: '',
-                //     body: '',
-                //     name: '',
-                //     workflow_id: ''
-                // });
-            }
-
-            else if (action === "Send") {
-                console.log("Send button clicked");
-                fetchFlows();
-                // setFlowData({
-                //     recipient_email: '',
-                //     title: '',
-                //     body: '',
-                //     name: '',
-                //     workflow_id: ''
-                // });
-    
-                console.log("Sending flow data:", flowData);
-                console.log("Workflow object entries", workflowObjects)
-                // Determine if any replacements are needed based on presence of '/' in flowData
-                const needsReplacement = Object.values(flowData).some(value => value.includes("/"));
-                console.log("Need replacement.", workflowObjects);
-    
-                let emailPromises;
-    
-                if (needsReplacement) {
-                    // Generate an array of promises to send individualized emails
-                    emailPromises = workflowObjects.map((recipient) => {
-                    // Conditionally apply key replacement if needed
-                    const personalizedEmail = {
-                            recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
-                            title: replaceKeysInString(flowData.title, recipient),
-                            body: replaceKeysInString(flowData.body, recipient),
-                            name: flowData.name, // Set name as-is from form data
-                            workflow_id: id // Set workflow_id directly
-                    };
-    
-                    console.log('Creating personalizedEmail:', personalizedEmail);
-    
-                        // Send API request for each personalized email
-                        return api.post(`/sendmail/${id}/`, personalizedEmail);
-                    });
-
-                } else {
-                        // Send a single email when no replacement is needed
-                        const singleEmail = {
-                            recipient_email: flowData.recipient_email,
-                            title: flowData.title,
-                            body: flowData.body,
-                            name: flowData.name,
-                            workflow_id: id
-                        };
-    
-                        console.log('Creating single email:', singleEmail);
-                        emailPromises = [api.post(`/sendmail/${id}/`, singleEmail)];
-                }
-    
-                // Wait for all email-sending promises to complete
-                await Promise.all(emailPromises);
-    
-                console.log("Emails saved successfully");
-    
-                // Refetch flows after email sending is complete
-                fetchFlows();
-    
-                // Reset form data to initial state after successful email sending
-                // setFlowData({
-                //         recipient_email: '',
-                //         title: '',
-                //         body: '',
-                //         name: '',
-                //         workflow_id: ''
-                // });
             }
 
         } catch (error) {
@@ -429,7 +343,7 @@ const GmailWorkflowPage = () => {
             <div className="d-flex">
                 <VerticalNavbar />
                 <div className="container d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
-                    <h2 className="text-center py-5">Workflow Name</h2>
+                    <h2 className="text-center py-5">Workflow: {workflows.name}</h2>
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body d-flex flex-column">
@@ -451,7 +365,7 @@ const GmailWorkflowPage = () => {
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body">
-                                <h5 className="text-center mb-4">Workflow user id: {id}</h5>
+                                <h5 className="text-center mb-4">Data Field</h5>
                                 <form onSubmit={handleFormSubmit} style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
                                     {['recipient_email', 'title', 'name', 'body'].map((field) => (
                                         <div className="mb-4" key={field}>
