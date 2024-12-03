@@ -346,13 +346,15 @@ const GmailWorkflowPage = () => {
         } catch (error) {
             console.error("Error submitting the form:", error);
             setIsSuccessPopupOpen(true);
-            setPopupMessage("Invalid Sender Email");
+            setPopupMessage("Error submitting: May be caused by an invalid sender email, invalid form, or invalid data.");
         }
 
         // clearFile();
     };
 
     const SuccessPopup = ({ message, onClose }) => {
+        const [hovered, setHovered] = useState(false);
+    
         return (
             <div
                 style={{
@@ -378,8 +380,23 @@ const GmailWorkflowPage = () => {
                         width: "90%",
                     }}
                 >
-                    <h4>{message}</h4>
-                    <button className="btn btn-primary mt-3" onClick={onClose}>
+                    <br></br>
+                    <h6><strong>{message}</strong></h6>
+                    <br></br>
+                    <button
+                        style={{
+                            backgroundColor: hovered ? "#20c997" : "#333",
+                            color: "white",
+                            border: "none",
+                            padding: "10px 15px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            transition: "background-color 0.3s ease",
+                        }}
+                        onMouseEnter={() => setHovered(true)}
+                        onMouseLeave={() => setHovered(false)}
+                        onClick={onClose}
+                    >
                         OK
                     </button>
                 </div>
