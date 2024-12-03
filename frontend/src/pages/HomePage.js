@@ -11,6 +11,7 @@ const HomePage = () => {
     const { user, token} = useContext(UserContext);
     const navigate = useNavigate();
     const [workflows, setWorkflows] = useState([]);
+    const [activatedWorkflowCount, setActivatedWorkflowCount] = useState(0);
 
     // Function to extract the username from the email
     const getUsernameFromEmail = (email) => {
@@ -23,6 +24,14 @@ const HomePage = () => {
             navigate(`/home/${user.id}`);
             fetchWorkflows()
         }
+        // Set interval to change the message every 10 seconds
+        const intervalId = setInterval(() => {
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            setCurrentMessage(messages[randomIndex]);
+        }, 10000); // 10 seconds
+
+        // Clean up interval on component unmount
+        return () => clearInterval(intervalId);
     }, [user, navigate]);
 
     const fetchWorkflows = async () => {
@@ -35,12 +44,26 @@ const HomePage = () => {
                 });
 
             const data = await response.data;
-            const lastTwoWorkflows = data.filter(workflow => workflow.owner_id === user.id).slice(-2);
+            const userWorkflows = data.filter(workflow => workflow.owner_id === user.id);
+            const lastTwoWorkflows = userWorkflows.slice(-2);
+            const activeWorkflows = userWorkflows.filter(workflow => workflow.status === true);
             setWorkflows(lastTwoWorkflows);
+            setActivatedWorkflowCount(activeWorkflows.length);
         } catch (error) {
             console.error('Error fetching workflows:', error);
         }
     };
+
+    const messages = [
+        "Hope you enjoy your lucky day! 🍀",
+        "Wishing you a day full of opportunities! ✨",
+        "Today is a great day for success! 🌟",
+        "Make the most of today! 💪",
+        "Keep pushing forward! 🚀",
+        "You're on the right track! 👍"
+    ];
+
+    const [currentMessage, setCurrentMessage] = useState(messages[0]);
 
     return (
         <div>
@@ -54,11 +77,15 @@ const HomePage = () => {
                                 Welcome back, {user ? getUsernameFromEmail(user.email) : "User"}!
                             </h1>
                         </div>
-                        <p className="pl-40">Hope you enjoy your lucky day! 🍀</p>
+                        <p className="pl-40">{currentMessage}</p>
                     </div>
                     <div className="bg-light p-3 rounded mb-4">
-                        <h4 className="pl-40">Notifications</h4>
-                        <p className="pl-40">No new notifications</p>
+                        <h4>Notifications</h4>
+                            <p>
+                                {activatedWorkflowCount > 0
+                                    ? `✅ Activated Workflow Count: ${activatedWorkflowCount} workflows`
+                                    : "❎ No activated workflow"}
+                            </p>
                     </div>
                     <div className="bg-light p-3 rounded">
                         <h4 className="pl-40 py-1">Recent Workflows</h4>
