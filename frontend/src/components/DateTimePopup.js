@@ -29,12 +29,14 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
                 // Organize times based on dates
                 const organizedTimes = {};
                 timestamps.forEach((timestamp) => {
+                    const utcDate = new Date(timestamp.trigger_time);
+                    const localDate = new Date(utcDate.getTime() + 7 * 60 * 60 * 1000);
                     const date = format(new Date(timestamp.trigger_time), "yyyy-MM-dd");
                     if (!organizedTimes[date]) {
                         organizedTimes[date] = [];
                     }
                     organizedTimes[date].push({
-                        time: format(new Date(timestamp.trigger_time), "HH:mm"),
+                        time: format(localDate, "HH:mm"),
                         id: timestamp.id,
                     });
                 });
@@ -115,7 +117,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         const timeParts = selectedTime.split(":");
         const inputTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), timeParts[0], timeParts[1]);
 
-        const minTime = addMinutes(currentTime, 5);
+        const minTime = addMinutes(currentTime, 1);
         const newTimes = { ...times };
 
         // Check if the current value is a string or an object
@@ -150,10 +152,11 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
                     const [hour, minute] = timeObj.time.split(":");
                     const selectedDateTime = new Date(date);
                     selectedDateTime.setHours(hour, minute, 0, 0);
+                    const utcDateTime = new Date(selectedDateTime.getTime() - 7 * 60 * 60 * 1000);
                     console.log(timeObj);
                     return {
                         workflow_id: workflowID,
-                        trigger_time: selectedDateTime.toISOString(),
+                        trigger_time: utcDateTime.toISOString(),
                     };
                 } else {
                     console.error("Invalid time format:", timeObj);
@@ -224,7 +227,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
 
         const isTodayOverMidnight = () => {
             const currentTime = new Date();
-            const thirtyMinutesLater = addMinutes(currentTime, 30);
+            const thirtyMinutesLater = addMinutes(currentTime, 5);
             return thirtyMinutesLater.getDate() !== currentTime.getDate();
         };
 
@@ -262,7 +265,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         const currentTime = new Date();
 
         if (isToday(new Date(date))) {
-            const adjustedTime = addMinutes(currentTime, 30);
+            const adjustedTime = addMinutes(currentTime, 5);
             return format(adjustedTime, "HH:mm"); // Include seconds
         }
 
