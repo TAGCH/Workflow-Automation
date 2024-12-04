@@ -117,7 +117,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         const timeParts = selectedTime.split(":");
         const inputTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), timeParts[0], timeParts[1]);
 
-        const minTime = addMinutes(currentTime, 5);
+        const minTime = addMinutes(currentTime, 1);
         const newTimes = { ...times };
 
         // Check if the current value is a string or an object
@@ -227,7 +227,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
 
         const isTodayOverMidnight = () => {
             const currentTime = new Date();
-            const thirtyMinutesLater = addMinutes(currentTime, 30);
+            const thirtyMinutesLater = addMinutes(currentTime, 5);
             return thirtyMinutesLater.getDate() !== currentTime.getDate();
         };
 
@@ -265,7 +265,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         const currentTime = new Date();
 
         if (isToday(new Date(date))) {
-            const adjustedTime = addMinutes(currentTime, 30);
+            const adjustedTime = addMinutes(currentTime, 5);
             return format(adjustedTime, "HH:mm"); // Include seconds
         }
 
