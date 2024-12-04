@@ -40,9 +40,6 @@ class TestSchemas(unittest.TestCase):
             "owner_id": 1,
             "sender_email": "sender@example.com",
             "sender_hashed_password": "hashedpassword123",
-            "trigger_time": datetime.now(),
-            "trigger_frequency": "daily",
-            "trigger_day": "Monday",
             "status": True
         }
         workflow = WorkflowBase(**valid_data)
@@ -70,43 +67,17 @@ class TestSchemas(unittest.TestCase):
             "owner_id": 1,
             "sender_email": "sender@example.com",
             "sender_hashed_password": "hashedpassword123",
-            "trigger_time": datetime.now(),
-            "trigger_frequency": "daily",
-            "trigger_day": "Monday",
             "status": True
         }
         workflow_model = WorkflowModel(**valid_data)
         self.assertEqual(workflow_model.id, 1)
         self.assertEqual(workflow_model.name, "Test Workflow")
 
-    def test_gmailflow_base_schema(self):
-        """Test that GmailflowBase schema accepts valid data and rejects invalid data."""
-        valid_data = {
-            "email": "recipient@example.com",
-            "title": "Test Email",
-            "body": "This is a test email body",
-            "name": "Test Gmail Flow",
-            "workflow_id": 1
-        }
-        gmailflow = GmailflowBase(**valid_data)
-        self.assertEqual(gmailflow.email, "recipient@example.com")
-        self.assertEqual(gmailflow.title, "Test Email")
-
-        invalid_data = {
-            "email": "invalid-email",
-            "title": "Test Email",
-            "body": "This is a test email body",
-            "name": "Test Gmail Flow",
-            "workflow_id": 1
-        }
-        with self.assertRaises(ValidationError):
-            GmailflowBase(**invalid_data)
-
     def test_gmailflow_model_schema(self):
         """Test that GmailflowModel schema accepts valid data."""
         valid_data = {
             "id": 1,
-            "email": "recipient@example.com",
+            "recipient_email": "recipient@example.com",
             "title": "Test Email",
             "body": "This is a test email body",
             "name": "Test Gmail Flow",
