@@ -262,7 +262,7 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
         const currentTime = new Date();
 
         if (isToday(new Date(date))) {
-            const adjustedTime = addMinutes(currentTime, 30);
+            const adjustedTime = addMinutes(currentTime, 5);
             return format(adjustedTime, "HH:mm"); // Include seconds
         }
 

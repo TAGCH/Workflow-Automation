@@ -280,24 +280,24 @@ const GmailWorkflowPage = () => {
             if (action === "Save") {
                 // Clear flows and reset form data before starting email sending process
 
-                console.log("replacement checked? ", needsReplacement)
-                console.log("Creating personalizedEmail");
+                // console.log("replacement checked? ", needsReplacement)
+                // console.log("Creating personalizedEmail");
 
-                if (needsReplacement) {
-                    emailPromises = workflowObjects.map((recipient) => {
-                        const personalizedEmail = {
-                            recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
-                            title: replaceKeysInString(flowData.title, recipient),
-                            body: replaceKeysInString(flowData.body, recipient),
-                            name: flowData.name,
-                            workflow_id: id,
-                        };
+                // if (needsReplacement) {
+                //     emailPromises = workflowObjects.map((recipient) => {
+                //         const personalizedEmail = {
+                //             recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
+                //             title: replaceKeysInString(flowData.title, recipient),
+                //             body: replaceKeysInString(flowData.body, recipient),
+                //             name: flowData.name,
+                //             workflow_id: id,
+                //         };
 
-                        return api.post(`/gmailflow/`, personalizedEmail);
-                    });
-                }
+                //         return api.post(`/gmailflow/`, personalizedEmail);
+                //     });
+                // }
 
-                else {
+                // else {
                         const formatEmail = {
                         recipient_email: flowData.recipient_email,
                         title: flowData.title,
@@ -307,7 +307,7 @@ const GmailWorkflowPage = () => {
                     };
                     console.log(formatEmail);
                     await api.post(`/gmailflow/`, formatEmail);
-                }
+                // }
                 
                 fetchFlows();
             }

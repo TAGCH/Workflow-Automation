@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.sql import func
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
+import re
 
 #email
 from fastapi import BackgroundTasks
@@ -336,26 +337,38 @@ async def check_workflows_for_trigger():
             print(f"Error processing workflow {workflow.id}: {e}")
             db.rollback()
 
+def replace_keys_in_string(s, workflows_import_data):
+    """
+    Replace any '/keyName' pattern in the string with the corresponding value
+    from the `data` field of workflows_import_data.
+    If the key doesn't exist in any of the dictionaries, retain the original pattern.
+    """
+    # dicted_workflow_import = workflows_import_data.__dict__ if hasattr(workflows_import_data, "__dict__") else vars(workflows_import_data)
+    # Flatten the list of dictionaries into one combined dictionary for easy lookup
+    # import_data = {key: value for d in dicted_workflow_import.data for key, value in d.items()}
+
+    return re.sub(
+        r"/\w+",
+        lambda match: str(workflows_import_data.get(match.group()[1:], match.group())),
+        s
+    )
+
+def needs_replacement(gmailflow):
+    """
+    Check if any value in the dictionary contains the substring " /".
+    """
+    flow_data = gmailflow.__dict__ if hasattr(gmailflow, "__dict__") else vars(gmailflow)
+    return any(" /" in str(value) for value in flow_data.values())
+
+
 async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Session):
     # Build email details and send
 
-        gmailflow = db.query(models.Gmailflow).filter(workflow.id == models.Gmailflow.workflow_id)[-1]
-    
-    # if ("/" in str(gmailflow.recipient_email)):
-    #     print(f"recipient mail: {[gmailflow.recipient_email]}")
+    gmailflow = db.query(models.Gmailflow).filter(workflow.id == models.Gmailflow.workflow_id)[-1]
+    # print(gmailflow)
+    workflows_import_data = db.query(models.WorkflowsImportsData).filter(workflow.id == models.WorkflowsImportsData.workflow_id)[-1]
 
-    # else:
-    
-    
-        print(f"recipient mail: {[gmailflow.recipient_email]}")
-        message = MessageSchema(
-            subject=gmailflow.title,
-            recipients=[gmailflow.recipient_email],
-            body=gmailflow.body,
-            subtype=MessageType.html
-        )
-
-        conf = ConnectionConfig(
+    conf = ConnectionConfig(
             MAIL_USERNAME=workflow.sender_email,
             MAIL_PASSWORD=workflow.sender_hashed_password,
             MAIL_FROM=workflow.sender_email,
@@ -364,12 +377,67 @@ async def send_email_for_scheduled_workflow(workflow: models.Workflow, db: Sessi
             MAIL_STARTTLS=False,
             MAIL_SSL_TLS=True,
             USE_CREDENTIALS=True,
+            )
+
+    fm = FastMail(conf)
+    
+    if (needs_replacement(gmailflow)):
+
+        for data in workflows_import_data.data:
+ 
+            title = replace_keys_in_string(gmailflow.title, data)
+            recipient_email = replace_keys_in_string(gmailflow.recipient_email,data)
+            body = replace_keys_in_string(gmailflow.body,data)
+
+            message = MessageSchema(
+                subject=title,
+                recipients=[recipient_email],
+                body=body,
+                subtype=MessageType.html
+            )
+
+            await fm.send_message(message)
+            print("mail sent")
+            pass
+
+    else:
+
+        print(f"recipient mail: {[gmailflow.recipient_email]}")
+        message = MessageSchema(
+            subject=gmailflow.title,
+            recipients=[gmailflow.recipient_email],
+            body=gmailflow.body,
+            subtype=MessageType.html
         )
 
-        fm = FastMail(conf)
         await fm.send_message(message)
-        
         print("mail sent")
+    # Build email details and send
+
+    # gmailflow = db.query(models.Gmailflow).filter(workflow.id == models.Gmailflow.workflow_id)[-1]
+    # print(gmailflow.id)
+
+    # message = MessageSchema(
+    #     subject=gmailflow.title,
+    #     recipients=[gmailflow.recipient_email],
+    #     body=gmailflow.body,
+    #     subtype=MessageType.html
+    # )
+
+    # conf = ConnectionConfig(
+    #     MAIL_USERNAME=workflow.sender_email,
+    #     MAIL_PASSWORD=workflow.sender_hashed_password,
+    #     MAIL_FROM=workflow.sender_email,
+    #     MAIL_PORT=465,
+    #     MAIL_SERVER="smtp.gmail.com",
+    #     MAIL_STARTTLS=False,
+    #     MAIL_SSL_TLS=True,
+    #     USE_CREDENTIALS=True,
+    # )
+
+    # fm = FastMail(conf)
+    # await fm.send_message(message)
+    # print("mail sent")
 
 @app.on_event("startup")
 async def start_scheduler():
