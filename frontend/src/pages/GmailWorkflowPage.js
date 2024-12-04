@@ -320,6 +320,8 @@ const GmailWorkflowPage = () => {
                     };
                     console.log(formatEmail);
                     await api.post(`/gmailflow/`, formatEmail);
+                    setIsSuccessPopupOpen(true);
+                    setPopupMessage("Data Saved");
                 // }
 
                 fetchFlows();
@@ -340,6 +342,8 @@ const GmailWorkflowPage = () => {
 
                         // Send API request for each personalized email
                         return api.post(`/sendmail/${id}/`, personalizedEmail);
+                        setIsSuccessPopupOpen(true);
+                        setPopupMessage("Email Sent");
                     });
 
                 } else {
@@ -355,7 +359,8 @@ const GmailWorkflowPage = () => {
                     emailPromises = [api.post(`/sendmail/${id}/`, singleEmail)];
                 }
                 await Promise.all(emailPromises);
-
+                setIsSuccessPopupOpen(true);
+                setPopupMessage("Email Sent");
                 // console.log("Emails saved successfully");
 
                 fetchFlows();
@@ -363,7 +368,8 @@ const GmailWorkflowPage = () => {
 
         } catch (error) {
             console.error("Error submitting the form:", error);
-            setErrorMessage("Something went wrong.", error);
+            setIsSuccessPopupOpen(true);
+            setPopupMessage("Error submitting: May be caused by an invalid sender email, invalid form, or invalid data.");
         }
 
         // clearFile();
