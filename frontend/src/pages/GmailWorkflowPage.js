@@ -319,9 +319,16 @@ const GmailWorkflowPage = () => {
                         workflow_id: id
                     };
                     console.log(formatEmail);
-                    await api.post(`/gmailflow/`, formatEmail);
-                    setIsSuccessPopupOpen(true);
-                    setPopupMessage("Data Saved");
+                    // Check if all fields are empty
+                    if (!formatEmail.recipient_email && !formatEmail.title && !formatEmail.body && !formatEmail.name) {
+                        // If all fields are empty, show the popup
+                        setIsSuccessPopupOpen(true);
+                        setPopupMessage("Data is Empty");
+                    } else {
+                        await api.post(`/gmailflow/`, formatEmail);
+                        setIsSuccessPopupOpen(true);
+                        setPopupMessage("Data Saved");
+                    }
                 // }
 
                 fetchFlows();
