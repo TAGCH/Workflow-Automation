@@ -289,37 +289,44 @@ const GmailWorkflowPage = () => {
 
         try {
             console.log("Action:", action);
+            fetchFlows();
+            const needsReplacement = Object.values(flowData).some(value => value.includes(" /"));
+            let emailPromises;
+
             if (action === "Save") {
                 // Clear flows and reset form data before starting email sending process
-                fetchFlows();
-                const formatEmail = {
-                    recipient_email: flowData.recipient_email,
-                    title: flowData.title,
-                    body: flowData.body,
-                    name: flowData.name,
-                    workflow_id: id
-                };
-                console.log(formatEmail);
-                // Check if all fields are empty
-                if (!formatEmail.recipient_email && !formatEmail.title && !formatEmail.body && !formatEmail.name) {
-                    // If all fields are empty, show the popup
-                    setIsSuccessPopupOpen(true);
-                    setPopupMessage("Data is Empty");
-                } else {
+
+                // console.log("replacement checked? ", needsReplacement)
+                // console.log("Creating personalizedEmail");
+                // if (needsReplacement) {
+                //     emailPromises = workflowObjects.map((recipient) => {
+                //         const personalizedEmail = {
+                //             recipient_email: replaceKeysInString(flowData.recipient_email, recipient),
+                //             title: replaceKeysInString(flowData.title, recipient),
+                //             body: replaceKeysInString(flowData.body, recipient),
+                //             name: flowData.name,
+                //             workflow_id: id,
+                //         };
+                //         return api.post(`/gmailflow/`, personalizedEmail);
+                //     });
+                // }
+                // else {
+                        const formatEmail = {
+                        recipient_email: flowData.recipient_email,
+                        title: flowData.title,
+                        body: flowData.body,
+                        name: flowData.name,
+                        workflow_id: id
+                    };
+                    console.log(formatEmail);
                     await api.post(`/gmailflow/`, formatEmail);
-                    setIsSuccessPopupOpen(true);
-                    setPopupMessage("Data Saved");
-                }
+                // }
+
                 fetchFlows();
             }
+
             else if (action === "Send") {
-                fetchFlows();
 
-                const needsReplacement = Object.values(flowData).some(value => value.includes(" /"));
-
-                let emailPromises;
-                console.log("replacement checked? ", needsReplacement)
-                console.log("Creating personalizedEmail");
                 if (needsReplacement) {
                     emailPromises = workflowObjects.map((recipient) => {
                         const personalizedEmail = {
@@ -333,8 +340,6 @@ const GmailWorkflowPage = () => {
 
                         // Send API request for each personalized email
                         return api.post(`/sendmail/${id}/`, personalizedEmail);
-                        setIsSuccessPopupOpen(true);
-                        setPopupMessage("Email Sent");
                     });
 
                 } else {
@@ -350,8 +355,7 @@ const GmailWorkflowPage = () => {
                     emailPromises = [api.post(`/sendmail/${id}/`, singleEmail)];
                 }
                 await Promise.all(emailPromises);
-                setIsSuccessPopupOpen(true);
-                setPopupMessage("Email Sent");
+
                 // console.log("Emails saved successfully");
 
                 fetchFlows();
@@ -359,8 +363,7 @@ const GmailWorkflowPage = () => {
 
         } catch (error) {
             console.error("Error submitting the form:", error);
-            setIsSuccessPopupOpen(true);
-            setPopupMessage("Error submitting: May be caused by an invalid sender email, invalid form, or invalid data.");
+            setErrorMessage("Something went wrong.", error);
         }
 
         // clearFile();
