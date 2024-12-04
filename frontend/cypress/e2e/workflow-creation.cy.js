@@ -3,8 +3,8 @@ describe('Createflow after Login', () => {
     // Mock API response for login
     cy.intercept('POST', '/api/token', {
       body: {
-        user: {id: 9, name: 'Test User', email: 'test123@example.com'},
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6OX0.e99J-IKJ_U8dcS0dYSo9oe5EXsGLrwW4iyUZkEGxduI',
+        user: {id: 2, name: 'Test User', email: 'test123@example.com'},
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6Mn0.PnNyFyYQpAg13LU9zcCR9UACtKElK42PxvdjSkwW_9w',
       },
     }).as('postLogin');
   });
@@ -34,10 +34,10 @@ describe('Createflow after Login', () => {
 
     // Store the awesomeUsersToken in localStorage
     cy.window().then((win) => {
-      win.localStorage.setItem('awesomeUsersToken', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6OX0.e99J-IKJ_U8dcS0dYSo9oe5EXsGLrwW4iyUZkEGxduI');
+      win.localStorage.setItem('awesomeUsersToken', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6Mn0.PnNyFyYQpAg13LU9zcCR9UACtKElK42PxvdjSkwW_9w');
     });
 
-    cy.visit('/home/9')
+    cy.visit('/home/2')
     cy.wait(1000);
 
     // Simulate hover over the vertical navbar

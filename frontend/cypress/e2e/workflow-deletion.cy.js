@@ -3,8 +3,8 @@ describe('Workflow Deletion', () => {
     // Mock API response for login
     cy.intercept('POST', '/api/token', {
       body: {
-        user: { id: 9, name: 'Test User', email: 'test123@example.com' },
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6OX0.e99J-IKJ_U8dcS0dYSo9oe5EXsGLrwW4iyUZkEGxduI',
+        user: { id: 2, name: 'Test User', email: 'test123@example.com' },
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6Mn0.PnNyFyYQpAg13LU9zcCR9UACtKElK42PxvdjSkwW_9w',
       },
     }).as('postLogin');
   });
@@ -20,11 +20,11 @@ describe('Workflow Deletion', () => {
     cy.window().then((win) => {
       win.localStorage.setItem(
           'awesomeUsersToken',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6OX0.e99J-IKJ_U8dcS0dYSo9oe5EXsGLrwW4iyUZkEGxduI'
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxMjNAZXhhbXBsZS5jb20iLCJpZCI6Mn0.PnNyFyYQpAg13LU9zcCR9UACtKElK42PxvdjSkwW_9w'
       );
     });
 
-    cy.visit('/home/9');
+    cy.visit('/home/2');
     cy.wait(1000);
 
     // Simulate hover over the vertical navbar
@@ -34,7 +34,7 @@ describe('Workflow Deletion', () => {
     // Navigate to the workflows page
     cy.get('.bi-collection-fill').trigger('mouseover');
     cy.get('.bi-collection-fill').click();
-    cy.url().should('include', '/myflows/9');
+    cy.url().should('include', '/myflows/2');
     cy.wait(1000);
 
     // Hover the card then perform deletion

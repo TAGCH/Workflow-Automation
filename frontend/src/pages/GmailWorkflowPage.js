@@ -145,7 +145,6 @@ const GmailWorkflowPage = () => {
         try {
             const response = await api.get(`/workflow/${id}/data`);
             setWorkflowObjects(Object(response.data))
-            console.log("fetchFlowdata", response.data)
         } catch (error) {
             console.error("Failed to fetch data from database");
         }
@@ -457,8 +456,15 @@ const GmailWorkflowPage = () => {
                     <div className="col-md-6 mb-4">
                         <div className="card h-100">
                             <div className="card-body">
-                                <h5 className="text-center mb-4">Data Field</h5>
-                                <form onSubmit={handleFormSubmit} style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+                                <h5 className="text-center mb-4">Key Available for Use</h5>
+                                <h6 className='text-center mb-4'
+                                    style={{backgroundColor: 'beige', padding: '15px', borderRadius: '15px'}}>
+                                    {Object(keyNames).length > 0
+                                        ? Object(keyNames).join(', ')
+                                        : 'No key available'}
+                                </h6>
+                                <form onSubmit={handleFormSubmit}
+                                      style={{padding: '20px', maxWidth: '600px', margin: '0 auto'}}>
                                     {['recipient_email', 'title', 'name', 'body'].map((field) => (
                                         <div className="mb-4" key={field}>
                                             <label
@@ -467,16 +473,16 @@ const GmailWorkflowPage = () => {
                                             >
                                                 {field.charAt(0).toUpperCase() + field.slice(1)}:
                                             </label>
-                                            <div style={{ position: 'relative', paddingBottom: '20px' }}>
+                                            <div style={{position: 'relative', paddingBottom: '20px'}}>
                                                 {field === 'body' ? (
                                                     <ReactQuill
                                                         value={flowData[field]}
                                                         onChange={(value) =>
-                                                            handleInputChange({ target: { name: field, value } })
+                                                            handleInputChange({target: {name: field, value}})
                                                         }
                                                         onBlur={() => handleInputBlur(field)} // Disable dropdown when not focused
                                                         theme="snow"
-                                                        style={{ height: '150px' }}
+                                                        style={{height: '150px'}}
                                                     />
                                                 ) : (
                                                     <input
@@ -507,7 +513,7 @@ const GmailWorkflowPage = () => {
                                                             <div
                                                                 key={name}
                                                                 onClick={() => handleAutocompleteClick(name)}
-                                                                style={{ padding: '5px', cursor: 'pointer' }}
+                                                                style={{padding: '5px', cursor: 'pointer'}}
                                                             >
                                                                 {name}
                                                             </div>
