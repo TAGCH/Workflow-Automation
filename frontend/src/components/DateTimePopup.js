@@ -29,12 +29,14 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
                 // Organize times based on dates
                 const organizedTimes = {};
                 timestamps.forEach((timestamp) => {
+                    const utcDate = new Date(timestamp.trigger_time);
+                    const localDate = new Date(utcDate.getTime() + 7 * 60 * 60 * 1000);
                     const date = format(new Date(timestamp.trigger_time), "yyyy-MM-dd");
                     if (!organizedTimes[date]) {
                         organizedTimes[date] = [];
                     }
                     organizedTimes[date].push({
-                        time: format(new Date(timestamp.trigger_time), "HH:mm"),
+                        time: format(localDate, "HH:mm"),
                         id: timestamp.id,
                     });
                 });
@@ -150,10 +152,11 @@ const DateTimePopup = ({ onClose, onConfirm, workflowID }) => {
                     const [hour, minute] = timeObj.time.split(":");
                     const selectedDateTime = new Date(date);
                     selectedDateTime.setHours(hour, minute, 0, 0);
+                    const utcDateTime = new Date(selectedDateTime.getTime() - 7 * 60 * 60 * 1000);
                     console.log(timeObj);
                     return {
                         workflow_id: workflowID,
-                        trigger_time: selectedDateTime.toISOString(),
+                        trigger_time: utcDateTime.toISOString(),
                     };
                 } else {
                     console.error("Invalid time format:", timeObj);
