@@ -375,8 +375,6 @@ const GmailWorkflowPage = () => {
 
         } catch (error) {
             console.error("Error submitting the form:", error);
-            setIsSuccessPopupOpen(true);
-            setPopupMessage("Error submitting: May be caused by an invalid sender email, invalid form, or invalid data.");
         }
 
         // clearFile();
